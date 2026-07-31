@@ -1,0 +1,483 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Author studio" description="Private editorial workspace." noindex>
+  <div class="admin-shell" data-admin-app data-api={__API_BASE_URL__}>
+    <section class="login-panel" data-login-panel aria-labelledby="login-title">
+      <div class="login-mark" aria-hidden="true">EH</div>
+      <p class="eyebrow">Private editorial space</p>
+      <h1 id="login-title">Author studio</h1>
+      <p>Sign in to manage the bookshelf, stories and reader comments.</p>
+      <form data-login-form>
+        <label>
+          <span>Username</span>
+          <input name="username" autocomplete="username" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input name="password" type="password" autocomplete="current-password" minlength="10" required />
+        </label>
+        <button class="button primary" type="submit">Sign in</button>
+        <p class="form-status" data-login-status aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="admin-studio" data-admin-studio hidden>
+      <header class="admin-header">
+        <div>
+          <p class="eyebrow">Eleanor Hart</p>
+          <h1>Author studio</h1>
+        </div>
+        <div class="button-row">
+          <button class="button secondary" type="button" data-export>Export data</button>
+          <button class="text-button" type="button" data-logout>Sign out</button>
+        </div>
+      </header>
+
+      <nav class="admin-tabs" aria-label="Studio sections">
+        <button type="button" aria-current="page" data-tab="dashboard">Dashboard</button>
+        <button type="button" data-tab="works">Works</button>
+        <button type="button" data-tab="comments">Comments</button>
+        <button type="button" data-tab="settings">Site settings</button>
+      </nav>
+
+      <div data-panel="dashboard">
+        <div class="dashboard-heading">
+          <div>
+            <p class="eyebrow">At a glance</p>
+            <h2>Welcome back</h2>
+          </div>
+          <button class="button primary" type="button" data-new-work>+ Add new work</button>
+        </div>
+        <div class="stat-grid">
+          <article><strong data-stat-published>—</strong><span>Published</span></article>
+          <article><strong data-stat-drafts>—</strong><span>Drafts</span></article>
+          <article><strong data-stat-featured>—</strong><span>Featured</span></article>
+          <article><strong data-stat-comments>—</strong><span>Awaiting review</span></article>
+        </div>
+        <section class="admin-card">
+          <h3>Recently edited</h3>
+          <div data-recent-works class="admin-list"></div>
+        </section>
+      </div>
+
+      <div data-panel="works" hidden>
+        <div class="dashboard-heading">
+          <div><p class="eyebrow">The collection</p><h2>Works</h2></div>
+          <button class="button primary" type="button" data-new-work>+ Add new work</button>
+        </div>
+        <div class="admin-list" data-all-works></div>
+      </div>
+
+      <div data-panel="comments" hidden>
+        <div class="dashboard-heading">
+          <div><p class="eyebrow">Reader responses</p><h2>Comment moderation</h2></div>
+        </div>
+        <div class="admin-list" data-comments-list></div>
+      </div>
+
+      <div data-panel="settings" hidden>
+        <div class="dashboard-heading">
+          <div><p class="eyebrow">Public details</p><h2>Site settings</h2></div>
+        </div>
+        <form class="editor-form narrow" data-settings-form>
+          <label><span>Author name</span><input name="authorName" required maxlength="160" /></label>
+          <label><span>Introduction</span><textarea name="introduction" rows="3" maxlength="2000"></textarea></label>
+          <label><span>Biography <small>Markdown supported</small></span><textarea name="biography" rows="10"></textarea></label>
+          <label><span>Profile image URL</span><input name="profileImageUrl" type="url" /></label>
+          <label><span>Announcement</span><input name="announcement" maxlength="500" /></label>
+          <label><span>Contact URL</span><input name="contactLink" type="url" /></label>
+          <label><span>Social links <small>One per line: Label: https://…</small></span><textarea name="socialLinks" rows="5"></textarea></label>
+          <button class="button primary" type="submit">Save settings</button>
+          <p class="form-status" data-settings-status aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <dialog class="editor-dialog" data-editor-dialog aria-labelledby="editor-title">
+    <form method="dialog" class="dialog-close-row"><button class="icon-button" value="cancel" aria-label="Close editor">×</button></form>
+    <header>
+      <p class="eyebrow">Work editor</p>
+      <h2 id="editor-title" data-editor-title>Add a new work</h2>
+    </header>
+    <form class="editor-form" data-work-form>
+      <input type="hidden" name="id" />
+      <div class="form-grid two">
+        <label><span>Title</span><input name="title" required maxlength="180" /></label>
+        <label><span>Subtitle</span><input name="subtitle" maxlength="240" /></label>
+      </div>
+      <div class="form-grid three">
+        <label>
+          <span>Publication type</span>
+          <select name="publicationType" required>
+            <option value="book">Book</option><option value="novella">Novella</option>
+            <option value="short-story">Short story</option><option value="poem">Poem</option>
+            <option value="essay">Essay</option><option value="magazine">Magazine</option>
+            <option value="anthology">Anthology</option><option value="other">Other</option>
+          </select>
+        </label>
+        <label><span>Publication date</span><input name="publishedAt" type="date" /></label>
+        <label><span>Word count</span><input name="wordCount" type="number" min="0" /></label>
+      </div>
+      <label><span>URL slug</span><input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" /></label>
+      <label><span>Blurb</span><textarea name="blurb" rows="4" required maxlength="4000"></textarea></label>
+      <label><span>Excerpt <small>Markdown supported</small></span><textarea name="excerpt" rows="7"></textarea></label>
+      <label><span>Full story <small>Markdown supported</small></span><textarea name="storyContent" rows="15"></textarea></label>
+      <label><span>Author notes <small>Markdown supported</small></span><textarea name="authorNotes" rows="6"></textarea></label>
+
+      <fieldset>
+        <legend>What visitors can read</legend>
+        <label class="radio-card">
+          <input type="radio" name="contentVisibility" value="external-only" checked />
+          <span><strong>Link only</strong><small>Visitors see the blurb and external link, but not the story.</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="contentVisibility" value="excerpt" />
+          <span><strong>Excerpt</strong><small>Visitors see the blurb and excerpt.</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="contentVisibility" value="full" />
+          <span><strong>Full story</strong><small>Visitors can read the complete story on the website.</small></span>
+        </label>
+        <p class="visibility-warning" data-full-warning hidden>Only publish content here when you hold the necessary digital rights.</p>
+      </fieldset>
+
+      <div class="form-grid two">
+        <label><span>Publisher</span><input name="publisherName" /></label>
+        <label><span>Publication name</span><input name="publicationName" /></label>
+        <label><span>Publication URL</span><input name="primaryExternalUrl" type="url" /></label>
+        <label><span>Purchase URL</span><input name="purchaseUrl" type="url" /></label>
+        <label><span>Social post URL</span><input name="socialPostUrl" type="url" /></label>
+        <label class="checkbox"><input name="socialEmbedEnabled" type="checkbox" /><span>Enable supported social embed</span></label>
+        <label><span>Cover image URL</span><input name="coverImageUrl" type="url" /></label>
+        <label><span>Cover image alt text</span><input name="coverImageAlt" /></label>
+        <label><span>Genres <small>Comma separated</small></span><input name="genres" /></label>
+        <label><span>Tags <small>Comma separated</small></span><input name="tags" /></label>
+      </div>
+      <div class="form-grid three">
+        <label>
+          <span>Status</span>
+          <select name="status"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select>
+        </label>
+        <label><span>Display order</span><input name="displayOrder" type="number" /></label>
+        <label class="checkbox"><input name="featured" type="checkbox" /><span>Feature this work</span></label>
+      </div>
+      <div class="form-grid two">
+        <label><span>SEO title</span><input name="seoTitle" maxlength="70" /></label>
+        <label><span>SEO description</span><textarea name="seoDescription" rows="2" maxlength="180"></textarea></label>
+      </div>
+      <details class="preview-panel">
+        <summary>Preview draft text</summary>
+        <div data-markdown-preview class="story-content"></div>
+      </details>
+      <div class="editor-actions">
+        <button class="button secondary" type="button" data-archive hidden>Archive work</button>
+        <span class="spacer"></span>
+        <button class="text-button" type="button" data-cancel-editor>Cancel</button>
+        <button class="button primary" type="submit">Save work</button>
+      </div>
+      <p class="form-status" data-editor-status aria-live="polite"></p>
+    </form>
+  </dialog>
+</BaseLayout>
+
+<script>
+  type ApiWork = Record<string, any>;
+  const app = document.querySelector<HTMLElement>("[data-admin-app]")!;
+  const apiBase = app.dataset.api!;
+  let accessToken = "";
+  let works: ApiWork[] = [];
+  let dirty = false;
+
+  const request = async (path: string, init: RequestInit = {}) => {
+    const headers = new Headers(init.headers);
+    if (init.body) headers.set("Content-Type", "application/json");
+    if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
+    const response = await fetch(`${apiBase}${path}`, { ...init, headers, credentials: "include" });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error?.message || "The request could not be completed.");
+    return payload.data;
+  };
+
+  const loginPanel = document.querySelector<HTMLElement>("[data-login-panel]")!;
+  const studio = document.querySelector<HTMLElement>("[data-admin-studio]")!;
+  const loginStatus = document.querySelector<HTMLElement>("[data-login-status]")!;
+  const showStudio = () => {
+    loginPanel.hidden = true;
+    studio.hidden = false;
+  };
+
+  const refreshSession = async () => {
+    try {
+      const session = await request("/api/v1/auth/refresh", { method: "POST" });
+      accessToken = session.accessToken;
+      showStudio();
+      await loadDashboard();
+    } catch {
+      loginPanel.hidden = false;
+      studio.hidden = true;
+    }
+  };
+
+  document.querySelector<HTMLFormElement>("[data-login-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    loginStatus.textContent = "Signing in…";
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    try {
+      const session = await request("/api/v1/auth/login", { method: "POST", body: JSON.stringify(data) });
+      accessToken = session.accessToken;
+      loginStatus.textContent = "";
+      showStudio();
+      await loadDashboard();
+    } catch (error) {
+      loginStatus.textContent = (error as Error).message;
+    }
+  });
+
+  document.querySelector("[data-logout]")?.addEventListener("click", async () => {
+    await request("/api/v1/auth/logout", { method: "POST" }).catch(() => undefined);
+    accessToken = "";
+    window.location.reload();
+  });
+
+  const escape = (value: unknown) =>
+    String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
+
+  const workRow = (work: ApiWork) => `
+    <article class="admin-list-row">
+      <div>
+        <strong>${escape(work.title)}</strong>
+        <span>${escape(work.status)} · ${escape(work.publicationType).replace("-", " ")}</span>
+      </div>
+      <time>${new Date(work.updatedAt).toLocaleDateString()}</time>
+      <button class="text-button" type="button" data-edit-work="${escape(work.id)}">Edit</button>
+    </article>`;
+
+  const bindEditButtons = () => {
+    document.querySelectorAll<HTMLButtonElement>("[data-edit-work]").forEach((button) => {
+      button.addEventListener("click", () => openEditor(works.find((work) => work.id === button.dataset.editWork)));
+    });
+  };
+
+  const loadDashboard = async () => {
+    const [workData, commentData] = await Promise.all([
+      request("/api/v1/admin/works"),
+      request("/api/v1/admin/comments?status=pending")
+    ]);
+    works = workData.items;
+    document.querySelector<HTMLElement>("[data-stat-published]")!.textContent = String(works.filter((work) => work.status === "published").length);
+    document.querySelector<HTMLElement>("[data-stat-drafts]")!.textContent = String(works.filter((work) => work.status === "draft").length);
+    document.querySelector<HTMLElement>("[data-stat-featured]")!.textContent = String(works.filter((work) => work.featured).length);
+    document.querySelector<HTMLElement>("[data-stat-comments]")!.textContent = String(commentData.items.length);
+    document.querySelector<HTMLElement>("[data-recent-works]")!.innerHTML = works.slice(0, 5).map(workRow).join("");
+    document.querySelector<HTMLElement>("[data-all-works]")!.innerHTML = works.map(workRow).join("");
+    renderComments(commentData.items);
+    bindEditButtons();
+    await loadSettings();
+  };
+
+  const renderComments = (comments: ApiWork[]) => {
+    const list = document.querySelector<HTMLElement>("[data-comments-list]")!;
+    list.innerHTML = comments.length
+      ? comments.map((comment) => `<article class="comment-row">
+          <p>“${escape(comment.body)}”</p>
+          <span>${escape(comment.display_name || "Anonymous")} on <strong>${escape(comment.work_title)}</strong></span>
+          <div class="button-row">
+            <button class="button secondary" data-comment-action="approved" data-comment-id="${escape(comment.id)}">Approve</button>
+            <button class="text-button" data-comment-action="rejected" data-comment-id="${escape(comment.id)}">Reject</button>
+          </div>
+        </article>`).join("")
+      : "<p class='empty-admin'>No comments are waiting for review.</p>";
+    list.querySelectorAll<HTMLButtonElement>("[data-comment-action]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        await request(`/api/v1/admin/comments/${button.dataset.commentId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ moderationStatus: button.dataset.commentAction })
+        });
+        button.closest("article")?.remove();
+      });
+    });
+  };
+
+  document.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => {
+        panel.hidden = panel.dataset.panel !== tab.dataset.tab;
+      });
+      document.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach((item) => item.removeAttribute("aria-current"));
+      tab.setAttribute("aria-current", "page");
+    });
+  });
+
+  const dialog = document.querySelector<HTMLDialogElement>("[data-editor-dialog]")!;
+  const workForm = document.querySelector<HTMLFormElement>("[data-work-form]")!;
+  const archiveButton = document.querySelector<HTMLButtonElement>("[data-archive]")!;
+  const editorStatus = document.querySelector<HTMLElement>("[data-editor-status]")!;
+
+  const setValue = (name: string, value: unknown) => {
+    const input = workForm.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | RadioNodeList | null;
+    if (!input) return;
+    if (input instanceof RadioNodeList) input.value = String(value ?? "");
+    else if (input instanceof HTMLInputElement && input.type === "checkbox") input.checked = Boolean(value);
+    else input.value = String(value ?? "");
+  };
+
+  const openEditor = (work?: ApiWork) => {
+    workForm.reset();
+    editorStatus.textContent = "";
+    document.querySelector<HTMLElement>("[data-editor-title]")!.textContent = work ? "Edit work" : "Add a new work";
+    archiveButton.hidden = !work;
+    const defaults: ApiWork = work || { publicationType: "short-story", status: "draft", contentVisibility: "external-only", genres: [], tags: [] };
+    Object.entries(defaults).forEach(([key, value]) => setValue(key, Array.isArray(value) ? value.join(", ") : value));
+    if (work?.publishedAt) setValue("publishedAt", work.publishedAt.slice(0, 10));
+    dirty = false;
+    updatePreview();
+    dialog.showModal();
+    (workForm.elements.namedItem("title") as HTMLInputElement).focus();
+  };
+
+  document.querySelectorAll("[data-new-work]").forEach((button) => button.addEventListener("click", () => openEditor()));
+  document.querySelector("[data-cancel-editor]")?.addEventListener("click", () => {
+    if (!dirty || confirm("Discard your unsaved changes?")) dialog.close();
+  });
+  dialog.addEventListener("cancel", (event) => {
+    if (dirty && !confirm("Discard your unsaved changes?")) event.preventDefault();
+  });
+
+  workForm.addEventListener("input", () => {
+    dirty = true;
+    const title = workForm.elements.namedItem("title") as HTMLInputElement;
+    const slug = workForm.elements.namedItem("slug") as HTMLInputElement;
+    if (!slug.value || slug.dataset.auto === "true") {
+      slug.value = title.value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      slug.dataset.auto = "true";
+    }
+    updatePreview();
+  });
+
+  workForm.querySelectorAll<HTMLInputElement>('[name="contentVisibility"]').forEach((radio) => {
+    radio.addEventListener("change", () => {
+      document.querySelector<HTMLElement>("[data-full-warning]")!.hidden = radio.value !== "full" || !radio.checked;
+    });
+  });
+
+  const updatePreview = () => {
+    const story = (workForm.elements.namedItem("storyContent") as HTMLTextAreaElement).value;
+    const excerpt = (workForm.elements.namedItem("excerpt") as HTMLTextAreaElement).value;
+    document.querySelector<HTMLElement>("[data-markdown-preview]")!.innerHTML = `<p>${escape(story || excerpt || "Your preview will appear here.").replace(/\n\n/g, "</p><p>").replace(/\n/g, "<br>")}</p>`;
+  };
+
+  workForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const formData = new FormData(workForm);
+    const id = String(formData.get("id") || "");
+    const optional = (name: string) => String(formData.get(name) || "").trim() || undefined;
+    const date = optional("publishedAt");
+    const payload = {
+      slug: String(formData.get("slug")),
+      title: String(formData.get("title")),
+      subtitle: optional("subtitle"),
+      status: String(formData.get("status")),
+      publicationType: String(formData.get("publicationType")),
+      publishedAt: date ? `${date}T00:00:00Z` : undefined,
+      wordCount: optional("wordCount") ? Number(formData.get("wordCount")) : undefined,
+      blurb: String(formData.get("blurb")),
+      excerpt: optional("excerpt"),
+      storyContent: optional("storyContent"),
+      authorNotes: optional("authorNotes"),
+      contentVisibility: String(formData.get("contentVisibility")),
+      publisherName: optional("publisherName"),
+      publicationName: optional("publicationName"),
+      primaryExternalUrl: optional("primaryExternalUrl"),
+      purchaseUrl: optional("purchaseUrl"),
+      socialPostUrl: optional("socialPostUrl"),
+      socialEmbedEnabled: formData.get("socialEmbedEnabled") === "on",
+      coverImageUrl: optional("coverImageUrl"),
+      coverImageAlt: optional("coverImageAlt"),
+      genres: String(formData.get("genres") || "").split(",").map((value) => value.trim()).filter(Boolean),
+      tags: String(formData.get("tags") || "").split(",").map((value) => value.trim()).filter(Boolean),
+      featured: formData.get("featured") === "on",
+      displayOrder: optional("displayOrder") ? Number(formData.get("displayOrder")) : undefined,
+      seoTitle: optional("seoTitle"),
+      seoDescription: optional("seoDescription")
+    };
+    if (payload.contentVisibility === "full" && !confirm("Publish the complete story on the public website? Confirm that you hold the digital rights.")) return;
+    editorStatus.textContent = "Saving…";
+    try {
+      await request(id ? `/api/v1/admin/works/${id}` : "/api/v1/admin/works", {
+        method: id ? "PUT" : "POST",
+        body: JSON.stringify(payload)
+      });
+      dirty = false;
+      editorStatus.textContent = "Saved.";
+      await loadDashboard();
+      window.setTimeout(() => dialog.close(), 500);
+    } catch (error) {
+      editorStatus.textContent = (error as Error).message;
+    }
+  });
+
+  archiveButton.addEventListener("click", async () => {
+    const id = String(new FormData(workForm).get("id") || "");
+    if (!id || !confirm("Archive this work? It will disappear from the public site after the next site build.")) return;
+    await request(`/api/v1/admin/works/${id}`, { method: "DELETE" });
+    dirty = false;
+    dialog.close();
+    await loadDashboard();
+  });
+
+  const loadSettings = async () => {
+    const settings = await request("/api/v1/admin/settings");
+    const form = document.querySelector<HTMLFormElement>("[data-settings-form]")!;
+    Object.entries(settings).forEach(([key, value]) => {
+      const input = form.elements.namedItem(key) as HTMLInputElement | HTMLTextAreaElement | null;
+      if (input) input.value = key === "socialLinks"
+        ? Object.entries(value as Record<string, string>).map(([label, url]) => `${label}: ${url}`).join("\n")
+        : String(value ?? "");
+    });
+  };
+
+  document.querySelector<HTMLFormElement>("[data-settings-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const socialLinks = Object.fromEntries(String(form.get("socialLinks") || "").split("\n").map((line) => {
+      const split = line.indexOf(": ");
+      return split > 0 ? [line.slice(0, split), line.slice(split + 2)] : null;
+    }).filter(Boolean) as [string, string][]);
+    const payload = {
+      authorName: form.get("authorName"),
+      introduction: form.get("introduction"),
+      biography: form.get("biography"),
+      profileImageUrl: form.get("profileImageUrl") || undefined,
+      announcement: form.get("announcement") || undefined,
+      contactLink: form.get("contactLink") || undefined,
+      socialLinks,
+      themeSettings: {}
+    };
+    const status = document.querySelector<HTMLElement>("[data-settings-status]")!;
+    status.textContent = "Saving…";
+    try {
+      await request("/api/v1/admin/settings", { method: "PUT", body: JSON.stringify(payload) });
+      status.textContent = "Settings saved.";
+    } catch (error) {
+      status.textContent = (error as Error).message;
+    }
+  });
+
+  document.querySelector("[data-export]")?.addEventListener("click", async () => {
+    const data = await request("/api/v1/admin/export");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+    link.download = `author-library-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+
+  window.addEventListener("beforeunload", (event) => {
+    if (dirty) event.preventDefault();
+  });
+  refreshSession();
+</script>
+

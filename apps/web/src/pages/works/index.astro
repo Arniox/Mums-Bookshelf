@@ -1,0 +1,70 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import WorkCard from "../../components/WorkCard.astro";
+import { getPublicWorks } from "../../lib/contentSource";
+
+const works = await getPublicWorks();
+const types = [...new Set(works.map((work) => work.publicationType))];
+---
+
+<BaseLayout title="Works" description="Books, short stories, essays and anthology contributions by Eleanor Hart.">
+  <header class="page-heading">
+    <p class="eyebrow">The collected shelf</p>
+    <h1>Works</h1>
+    <p>Browse published stories, books, magazine pieces and anthology contributions.</p>
+  </header>
+
+  <section class="library-tools" aria-label="Search and filter works">
+    <label>
+      <span>Search</span>
+      <input type="search" placeholder="Title, genre or tag" data-work-search />
+    </label>
+    <label>
+      <span>Publication type</span>
+      <select data-work-filter>
+        <option value="">All types</option>
+        {types.map((type) => <option value={type}>{type.replace("-", " ")}</option>)}
+      </select>
+    </label>
+    <p class="result-count" aria-live="polite" data-result-count>{works.length} works</p>
+  </section>
+
+  <div class="works-grid" data-works-grid>
+    {works.map((work) => <WorkCard work={work} />)}
+  </div>
+  <div class="empty-results" data-empty-results hidden>
+    <p>No works match those filters.</p>
+    <button class="button secondary" type="button" data-clear-filters>Clear filters</button>
+  </div>
+</BaseLayout>
+
+<script>
+  const search = document.querySelector<HTMLInputElement>("[data-work-search]");
+  const filter = document.querySelector<HTMLSelectElement>("[data-work-filter]");
+  const cards = [...document.querySelectorAll<HTMLElement>("[data-work-card]")];
+  const count = document.querySelector<HTMLElement>("[data-result-count]");
+  const empty = document.querySelector<HTMLElement>("[data-empty-results]");
+  const clear = document.querySelector<HTMLButtonElement>("[data-clear-filters]");
+
+  const update = () => {
+    const query = search?.value.trim().toLowerCase() || "";
+    const type = filter?.value || "";
+    let visible = 0;
+    cards.forEach((card) => {
+      const haystack = `${card.dataset.title} ${card.dataset.tags}`;
+      const show = (!query || haystack.includes(query)) && (!type || card.dataset.type === type);
+      card.hidden = !show;
+      if (show) visible += 1;
+    });
+    if (count) count.textContent = `${visible} ${visible === 1 ? "work" : "works"}`;
+    if (empty) empty.hidden = visible !== 0;
+  };
+  search?.addEventListener("input", update);
+  filter?.addEventListener("change", update);
+  clear?.addEventListener("click", () => {
+    if (search) search.value = "";
+    if (filter) filter.value = "";
+    update();
+    search?.focus();
+  });
+</script>

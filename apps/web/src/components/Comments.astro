@@ -1,0 +1,110 @@
+---
+interface Props {
+  workId: string;
+}
+const { workId } = Astro.props;
+---
+
+{
+  __COMMENTS_ENABLED__ && (
+    <section
+      class="comments-section"
+      data-comments
+      data-work-id={workId}
+      data-api={__API_BASE_URL__}
+      data-turnstile-key={__TURNSTILE_SITE_KEY__}
+      aria-labelledby="comments-title"
+    >
+      <p class="eyebrow">Reader responses</p>
+      <h2 id="comments-title">Comments</h2>
+      <div data-comment-list><p>Loading comments…</p></div>
+      <form data-comment-form>
+        <h3>Leave a comment</h3>
+        <p>Comments are reviewed before they appear. No email address is needed.</p>
+        <label><span>Name <small>Optional</small></span><input name="displayName" maxlength="80" autocomplete="name" /></label>
+        <label><span>Comment</span><textarea name="body" required maxlength="2000" rows="5"></textarea></label>
+        <label class="honeypot" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off" /></label>
+        <div data-turnstile></div>
+        <button class="button primary" type="submit">Submit for review</button>
+        <p class="form-status" data-comment-status aria-live="polite"></p>
+      </form>
+    </section>
+  )
+}
+
+<script>
+  const section = document.querySelector<HTMLElement>("[data-comments]");
+  if (section) {
+    const api = section.dataset.api!;
+    const workId = section.dataset.workId!;
+    const list = section.querySelector<HTMLElement>("[data-comment-list]")!;
+    const status = section.querySelector<HTMLElement>("[data-comment-status]")!;
+    let turnstileToken = "";
+    const escape = (value: unknown) =>
+      String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
+
+    fetch(`${api}/api/v1/works/${encodeURIComponent(workId)}/comments`)
+      .then((response) => response.json())
+      .then((payload) => {
+        const comments = payload.data?.items || [];
+        list.innerHTML = comments.length
+          ? comments.map((comment: any) => `<article><strong>${escape(comment.displayName || "Anonymous")}</strong><p>${escape(comment.body)}</p></article>`).join("")
+          : "<p>No comments yet. You could be the first.</p>";
+      })
+      .catch(() => { list.innerHTML = "<p>Comments are temporarily unavailable.</p>"; });
+
+    const siteKey = section.dataset.turnstileKey;
+    if (siteKey) {
+      const script = document.createElement("script");
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        const turnstile = (window as any).turnstile;
+        turnstile?.render(section.querySelector("[data-turnstile]"), {
+          sitekey: siteKey,
+          callback: (token: string) => { turnstileToken = token; }
+        });
+      };
+      document.body.append(script);
+    }
+
+    section.querySelector<HTMLFormElement>("[data-comment-form]")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const data = Object.fromEntries(new FormData(form));
+      status.textContent = "Sending…";
+      try {
+        const response = await fetch(`${api}/api/v1/works/${encodeURIComponent(workId)}/comments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...data, turnstileToken })
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error?.message || "Comment could not be submitted.");
+        form.reset();
+        status.textContent = "Thank you. Your comment is awaiting review.";
+      } catch (error) {
+        status.textContent = (error as Error).message;
+      }
+    });
+  }
+</script>
+
+<style>
+  .comments-section {
+    max-width: 720px;
+    margin: 5rem auto;
+    border-top: 1px solid var(--line);
+    padding-top: 3rem;
+  }
+  .comments-section h2 { margin: 0 0 2rem; font-size: 3rem; }
+  [data-comment-list] article { border-bottom: 1px solid var(--line); padding: 1.2rem 0; }
+  [data-comment-list] article p { margin: .4rem 0; font-family: var(--serif); font-size: 1.1rem; }
+  .comments-section form { margin-top: 3rem; display: grid; gap: 1rem; }
+  .comments-section h3 { margin: 0; font-size: 2rem; }
+  .comments-section form > p { margin: 0; color: var(--muted); font-size: .82rem; }
+  .comments-section .button { justify-self: start; }
+  .honeypot { position: absolute; left: -9999px; }
+</style>
+

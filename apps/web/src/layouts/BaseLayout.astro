@@ -1,0 +1,67 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  noindex?: boolean;
+}
+
+const {
+  title = "Eleanor Hart — Author",
+  description = "Stories about small rooms, long roads, and the brave choices made between them.",
+  image,
+  noindex = false
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const fullTitle = title.includes("Eleanor Hart") ? title : `${title} — Eleanor Hart`;
+const base = import.meta.env.BASE_URL;
+const socialImage = image || `${base}og.png`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title="Eleanor Hart's latest work" href={`${base}rss.xml`} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(socialImage, Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {noindex && <meta name="robots" content="noindex,nofollow" />}
+    <title>{fullTitle}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="wordmark" href={base} aria-label="Eleanor Hart, home">
+        <span>Eleanor</span> Hart
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href={`${base}works/`}>Works</a>
+        <a href={`${base}about/`}>About</a>
+      </nav>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p><span class="footer-mark">EH</span> Stories made near the sea.</p>
+      <nav aria-label="Footer navigation">
+        <a href={`${base}rss.xml`}>RSS</a>
+        <a href={`${base}admin/`}>Author sign in</a>
+      </nav>
+      <p>© {new Date().getFullYear()} Eleanor Hart</p>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  @import "../styles/global.css";
+</style>

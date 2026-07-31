@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicSettings } from "../lib/contentSource";
+const settings = await getPublicSettings();
+---
+
+<BaseLayout title="About" description="About author Eleanor Hart and her writing.">
+  <article class="about-page">
+    <header>
+      <p class="eyebrow">About the author</p>
+      <h1>Eleanor Hart</h1>
+    </header>
+    <div class="about-layout">
+      <div class="portrait-placeholder" role="img" aria-label="A decorative monogram portrait placeholder for Eleanor Hart">
+        <span>EH</span>
+        <small>Photo coming soon</small>
+      </div>
+      <div class="about-copy">
+        {settings.biography.split("\n\n").map((paragraph) => <p>{paragraph}</p>)}
+        <blockquote>“I write toward the moment a familiar place becomes strange, and then familiar again.”</blockquote>
+        <h2>Elsewhere</h2>
+        <ul class="social-list">
+          {Object.entries(settings.socialLinks).map(([label, url]) => <li><a href={url}>{label} ↗</a></li>)}
+          {settings.contactLink && <li><a href={settings.contactLink}>Contact ↗</a></li>}
+        </ul>
+      </div>
+    </div>
+  </article>
+</BaseLayout>

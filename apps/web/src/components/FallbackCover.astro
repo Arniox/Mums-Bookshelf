@@ -1,0 +1,26 @@
+---
+import { getBookAppearance } from "@mums-bookshelf/shared";
+
+interface Props {
+  title: string;
+  seed: string;
+  label?: string;
+}
+
+const { title, seed, label = "A work by Eleanor Hart" } = Astro.props;
+const appearance = getBookAppearance(seed);
+---
+
+<div
+  class="fallback-cover"
+  style={`--cover:${appearance.primaryColor};--cover-accent:${appearance.accentColor}`}
+  role="img"
+  aria-label={`Decorative cover for ${title}`}
+>
+  <span class="cover-rule"></span>
+  <p>{label}</p>
+  <h2>{title}</h2>
+  <span class="cover-ornament">✦</span>
+  <small>Eleanor Hart</small>
+</div>
+

@@ -1,0 +1,104 @@
+---
+import { getBookAppearance, type Work } from "@mums-bookshelf/shared";
+
+interface Props {
+  works: Work[];
+  compact?: boolean;
+}
+
+const { works, compact = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<section class:list={["bookshelf-wrap", { compact }]} aria-labelledby="bookshelf-title" data-bookshelf>
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Browse the library</p>
+      <h2 id="bookshelf-title">Choose a spine</h2>
+    </div>
+    <button class="text-button" type="button" data-skip-animation hidden>Skip reveal</button>
+  </div>
+  {
+    works.length ? (
+      <div class="bookcase" aria-label={`${works.length} published works on the bookshelf`}>
+        <ol class="shelves">
+          {works.map((work, index) => {
+            const appearance = getBookAppearance(work.id || work.slug);
+            const style = [
+              `--book-color:${appearance.primaryColor}`,
+              `--book-accent:${appearance.accentColor}`,
+              `--book-height:${appearance.height}px`,
+              `--book-width:${appearance.width}px`,
+              `--book-depth:${appearance.depth}px`,
+              `--book-lean:${appearance.lean}deg`,
+              `--book-radius:${appearance.borderRadius}px`,
+              `--book-index:${index}`
+            ].join(";");
+            return (
+              <li class="book-slot">
+                <a
+                  class:list={["book", `spine-${appearance.spineStyle}`, `material-${appearance.materialStyle}`, `title-${appearance.titlePosition}`]}
+                  style={style}
+                  href={`${base}works/${work.slug}/`}
+                  aria-label={`${work.title}, ${work.publicationType.replace("-", " ")}`}
+                  data-title={work.title.toLowerCase()}
+                  data-type={work.publicationType}
+                  data-tags={[...work.tags, ...work.genres].join(" ").toLowerCase()}
+                >
+                  <span class="book-shine" aria-hidden="true" />
+                  <span class="book-title">{work.title}</span>
+                  <span class="book-mark" aria-hidden="true">✦</span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    ) : (
+      <div class="empty-shelf">
+        <p>The shelf is waiting for its first story.</p>
+      </div>
+    )
+  }
+  <details class="accessible-library">
+    <summary>View as an accessible list</summary>
+    <ul>
+      {works.map((work) => (
+        <li>
+          <a href={`${base}works/${work.slug}/`}>{work.title}</a>
+          <span>{work.publicationType.replace("-", " ")}</span>
+        </li>
+      ))}
+    </ul>
+  </details>
+</section>
+
+<script>
+  const shelf = document.querySelector<HTMLElement>("[data-bookshelf]");
+  const skip = shelf?.querySelector<HTMLButtonElement>("[data-skip-animation]");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (shelf && !reduceMotion) {
+    shelf.classList.add("is-revealing");
+    if (skip) {
+      skip.hidden = false;
+      skip.addEventListener("click", () => {
+        shelf.classList.remove("is-revealing");
+        skip.hidden = true;
+      });
+    }
+    window.setTimeout(() => {
+      shelf.classList.remove("is-revealing");
+      if (skip) skip.hidden = true;
+    }, 1800);
+  }
+
+  document.querySelectorAll<HTMLAnchorElement>(".book").forEach((book) => {
+    book.addEventListener("click", (event) => {
+      if (reduceMotion || event.metaKey || event.ctrlKey || event.shiftKey) return;
+      event.preventDefault();
+      book.classList.add("is-opening");
+      window.setTimeout(() => window.location.assign(book.href), 160);
+    });
+  });
+</script>
+

@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "author-library-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "ALLOWED_ORIGINS": "http://localhost:4321",
+    "AUTH_TOKEN_ISSUER": "author-library-api",
+    "AUTH_ACCESS_TOKEN_TTL_SECONDS": "900",
+    "AUTH_REFRESH_TOKEN_TTL_SECONDS": "2592000",
+    "ENVIRONMENT": "development",
+    "PUBLIC_COMMENTS_ENABLED": "false",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "author-library",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+}
