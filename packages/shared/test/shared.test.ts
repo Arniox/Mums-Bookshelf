@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateReadingTime,
+  areSameExternalUrls,
   getBookAppearance,
   isAllowedExternalUrl,
   sanitiseMarkdown,
@@ -24,6 +25,21 @@ describe("shared domain logic", () => {
   it("accepts only normal web URLs", () => {
     expect(isAllowedExternalUrl("https://example.com/story")).toBe(true);
     expect(isAllowedExternalUrl("javascript:alert(1)")).toBe(false);
+  });
+
+  it("recognises equivalent publication and purchase URLs", () => {
+    expect(
+      areSameExternalUrls(
+        "https://example.com/story/?edition=1&format=book#buy",
+        "https://example.com/story?format=book&edition=1",
+      ),
+    ).toBe(true);
+    expect(
+      areSameExternalUrls(
+        "https://example.com/story",
+        "https://example.com/shop/story",
+      ),
+    ).toBe(false);
   });
 
   it("returns deterministic and distinct book appearances", () => {
@@ -62,7 +78,7 @@ describe("shared domain logic", () => {
     expect(result.success).toBe(false);
   });
 
-  it("requires a publication or audio URL for link-only work", () => {
+  it("requires a publication URL for link-only work", () => {
     const result = workSchema.safeParse({
       id: "1",
       slug: "missing-link",
@@ -81,7 +97,7 @@ describe("shared domain logic", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts an audio URL for link-only work", () => {
+  it("does not use an optional audio URL in place of a publication URL", () => {
     const result = workSchema.safeParse({
       id: "audio-1",
       slug: "audio-only",
@@ -98,7 +114,7 @@ describe("shared domain logic", () => {
       genres: [],
       featured: false,
     });
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
   });
 
   it("limits reader comments to 300 characters", () => {

@@ -21,6 +21,7 @@ describe("public work projection", () => {
   it("does not leak restricted external-only content", () => {
     const work = rowToWork(row);
     expect(work.storyContent).toBeUndefined();
+    expect(work.audioUrl).toBeUndefined();
   });
 
   it("returns restricted fields to an authenticated administrator", () => {

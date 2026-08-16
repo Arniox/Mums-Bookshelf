@@ -229,6 +229,11 @@ describe("API routes", () => {
         statement.sql.includes("status = 'archived'"),
       ),
     ).toBe(false);
+    expect(
+      database.statements.some((statement) =>
+        statement.sql.includes("SELECT * FROM works"),
+      ),
+    ).toBe(true);
   });
 
   it("returns validation errors for invalid work payloads", async () => {
