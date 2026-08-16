@@ -11,22 +11,36 @@ export async function getStaticPaths() {
   const publicWorks = await getPublicWorks();
   return publicWorks
     .filter((work) => work.status === "published")
-    .map((work) => ({ params: { slug: work.slug }, props: { work, works: publicWorks } }));
+    .map((work) => ({
+      params: { slug: work.slug },
+      props: { work, works: publicWorks },
+    }));
 }
 
 const { work, works } = Astro.props;
 const settings = await getPublicSettings();
 const date = work.publishedAt
-  ? new Intl.DateTimeFormat("en-NZ", { year: "numeric", month: "long", day: "numeric" }).format(new Date(work.publishedAt))
+  ? new Intl.DateTimeFormat("en-NZ", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(new Date(work.publishedAt))
   : "";
 const related = works
-  .filter((candidate) => candidate.id !== work.id && candidate.genres.some((genre) => work.genres.includes(genre)))
+  .filter(
+    (candidate) =>
+      candidate.id !== work.id &&
+      candidate.genres.some((genre) => work.genres.includes(genre)),
+  )
   .slice(0, 2);
 const storyHtml = work.storyContent ? sanitiseMarkdown(work.storyContent) : "";
-const notesHtml = work.authorNotes ? sanitiseMarkdown(work.authorNotes) : "";
 const base = import.meta.env.BASE_URL;
 const schemaType =
-  work.publicationType === "book" ? "Book" : work.publicationType === "short-story" ? "ShortStory" : "CreativeWork";
+  work.publicationType === "book"
+    ? "Book"
+    : work.publicationType === "short-story"
+      ? "ShortStory"
+      : "CreativeWork";
 const structuredData = {
   "@context": "https://schema.org",
   "@type": schemaType,
@@ -34,84 +48,158 @@ const structuredData = {
   description: work.blurb,
   author: { "@type": "Person", name: settings.authorName },
   datePublished: work.publishedAt,
-  genre: work.genres
+  genre: work.genres,
 };
 ---
 
-<BaseLayout title={work.seoTitle || work.title} description={work.seoDescription || work.blurb} siteSettings={settings}>
-  <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+<BaseLayout title={work.title} description={work.blurb} siteSettings={settings}>
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify(structuredData)}
+  />
   <article class="work-detail">
     <a class="back-link" href={`${base}works/`}>← All works</a>
     <header class="work-detail-header">
       <div class="work-detail-cover">
-        {work.coverImageUrl ? (
-          <img src={work.coverImageUrl} alt={work.coverImageAlt || `Cover of ${work.title}`} />
-        ) : (
-          <FallbackCover title={work.title} seed={work.id} authorName={settings.authorName} label={work.publicationType.replace("-", " ")} />
-        )}
+        {
+          work.workImageUrl ? (
+            <img src={work.workImageUrl} alt={`Image for ${work.title}`} />
+          ) : (
+            <FallbackCover
+              title={work.title}
+              seed={work.id}
+              authorName={settings.authorName}
+              label={work.publicationType.replace("-", " ")}
+            />
+          )
+        }
       </div>
       <div class="work-detail-copy">
-        <p class="eyebrow">{work.publicationType.replace("-", " ")} {date && `· ${date}`}</p>
+        <p class="eyebrow">
+          {work.publicationType.replace("-", " ")}
+          {date && `· ${date}`}
+        </p>
         <h1>{work.title}</h1>
-        {work.subtitle && <p class="subtitle">{work.subtitle}</p>}
         <p class="work-blurb">{work.blurb}</p>
         <dl class="work-facts">
-          {work.publicationName && <><dt>Published in</dt><dd>{work.publicationName}</dd></>}
-          {work.publisherName && <><dt>Publisher</dt><dd>{work.publisherName}</dd></>}
-          {work.wordCount && <><dt>Length</dt><dd>{work.wordCount.toLocaleString()} words</dd></>}
-          {work.readingTimeMinutes && work.contentVisibility !== "external-only" && <><dt>Reading time</dt><dd>{work.readingTimeMinutes} minutes</dd></>}
+          {
+            work.publisherName && (
+              <>
+                <>
+                  <dt>Publisher</dt>
+                  <dd>{work.publisherName}</dd>
+                </>
+              </>
+            )
+          }
+          {
+            work.wordCount && (
+              <>
+                <>
+                  <dt>Length</dt>
+                  <dd>{work.wordCount.toLocaleString()} words</dd>
+                </>
+              </>
+            )
+          }
+          {
+            work.readingTimeMinutes && work.contentVisibility === "full" && (
+              <>
+                <>
+                  <dt>Reading time</dt>
+                  <dd>{work.readingTimeMinutes} minutes</dd>
+                </>
+              </>
+            )
+          }
         </dl>
         <div class="button-row">
-          {work.contentVisibility === "full" && <a class="button primary" href="#story">Begin reading ↓</a>}
-          {work.primaryExternalUrl && <a class="button primary" href={work.primaryExternalUrl} rel="noopener noreferrer">View publication ↗</a>}
-          {work.purchaseUrl && <a class="button secondary" href={work.purchaseUrl} rel="noopener noreferrer">Purchase ↗</a>}
+          {
+            work.contentVisibility === "full" && (
+              <a class="button primary" href="#story">
+                Begin reading ↓
+              </a>
+            )
+          }
+          {
+            work.primaryExternalUrl && (
+              <a
+                class="button primary"
+                href={work.primaryExternalUrl}
+                rel="noopener noreferrer"
+              >
+                View publication ↗
+              </a>
+            )
+          }
+          {
+            work.purchaseUrl && (
+              <a
+                class="button secondary"
+                href={work.purchaseUrl}
+                rel="noopener noreferrer"
+              >
+                Purchase ↗
+              </a>
+            )
+          }
         </div>
       </div>
     </header>
 
-    {work.contentVisibility === "excerpt" && work.excerpt && (
-      <section class="reading-panel" aria-labelledby="excerpt-title">
-        <p class="eyebrow">Excerpt</p>
-        <h2 id="excerpt-title">A glimpse inside</h2>
-        <blockquote>{work.excerpt}</blockquote>
-        {work.primaryExternalUrl && <a class="text-link" href={work.primaryExternalUrl}>Continue at the publication ↗</a>}
-      </section>
-    )}
-
-    {work.contentVisibility === "full" && storyHtml && (
-      <section class="story-content" id="story" aria-label={`${work.title}, full story`}>
-        <p class="eyebrow">Read online</p>
-        <div set:html={storyHtml} />
-      </section>
-    )}
-
-    {notesHtml && (
-      <aside class="author-notes">
-        <p class="eyebrow">From the notebook</p>
-        <h2>Author’s notes</h2>
-        <div set:html={notesHtml} />
-      </aside>
-    )}
+    {
+      work.contentVisibility === "full" && storyHtml && (
+        <section
+          class="story-content"
+          id="story"
+          aria-label={`${work.title}, full story`}
+        >
+          <p class="eyebrow">Read online</p>
+          <div set:html={storyHtml} />
+        </section>
+      )
+    }
 
     {work.socialPostUrl && <SocialPost url={work.socialPostUrl} />}
 
     <footer class="work-actions">
       <div>
         <p class="eyebrow">Filed under</p>
-        <div class="tag-row">{[...work.genres, ...work.tags].map((tag) => <span>{tag}</span>)}</div>
+        <div class="tag-row">
+          {work.genres.map((genre) => <span>{genre}</span>)}
+        </div>
       </div>
-      <button class="text-button" type="button" data-share data-title={work.title}>Share this work</button>
+      <button
+        class="text-button"
+        type="button"
+        data-share
+        data-title={work.title}>Share this work</button
+      >
       <p data-share-status aria-live="polite"></p>
     </footer>
     <Comments workId={work.id} />
   </article>
 
-  {related.length > 0 && (
-    <section class="related-section">
-      <div class="section-heading"><div><p class="eyebrow">Continue reading</p><h2>Related works</h2></div></div>
-      <div class="recent-grid">{related.map((item) => <WorkCard work={item} authorName={settings.authorName} />)}</div>
-    </section>
-  )}
+  {
+    related.length > 0 && (
+      <section class="related-section">
+        <div class="section-heading">
+          <div>
+            <>
+              <p class="eyebrow">Continue reading</p>
+              <h2>Related works</h2>
+            </>
+          </div>
+        </div>
+        <div class="recent-grid">
+          {related.map((item) => (
+            <WorkCard work={item} authorName={settings.authorName} />
+          ))}
+        </div>
+      </section>
+    )
+  }
 </BaseLayout>
 
 <script>
@@ -129,7 +217,8 @@ const structuredData = {
         if (status) status.textContent = "Link copied.";
       }
     } catch (error) {
-      if ((error as Error).name !== "AbortError" && status) status.textContent = "Unable to share this link.";
+      if ((error as Error).name !== "AbortError" && status)
+        status.textContent = "Unable to share this link.";
     }
   });
 </script>
