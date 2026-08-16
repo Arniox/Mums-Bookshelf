@@ -40,6 +40,7 @@ const workBaseSchema = z.object({
     .enum(["facebook", "instagram", "threads", "x", "other"])
     .optional(),
   socialEmbedEnabled: z.boolean().default(false),
+  workImageUrl: optionalUrl,
   genres: z.array(z.string().trim().min(1).max(60)).max(20).default([]),
   featured: z.boolean().default(false),
 });
