@@ -110,9 +110,14 @@ const authorInitials = settings.authorName
       <div data-panel="works" hidden>
         <div class="dashboard-heading">
           <div><p class="eyebrow">The collection</p><h2>Works</h2></div>
-          <button class="button primary" type="button" data-new-work
-            >+ Add new work</button
-          >
+          <div class="button-row">
+            <button class="button secondary" type="button" data-publish-all
+              >Publish all drafts</button
+            >
+            <button class="button primary" type="button" data-new-work
+              >+ Add new work</button
+            >
+          </div>
         </div>
         <div class="admin-list" data-all-works></div>
       </div>
@@ -468,6 +473,8 @@ const authorInitials = settings.authorName
   const deploymentStatus = document.querySelector<HTMLElement>(
     "[data-deployment-status]",
   )!;
+  const publishAllButton =
+    document.querySelector<HTMLButtonElement>("[data-publish-all]")!;
 
   const triggerDeployment = async (status = deploymentStatus) => {
     status.textContent = "Starting the website update…";
@@ -567,6 +574,11 @@ const authorInitials = settings.authorName
       request("/api/v1/admin/comments?status=pending"),
     ]);
     works = workData.items;
+    const draftCount = works.filter((work) => work.status === "draft").length;
+    publishAllButton.disabled = draftCount === 0;
+    publishAllButton.textContent = draftCount
+      ? `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"}`
+      : "No drafts to publish";
     document.querySelector<HTMLElement>("[data-stat-published]")!.textContent =
       String(works.filter((work) => work.status === "published").length);
     document.querySelector<HTMLElement>("[data-stat-drafts]")!.textContent =
@@ -584,6 +596,35 @@ const authorInitials = settings.authorName
     bindEditButtons();
     await loadSettings();
   };
+
+  publishAllButton.addEventListener("click", async () => {
+    const draftCount = works.filter((work) => work.status === "draft").length;
+    if (!draftCount) return;
+    if (
+      !confirm(
+        `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"}? Drafts without a publication date will use today. This starts one website update after everything is published.`,
+      )
+    )
+      return;
+
+    publishAllButton.disabled = true;
+    deploymentStatus.textContent = "Publishing all drafts…";
+    try {
+      const result = await request("/api/v1/admin/works/publish-all", {
+        method: "POST",
+      });
+      await loadDashboard();
+      if (!result.published) {
+        deploymentStatus.textContent = "There were no drafts to publish.";
+        return;
+      }
+      await triggerDeployment(deploymentStatus);
+      deploymentStatus.textContent = `${result.published} ${result.published === 1 ? "work" : "works"} published. One website update has started and should appear in a few minutes.`;
+    } catch (error) {
+      deploymentStatus.textContent = (error as Error).message;
+      publishAllButton.disabled = false;
+    }
+  });
 
   const renderComments = (comments: ApiWork[]) => {
     const list = document.querySelector<HTMLElement>("[data-comments-list]")!;

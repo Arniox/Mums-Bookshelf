@@ -227,3 +227,19 @@ export async function archiveWork(context: Context<AppEnvironment>) {
     throw new ApiError(404, "work_not_found", "Work was not found.");
   return success(context, { archived: true });
 }
+
+export async function publishAllDrafts(context: Context<AppEnvironment>) {
+  const publishedAt = new Date().toISOString();
+  const result = await context.env.DB.prepare(
+    `UPDATE works
+     SET status = 'published', published_at = COALESCE(published_at, ?), updated_at = ?
+     WHERE status = 'draft'`,
+  )
+    .bind(publishedAt, publishedAt)
+    .run();
+
+  return success(context, {
+    published: result.meta.changes,
+    publishedAt,
+  });
+}

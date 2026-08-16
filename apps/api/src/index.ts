@@ -29,6 +29,7 @@ import {
   listAdminWorks,
   listPublicWorks,
   patchWork,
+  publishAllDrafts,
   replaceWork,
 } from "./works";
 
@@ -94,6 +95,7 @@ app.get("/api/v1/auth/session", requireAuth, (context) =>
 app.get("/api/v1/admin/works", listAdminWorks);
 app.get("/api/v1/admin/works/:id", getAdminWork);
 app.post("/api/v1/admin/works", createWork);
+app.post("/api/v1/admin/works/publish-all", publishAllDrafts);
 app.put("/api/v1/admin/works/:id", replaceWork);
 app.patch("/api/v1/admin/works/:id", patchWork);
 app.delete("/api/v1/admin/works/:id", archiveWork);
