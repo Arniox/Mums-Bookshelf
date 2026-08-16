@@ -37,7 +37,7 @@ jobs:
           PUBLIC_API_BASE_URL: ${{ vars.PUBLIC_API_BASE_URL }}
           PUBLIC_COMMENTS_ENABLED: ${{ vars.PUBLIC_COMMENTS_ENABLED }}
           PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: apps/web/dist
 
