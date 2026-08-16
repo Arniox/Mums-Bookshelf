@@ -41,48 +41,22 @@ const personSchema = {
           <span aria-hidden="true">→</span></a
         >
       </div>
-      <p class="room-whisper" aria-hidden="true">
-        Take a book down.<br />Stay awhile.
-      </p>
+      {
+        settings.announcement && (
+          <aside class="room-announcement" aria-label="Author announcement">
+            <span class="announcement-mark" aria-hidden="true">
+              ✦
+            </span>
+            <span>
+              <strong>From Denise's writing desk</strong>
+              <span>{settings.announcement}</span>
+            </span>
+          </aside>
+        )
+      }
     </section>
 
     <BookShelf works={works} />
-
-    <section class="writing-desk" aria-label="The writing desk">
-      <div class="desk-surface">
-        {
-          settings.announcement ? (
-            <aside
-              class="announcement desk-plaque"
-              aria-label="Author announcement"
-            >
-              <span class="announcement-mark" aria-hidden="true">
-                ✦
-              </span>
-              <span>
-                <strong>From Denise's writing desk</strong>
-                <span>{settings.announcement}</span>
-              </span>
-            </aside>
-          ) : (
-            <aside class="announcement desk-plaque">
-              <span class="announcement-mark" aria-hidden="true">
-                ✦
-              </span>
-              <span>
-                <strong>From the writing desk</strong>
-                <span>New stories are always taking shape.</span>
-              </span>
-            </aside>
-          )
-        }
-        <div class="desk-card">
-          <p class="eyebrow">The complete collection</p>
-          <p>Browse every published story, essay and book in the library.</p>
-          <a class="button primary" href={`${base}works/`}>View all works →</a>
-        </div>
-      </div>
-    </section>
   </div>
 
   <section class="recent-section">
