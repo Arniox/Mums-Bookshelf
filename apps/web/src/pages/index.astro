@@ -23,7 +23,17 @@ const personSchema = {
   <script is:inline type="application/ld+json" set:html={JSON.stringify(personSchema)} />
   <section class="hero">
     <div class="hero-copy">
-      {settings.announcement && <p class="announcement">{settings.announcement}</p>}
+      {
+        settings.announcement && (
+          <aside class="announcement" aria-label="Author announcement">
+            <span class="announcement-mark" aria-hidden="true">✦</span>
+            <span>
+              <strong>From the writing desk</strong>
+              <span>{settings.announcement}</span>
+            </span>
+          </aside>
+        )
+      }
       <p class="eyebrow">Fiction · Essays · Small observations</p>
       <h1>Stories for the<br /><em>quietly curious.</em></h1>
       <p class="hero-intro">{settings.introduction}</p>

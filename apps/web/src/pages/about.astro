@@ -11,23 +11,61 @@ const authorInitials = settings.authorName
   .toUpperCase();
 ---
 
-<BaseLayout title="About" description={`About author ${settings.authorName} and her writing.`} siteSettings={settings}>
+<BaseLayout
+  title="About"
+  description={`About author ${settings.authorName} and her writing.`}
+  siteSettings={settings}
+>
   <article class="about-page">
     <header>
       <p class="eyebrow">About the author</p>
       <h1>{settings.authorName}</h1>
     </header>
     <div class="about-layout">
-      <div class="portrait-placeholder" role="img" aria-label={`A decorative monogram portrait placeholder for ${settings.authorName}`}>
-        <span>{authorInitials}</span>
-        <small>Photo coming soon</small>
-      </div>
+      {
+        settings.profileImageUrl ? (
+          <figure class="author-portrait">
+            <img
+              src={settings.profileImageUrl}
+              alt={`${settings.authorName}, author`}
+              width="960"
+              height="1200"
+              decoding="async"
+            />
+          </figure>
+        ) : (
+          <div
+            class="portrait-placeholder"
+            role="img"
+            aria-label={`A decorative monogram portrait placeholder for ${settings.authorName}`}
+          >
+            <span>{authorInitials}</span>
+            <small>Photo coming soon</small>
+          </div>
+        )
+      }
       <div class="about-copy">
-        {settings.biography.split("\n\n").map((paragraph) => <p>{paragraph}</p>)}
+        {
+          settings.biography
+            .split("\n\n")
+            .map((paragraph) => <p>{paragraph}</p>)
+        }
         <h2>Elsewhere</h2>
         <ul class="social-list">
-          {Object.entries(settings.socialLinks).map(([label, url]) => <li><a href={url}>{label} ↗</a></li>)}
-          {settings.contactLink && <li><a href={settings.contactLink}>Contact ↗</a></li>}
+          {
+            Object.entries(settings.socialLinks).map(([label, url]) => (
+              <li>
+                <a href={url}>{label} ↗</a>
+              </li>
+            ))
+          }
+          {
+            settings.contactLink && (
+              <li>
+                <a href={settings.contactLink}>Contact ↗</a>
+              </li>
+            )
+          }
         </ul>
       </div>
     </div>
