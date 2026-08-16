@@ -11,9 +11,7 @@ const repositoryPart = /^[A-Za-z0-9_.-]+$/;
 const workflowFile = /^[A-Za-z0-9_.-]+\.ya?ml$/;
 const gitReference = /^[A-Za-z0-9_./-]+$/;
 
-export async function triggerPagesDeployment(
-  context: Context<AppEnvironment>,
-) {
+export async function triggerPagesDeployment(context: Context<AppEnvironment>) {
   const token = context.env.GITHUB_PAGES_DEPLOY_TOKEN;
   const [owner, repository, extra] = context.env.GITHUB_REPOSITORY.split("/");
   const workflow = context.env.GITHUB_PAGES_WORKFLOW;
@@ -63,13 +61,15 @@ export async function triggerPagesDeployment(
     throw new ApiError(
       502,
       "deployment_dispatch_failed",
-      "The work was saved, but the website update could not be started. Please try Update public website again.",
+      "Your changes were saved, but the website update could not be started. Please try Update public website again.",
     );
   }
 
   let dispatch: WorkflowDispatchResponse = {};
   if (response.status !== 204) {
-    dispatch = (await response.json()) as WorkflowDispatchResponse;
+    dispatch = await response
+      .json<WorkflowDispatchResponse>()
+      .catch(() => ({}));
   }
 
   return success(context, {
