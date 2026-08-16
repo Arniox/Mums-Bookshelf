@@ -1,19 +1,39 @@
 ---
+import type { PublicSettings } from "@mums-bookshelf/shared";
+import { getPublicSettings } from "../lib/contentSource";
+
 interface Props {
   title?: string;
   description?: string;
   image?: string;
   noindex?: boolean;
+  siteSettings?: PublicSettings;
 }
 
 const {
-  title = "Eleanor Hart — Author",
-  description = "Stories about small rooms, long roads, and the brave choices made between them.",
+  title,
+  description,
   image,
-  noindex = false
+  noindex = false,
+  siteSettings: suppliedSettings,
 } = Astro.props;
+const settings = suppliedSettings || (await getPublicSettings());
+const authorName = settings.authorName;
+const [authorFirstName, ...authorRemainingNames] = authorName.split(/\s+/);
+const authorRest = authorRemainingNames.join(" ");
+const authorInitials = authorName
+  .split(/\s+/)
+  .map((name) => name[0])
+  .filter(Boolean)
+  .slice(0, 2)
+  .join("")
+  .toUpperCase();
+const pageTitle = title || `${authorName} — Author`;
+const pageDescription = description || settings.introduction;
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const fullTitle = title.includes("Eleanor Hart") ? title : `${title} — Eleanor Hart`;
+const fullTitle = pageTitle.includes(authorName)
+  ? pageTitle
+  : `${pageTitle} — ${authorName}`;
 const base = import.meta.env.BASE_URL;
 const socialImage = image || `${base}og.png`;
 ---
@@ -24,13 +44,13 @@ const socialImage = image || `${base}og.png`;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <meta name="description" content={description} />
+    <meta name="description" content={pageDescription} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
-    <link rel="alternate" type="application/rss+xml" title="Eleanor Hart's latest work" href={`${base}rss.xml`} />
+    <link rel="alternate" type="application/rss+xml" title={`${authorName}'s latest work`} href={`${base}rss.xml`} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={pageDescription} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={new URL(socialImage, Astro.site)} />
     <meta name="twitter:card" content="summary_large_image" />
@@ -40,8 +60,8 @@ const socialImage = image || `${base}og.png`;
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
-      <a class="wordmark" href={base} aria-label="Eleanor Hart, home">
-        <span>Eleanor</span> Hart
+      <a class="wordmark" href={base} aria-label={`${authorName}, home`}>
+        <span>{authorFirstName}</span>{authorRest && ` ${authorRest}`}
       </a>
       <nav aria-label="Primary navigation">
         <a href={`${base}works/`}>Works</a>
@@ -52,12 +72,12 @@ const socialImage = image || `${base}og.png`;
       <slot />
     </main>
     <footer class="site-footer">
-      <p><span class="footer-mark">EH</span> Stories made near the sea.</p>
+      <p><span class="footer-mark">{authorInitials}</span> {settings.introduction}</p>
       <nav aria-label="Footer navigation">
         <a href={`${base}rss.xml`}>RSS</a>
         <a href={`${base}admin/`}>Author sign in</a>
       </nav>
-      <p>© {new Date().getFullYear()} Eleanor Hart</p>
+      <p>© {new Date().getFullYear()} {authorName}</p>
     </footer>
   </body>
 </html>
