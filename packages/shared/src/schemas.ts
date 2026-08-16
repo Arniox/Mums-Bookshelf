@@ -111,7 +111,7 @@ export const publicSettingsSchema = z.object({
 
 export const loginSchema = z.object({
   username: z.string().trim().min(1).max(100),
-  password: z.string().min(10).max(512),
+  password: z.string().min(8).max(512),
 });
 
 export const commentInputSchema = z.object({
