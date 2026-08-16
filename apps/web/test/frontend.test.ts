@@ -20,9 +20,9 @@ describe("public library", () => {
     expect(
       works.filter((work) => matchesWork(work, "lantern", "")),
     ).toHaveLength(1);
-    expect(works.filter((work) => matchesWork(work, "coast", ""))).toHaveLength(
-      1,
-    );
+    expect(
+      works.filter((work) => matchesWork(work, "creative nonfiction", "")),
+    ).toHaveLength(1);
   });
 
   it("randomises works while keeping featured work first", () => {
