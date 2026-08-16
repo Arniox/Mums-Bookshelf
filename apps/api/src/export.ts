@@ -1,13 +1,11 @@
 import type { Context } from "hono";
-import { rowToSettings, rowToWork, workColumns } from "./db";
+import { rowToSettings, rowToWork } from "./db";
 import { success } from "./http";
 import type { AppEnvironment } from "./types";
 
 export async function exportData(context: Context<AppEnvironment>) {
   const [works, settings, comments] = await Promise.all([
-    context.env.DB.prepare(
-      `SELECT ${workColumns} FROM works ORDER BY created_at`,
-    ).all(),
+    context.env.DB.prepare("SELECT * FROM works ORDER BY created_at").all(),
     context.env.DB.prepare("SELECT * FROM site_settings WHERE id = 1").first(),
     context.env.DB.prepare(
       `SELECT id, work_id, display_name, body, moderation_status, created_at, approved_at, parent_comment_id

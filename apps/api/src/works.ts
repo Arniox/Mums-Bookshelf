@@ -31,7 +31,7 @@ export async function listPublicWorks(context: Context<AppEnvironment>) {
   }
   values.push(pageSize, (page - 1) * pageSize);
   const result = await context.env.DB.prepare(
-    `SELECT ${workColumns} FROM works WHERE ${conditions.join(" AND ")}
+    `SELECT * FROM works WHERE ${conditions.join(" AND ")}
      ORDER BY featured DESC, published_at DESC, title LIMIT ? OFFSET ?`,
   )
     .bind(...values)
@@ -45,7 +45,7 @@ export async function listPublicWorks(context: Context<AppEnvironment>) {
 
 export async function getPublicWork(context: Context<AppEnvironment>) {
   const row = await context.env.DB.prepare(
-    `SELECT ${workColumns} FROM works WHERE slug = ? AND status = 'published'`,
+    "SELECT * FROM works WHERE slug = ? AND status = 'published'",
   )
     .bind(context.req.param("slug"))
     .first();
@@ -55,7 +55,7 @@ export async function getPublicWork(context: Context<AppEnvironment>) {
 
 export async function listAdminWorks(context: Context<AppEnvironment>) {
   const result = await context.env.DB.prepare(
-    `SELECT ${workColumns} FROM works ORDER BY updated_at DESC`,
+    "SELECT * FROM works ORDER BY updated_at DESC",
   ).all();
   return success(context, {
     items: result.results.map((row) => rowToWork(row, true)),
@@ -63,9 +63,7 @@ export async function listAdminWorks(context: Context<AppEnvironment>) {
 }
 
 export async function getAdminWork(context: Context<AppEnvironment>) {
-  const row = await context.env.DB.prepare(
-    `SELECT ${workColumns} FROM works WHERE id = ?`,
-  )
+  const row = await context.env.DB.prepare("SELECT * FROM works WHERE id = ?")
     .bind(context.req.param("id"))
     .first();
   if (!row) throw new ApiError(404, "work_not_found", "Work was not found.");
@@ -155,7 +153,7 @@ export async function createWork(context: Context<AppEnvironment>) {
     throw error;
   }
   const created = await context.env.DB.prepare(
-    `SELECT ${workColumns} FROM works WHERE id = ?`,
+    "SELECT * FROM works WHERE id = ?",
   )
     .bind(id)
     .first();
@@ -165,7 +163,7 @@ export async function createWork(context: Context<AppEnvironment>) {
 export async function replaceWork(context: Context<AppEnvironment>) {
   const id = context.req.param("id")!;
   const existing = await context.env.DB.prepare(
-    `SELECT ${workColumns} FROM works WHERE id = ?`,
+    "SELECT * FROM works WHERE id = ?",
   )
     .bind(id)
     .first();
@@ -194,9 +192,7 @@ export async function replaceWork(context: Context<AppEnvironment>) {
 
 export async function patchWork(context: Context<AppEnvironment>) {
   const id = context.req.param("id")!;
-  const row = await context.env.DB.prepare(
-    `SELECT ${workColumns} FROM works WHERE id = ?`,
-  )
+  const row = await context.env.DB.prepare("SELECT * FROM works WHERE id = ?")
     .bind(id)
     .first();
   if (!row) throw new ApiError(404, "work_not_found", "Work was not found.");
