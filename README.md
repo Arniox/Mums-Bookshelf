@@ -1,5 +1,7 @@
 # Mum's Bookshelf
 
+**[Visit Mum's Bookshelf](https://arniox.github.io/Mums-Bookshelf/)**
+
 A small author website with a warm, animated CSS bookshelf and a private editorial studio. The public site is static and deploys to GitHub Pages. Published content, sessions, settings, and moderated comments live in Cloudflare D1 behind a Cloudflare Worker API.
 
 The included fictional author and works are demonstration content and can be replaced through `/admin/`.
