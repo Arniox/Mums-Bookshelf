@@ -366,6 +366,30 @@ describe("API routes", () => {
     });
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it("returns a safe error when GitHub rejects the Pages deployment", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("token details must not reach the browser", { status: 403 }),
+    );
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/deployments/pages",
+      {
+        method: "POST",
+        headers: {
+          Origin: "https://allowed.example",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+      env,
+    );
+    const body = JSON.stringify(await response.json());
+
+    expect(response.status).toBe(502);
+    expect(body).toContain("website update could not be started");
+    expect(body).not.toContain("token details");
+  });
 });
 
 async function activeAccessToken(database: FakeDatabase, env: Bindings) {
