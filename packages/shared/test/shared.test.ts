@@ -57,7 +57,25 @@ describe("shared domain logic", () => {
       contentVisibility: "full",
       socialEmbedEnabled: false,
       genres: [],
-      tags: [],
+      featured: false,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("requires a publication URL for link-only work", () => {
+    const result = workSchema.safeParse({
+      id: "1",
+      slug: "missing-link",
+      title: "Missing Link",
+      status: "published",
+      publicationType: "short-story",
+      publishedAt: "2026-01-01T00:00:00Z",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+      blurb: "A blurb.",
+      contentVisibility: "external-only",
+      socialEmbedEnabled: false,
+      genres: [],
       featured: false,
     });
     expect(result.success).toBe(false);
