@@ -1170,6 +1170,86 @@ textarea {
   margin: 0;
   font-size: 3rem;
 }
+.settings-intro {
+  max-width: 620px;
+  margin: 0.7rem 0 0;
+  color: var(--muted);
+}
+.settings-form {
+  max-width: 900px;
+  margin-top: 2rem;
+  display: grid;
+  gap: 1.25rem;
+}
+.settings-card {
+  padding: 1.6rem;
+  border: 1px solid var(--line);
+  display: grid;
+  gap: 1.1rem;
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 14px 36px rgba(58, 34, 42, 0.05);
+}
+.settings-card h3 {
+  margin: 0;
+  font-size: 2rem;
+}
+.settings-card > .eyebrow,
+.settings-card-heading .eyebrow {
+  margin-bottom: 0.35rem;
+}
+.settings-card-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.settings-profile-preview {
+  width: 82px;
+  height: 102px;
+  border: 1px solid var(--line);
+  border-radius: 42px 42px 8px 8px;
+  object-fit: cover;
+  box-shadow: var(--shadow);
+}
+.settings-help {
+  max-width: 650px;
+  margin: -0.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.character-count {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  text-align: right;
+  font-size: 0.72rem;
+}
+.social-link-editor {
+  display: grid;
+  gap: 0.8rem;
+}
+.social-link-row {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: minmax(120px, 0.6fr) minmax(220px, 1.4fr) auto;
+  gap: 0.8rem;
+  align-items: end;
+  background: rgba(255, 255, 255, 0.32);
+}
+.social-link-row .text-button,
+.add-social-link {
+  min-height: 44px;
+}
+.add-social-link {
+  justify-self: start;
+}
+.settings-actions {
+  padding: 0.8rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 .stat-grid {
   margin: 2rem 0;
   display: grid;
@@ -1508,6 +1588,16 @@ fieldset {
   .form-grid.two,
   .form-grid.three {
     grid-template-columns: 1fr;
+  }
+  .social-link-row {
+    grid-template-columns: 1fr;
+  }
+  .social-link-row .text-button {
+    justify-self: start;
+  }
+  .settings-actions {
+    align-items: start;
+    flex-direction: column;
   }
   .editor-actions {
     bottom: -1.2rem;
