@@ -33,6 +33,7 @@ export function rowToWork(row: WorkRow, privileged = false): Work {
   assign("purchaseUrl", row.purchase_url);
   assign("socialPostUrl", row.social_post_url);
   assign("socialProvider", row.social_provider);
+  assign("workImageUrl", row.work_image_url);
 
   if (privileged || visibility === "full")
     assign("storyContent", row.story_content);
@@ -59,5 +60,5 @@ export const workColumns = `
   id, slug, title, status, publication_type, published_at, created_at, updated_at,
   word_count, reading_time_minutes, blurb, story_content, content_visibility,
   publisher_name, primary_external_url, purchase_url, social_post_url, social_provider,
-  social_embed_enabled, genres_json, featured
+  social_embed_enabled, work_image_url, genres_json, featured
 `;
