@@ -8,6 +8,7 @@ interface Props {
 
 const { works, compact = false } = Astro.props;
 const base = import.meta.env.BASE_URL;
+const featuredWork = works.find((work) => work.featured);
 ---
 
 <section
@@ -17,8 +18,11 @@ const base = import.meta.env.BASE_URL;
 >
   <div class="section-heading">
     <div>
-      <p class="eyebrow">Browse the library</p>
-      <h2 id="bookshelf-title">Choose a spine</h2>
+      <p class="eyebrow">Denise's bookshelf</p>
+      <h2 id="bookshelf-title">Pull out a story</h2>
+      <p class="shelf-instruction">
+        Choose a spine and settle in at the reading desk.
+      </p>
     </div>
     <button class="text-button" type="button" data-skip-animation hidden
       >Skip reveal</button
@@ -30,6 +34,13 @@ const base = import.meta.env.BASE_URL;
         class="bookcase"
         aria-label={`${works.length} published works on the bookshelf`}
       >
+        {featuredWork && (
+          <a class="featured-note" href={`${base}works/${featuredWork.slug}/`}>
+            <span>Featured story</span>
+            <strong>{featuredWork.title}</strong>
+            <small>Start here →</small>
+          </a>
+        )}
         <ol class="shelves">
           {works.map((work, index) => {
             const appearance = getBookAppearance(work.id || work.slug);
@@ -58,6 +69,7 @@ const base = import.meta.env.BASE_URL;
                   data-title={work.title.toLowerCase()}
                   data-type={work.publicationType}
                   data-genres={work.genres.join(" ").toLowerCase()}
+                  data-book-color={appearance.primaryColor}
                 >
                   <span class="book-shine" aria-hidden="true" />
                   <span class="book-title">{work.title}</span>
@@ -130,11 +142,25 @@ const base = import.meta.env.BASE_URL;
 
   document.querySelectorAll<HTMLAnchorElement>(".book").forEach((book) => {
     book.addEventListener("click", (event) => {
-      if (reduceMotion || event.metaKey || event.ctrlKey || event.shiftKey)
+      if (
+        reduceMotion ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      )
         return;
       event.preventDefault();
       book.classList.add("is-opening");
-      window.setTimeout(() => window.location.assign(book.href), 160);
+      const flyingBook = document.createElement("span");
+      flyingBook.className = "flying-book";
+      flyingBook.style.setProperty(
+        "--flying-book-color",
+        book.dataset.bookColor || "#5b3043",
+      );
+      flyingBook.setAttribute("aria-hidden", "true");
+      document.body.append(flyingBook);
+      window.setTimeout(() => window.location.assign(book.href), 620);
     });
   });
 </script>
