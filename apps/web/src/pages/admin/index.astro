@@ -51,6 +51,9 @@ const authorInitials = settings.authorName
           <h1>Author studio</h1>
         </div>
         <div class="button-row">
+          <button class="button secondary" type="button" data-rebuild
+            >Update public website</button
+          >
           <button class="button secondary" type="button" data-export
             >Export data</button
           >
@@ -58,6 +61,7 @@ const authorInitials = settings.authorName
           >
         </div>
       </header>
+      <p class="form-status deployment-status" data-deployment-status aria-live="polite"></p>
 
       <nav class="admin-tabs" aria-label="Studio sections">
         <button type="button" aria-current="page" data-tab="dashboard"
@@ -345,15 +349,8 @@ const authorInitials = settings.authorName
           /></label
         >
       </div>
-      <div class="form-grid three">
-        <label>
-          <span>Status</span>
-          <select name="status"
-            ><option value="draft">Draft</option><option value="published"
-              >Published</option
-            ><option value="archived">Archived</option></select
-          >
-        </label>
+      <input type="hidden" name="status" value="draft" />
+      <div class="form-grid two">
         <label
           ><span>Display order</span><input
             name="displayOrder"
@@ -381,6 +378,15 @@ const authorInitials = settings.authorName
         <summary>Preview draft text</summary>
         <div data-markdown-preview class="story-content"></div>
       </details>
+      <aside class="draft-safety-note">
+        <strong>Your writing is protected while you edit.</strong>
+        <p>
+          A recovery copy is saved in this browser. Use <em>Save draft online</em>
+          to continue on another device. Nothing becomes public until you choose
+          <em>Publish &amp; update website</em>.
+        </p>
+        <p data-local-draft-status aria-live="polite"></p>
+      </aside>
       <div class="editor-actions">
         <button class="button secondary" type="button" data-archive hidden
           >Archive work</button
@@ -389,7 +395,19 @@ const authorInitials = settings.authorName
         <button class="text-button" type="button" data-cancel-editor
           >Cancel</button
         >
-        <button class="button primary" type="submit">Save work</button>
+        <button class="button secondary" type="button" data-save-local
+          >Save on this device</button
+        >
+        <button
+          class="button secondary"
+          type="submit"
+          data-editor-action="draft">Save draft online</button
+        >
+        <button
+          class="button primary"
+          type="submit"
+          data-editor-action="publish">Publish &amp; update website</button
+        >
       </div>
       <p class="form-status" data-editor-status aria-live="polite"></p>
     </form>
@@ -397,12 +415,20 @@ const authorInitials = settings.authorName
 </BaseLayout>
 
 <script>
+  import {
+    localWorkDraftKey,
+    parseLocalWorkDraft,
+    type LocalWorkDraft,
+  } from "../../lib/localDraft";
+
   type ApiWork = Record<string, any>;
   const app = document.querySelector<HTMLElement>("[data-admin-app]")!;
   const apiBase = app.dataset.api!;
   let accessToken = "";
   let works: ApiWork[] = [];
   let dirty = false;
+  let originalStatus = "draft";
+  let localSaveTimer: number | undefined;
 
   const request = async (path: string, init: RequestInit = {}) => {
     const headers = new Headers(init.headers);
@@ -426,6 +452,20 @@ const authorInitials = settings.authorName
   const loginStatus = document.querySelector<HTMLElement>(
     "[data-login-status]",
   )!;
+  const deploymentStatus = document.querySelector<HTMLElement>(
+    "[data-deployment-status]",
+  )!;
+
+  const triggerDeployment = async (status = deploymentStatus) => {
+    status.textContent = "Starting the website update…";
+    const deployment = await request("/api/v1/admin/deployments/pages", {
+      method: "POST",
+    });
+    status.textContent = deployment.runId
+      ? "Website update started. It should be visible in a few minutes."
+      : "Website update queued. It should be visible in a few minutes.";
+    return deployment;
+  };
   const showStudio = () => {
     loginPanel.hidden = true;
     studio.hidden = false;
@@ -586,6 +626,9 @@ const authorInitials = settings.authorName
   const editorStatus = document.querySelector<HTMLElement>(
     "[data-editor-status]",
   )!;
+  const localDraftStatus = document.querySelector<HTMLElement>(
+    "[data-local-draft-status]",
+  )!;
 
   const setValue = (name: string, value: unknown) => {
     const input = workForm.elements.namedItem(name) as
@@ -595,6 +638,66 @@ const authorInitials = settings.authorName
     else if (input instanceof HTMLInputElement && input.type === "checkbox")
       input.checked = Boolean(value);
     else input.value = String(value ?? "");
+  };
+
+  const currentDraftKey = () => {
+    const id = (workForm.elements.namedItem("id") as HTMLInputElement).value;
+    return localWorkDraftKey(id || undefined);
+  };
+
+  const collectLocalDraftFields = () => {
+    const fields: LocalWorkDraft["fields"] = {};
+    Array.from(workForm.elements).forEach((element) => {
+      if (
+        !(
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLTextAreaElement ||
+          element instanceof HTMLSelectElement
+        ) ||
+        !element.name ||
+        element.name === "id" ||
+        element.name === "status"
+      )
+        return;
+      if (element instanceof HTMLInputElement && element.type === "radio") {
+        if (element.checked) fields[element.name] = element.value;
+      } else if (
+        element instanceof HTMLInputElement &&
+        element.type === "checkbox"
+      ) {
+        fields[element.name] = element.checked;
+      } else {
+        fields[element.name] = element.value;
+      }
+    });
+    return fields;
+  };
+
+  const saveLocalDraft = (announce = false) => {
+    try {
+      const draft: LocalWorkDraft = {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        fields: collectLocalDraftFields(),
+      };
+      localStorage.setItem(currentDraftKey(), JSON.stringify(draft));
+      if (announce) {
+        localDraftStatus.textContent = `Recovery copy saved on this device at ${new Date(draft.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`;
+      }
+    } catch {
+      if (announce)
+        localDraftStatus.textContent =
+          "This browser would not allow a local recovery copy. Use Save draft online instead.";
+    }
+  };
+
+  const clearLocalDraft = () => {
+    try {
+      localStorage.removeItem(currentDraftKey());
+    } catch {
+      // Saving online still succeeded when browser storage is unavailable.
+    }
+    localDraftStatus.textContent = "";
   };
 
   const openEditor = (work?: ApiWork) => {
@@ -610,12 +713,37 @@ const authorInitials = settings.authorName
       genres: [],
       tags: [],
     };
+    originalStatus = String(defaults.status || "draft");
     Object.entries(defaults).forEach(([key, value]) =>
       setValue(key, Array.isArray(value) ? value.join(", ") : value),
     );
     if (work?.publishedAt)
       setValue("publishedAt", work.publishedAt.slice(0, 10));
     dirty = false;
+    localDraftStatus.textContent = "";
+    try {
+      const localDraft = parseLocalWorkDraft(
+        localStorage.getItem(localWorkDraftKey(work?.id)),
+      );
+      const isNewer =
+        localDraft &&
+        (!work?.updatedAt ||
+          Date.parse(localDraft.savedAt) > Date.parse(work.updatedAt));
+      if (
+        isNewer &&
+        confirm(
+          `A recovery copy from ${new Date(localDraft.savedAt).toLocaleString()} is saved on this device. Restore it?`,
+        )
+      ) {
+        Object.entries(localDraft.fields).forEach(([key, value]) =>
+          setValue(key, value),
+        );
+        dirty = true;
+        localDraftStatus.textContent = "Recovered the draft saved on this device.";
+      }
+    } catch {
+      // Browser storage is an optional recovery layer.
+    }
     updatePreview();
     dialog.showModal();
     (workForm.elements.namedItem("title") as HTMLInputElement).focus();
@@ -649,7 +777,13 @@ const authorInitials = settings.authorName
       slug.dataset.auto = "true";
     }
     updatePreview();
+    window.clearTimeout(localSaveTimer);
+    localSaveTimer = window.setTimeout(() => saveLocalDraft(true), 750);
   });
+
+  document
+    .querySelector("[data-save-local]")
+    ?.addEventListener("click", () => saveLocalDraft(true));
 
   workForm
     .querySelectorAll<HTMLInputElement>('[name="contentVisibility"]')
