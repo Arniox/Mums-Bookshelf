@@ -4,6 +4,8 @@
 
 A small author website with a warm, animated CSS bookshelf and a private editorial studio. The public site is static and deploys to GitHub Pages. Published content, sessions, settings, and moderated comments live in Cloudflare D1 behind a Cloudflare Worker API.
 
+The studio keeps local recovery drafts, supports private online drafts from any device, and automatically starts a GitHub Pages rebuild when the author publishes, archives, or changes public site settings.
+
 The included fictional author and works are demonstration content and can be replaced through `/admin/`.
 
 ## Architecture
