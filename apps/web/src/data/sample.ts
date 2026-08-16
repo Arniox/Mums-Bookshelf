@@ -1,18 +1,19 @@
 import type { PublicSettings, Work } from "@mums-bookshelf/shared";
 
 export const settings: PublicSettings = {
-  authorName: "Eleanor Hart",
-  introduction:
-    "Stories about small rooms, long roads, and the brave choices made between them.",
+  authorName: "Denise Diehl",
+  introduction: "Writes stories about the weird and wonderful.",
   biography:
-    "Eleanor Hart writes fiction from a weatherboard house near the sea. Her work has appeared in magazines and anthologies, and often begins with an overheard sentence.\n\nShe is drawn to the quiet drama of ordinary lives: families negotiating old histories, neighbours watching one another across fences, and people finding their way home by unfamiliar roads.",
-  announcement: "New story: The Borrowed Lantern",
+    "Denise Diehl spent over 40 years working in laboratory science. After retiring with her husband to a small town in New Zealand, she wrote her first novel and short stories — a fun new adventure to match the latest decade of her life. Her writing leans towards the speculative and weird, think twilight zone. Several short stories have been published in various magazines including Frivolous Comma, Promised Protagonists, Starspun Lit, and 101 Words.",
+  announcement:
+    "Still Writing and Polishing up my First Novel - Castlands: The Secret of the Blood Key. Watch this space.",
   socialLinks: {
-    Instagram: "https://example.com/eleanor-instagram",
-    Facebook: "https://example.com/eleanor-facebook",
+    Instagram: "https://www.instagram.com/diehl7276/",
+    Facebook: "https://www.facebook.com/denise.diehl.946",
   },
   themeSettings: { accent: "plum", shelf: "walnut" },
-  contactLink: "https://example.com/contact",
+  contactLink:
+    "mailto:mumdiehl+bookshelf@gmail.com?subject=Bookshelf%20website",
 };
 
 export const works: Work[] = [
