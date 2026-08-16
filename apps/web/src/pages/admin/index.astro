@@ -350,10 +350,16 @@ const authorInitials = settings.authorName
         >
         <label
           ><span
-            >Publication URL <abbr title="required for Link Only">*</abbr><small
-              >Required for Link Only</small
-            ></span
+            >Publication URL <abbr
+              title="publication or audio is required for Link Only">*</abbr
+            ><small>Publication or audio is required for Link Only</small></span
           ><input name="primaryExternalUrl" type="url" /></label
+        >
+        <label
+          ><span>Audio URL <small>Podcast or audiobook</small></span><input
+            name="audioUrl"
+            type="url"
+          /></label
         >
         <label
           ><span>Purchase URL</span><input
@@ -834,6 +840,7 @@ const authorInitials = settings.authorName
 
   workForm.addEventListener("input", () => {
     dirty = true;
+    updateVisibilityRequirements();
     const title = workForm.elements.namedItem("title") as HTMLInputElement;
     const slug = workForm.elements.namedItem("slug") as HTMLInputElement;
     if (!slug.value || slug.dataset.auto === "true") {
@@ -865,10 +872,17 @@ const authorInitials = settings.authorName
     const publicationUrl = workForm.elements.namedItem(
       "primaryExternalUrl",
     ) as HTMLInputElement;
+    const audioUrl = workForm.elements.namedItem(
+      "audioUrl",
+    ) as HTMLInputElement;
     fullStory.required = visibility === "full";
     fullStory.closest<HTMLElement>("[data-full-story-field]")!.hidden =
       visibility !== "full";
-    publicationUrl.required = visibility === "external-only";
+    const linkOnly = visibility === "external-only";
+    const hasAudio = Boolean(audioUrl.value.trim());
+    const hasPublication = Boolean(publicationUrl.value.trim());
+    publicationUrl.required = linkOnly && !hasAudio;
+    audioUrl.required = linkOnly && !hasPublication;
     document.querySelector<HTMLElement>("[data-full-warning]")!.hidden =
       visibility !== "full";
   };
@@ -924,6 +938,7 @@ const authorInitials = settings.authorName
       contentVisibility: String(formData.get("contentVisibility")),
       publisherName: optional("publisherName"),
       primaryExternalUrl: optional("primaryExternalUrl"),
+      audioUrl: optional("audioUrl"),
       purchaseUrl: optional("purchaseUrl"),
       socialPostUrl: optional("socialPostUrl"),
       socialEmbedEnabled: formData.get("socialEmbedEnabled") === "on",
