@@ -5,7 +5,7 @@ import Comments from "../../components/Comments.astro";
 import FallbackCover from "../../components/FallbackCover.astro";
 import SocialPost from "../../components/SocialPost.astro";
 import WorkCard from "../../components/WorkCard.astro";
-import { getPublicWorks } from "../../lib/contentSource";
+import { getPublicSettings, getPublicWorks } from "../../lib/contentSource";
 
 export async function getStaticPaths() {
   const publicWorks = await getPublicWorks();
@@ -15,6 +15,7 @@ export async function getStaticPaths() {
 }
 
 const { work, works } = Astro.props;
+const settings = await getPublicSettings();
 const date = work.publishedAt
   ? new Intl.DateTimeFormat("en-NZ", { year: "numeric", month: "long", day: "numeric" }).format(new Date(work.publishedAt))
   : "";
@@ -31,13 +32,13 @@ const structuredData = {
   "@type": schemaType,
   name: work.title,
   description: work.blurb,
-  author: { "@type": "Person", name: "Eleanor Hart" },
+  author: { "@type": "Person", name: settings.authorName },
   datePublished: work.publishedAt,
   genre: work.genres
 };
 ---
 
-<BaseLayout title={work.seoTitle || work.title} description={work.seoDescription || work.blurb}>
+<BaseLayout title={work.seoTitle || work.title} description={work.seoDescription || work.blurb} siteSettings={settings}>
   <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   <article class="work-detail">
     <a class="back-link" href={`${base}works/`}>← All works</a>
@@ -46,7 +47,7 @@ const structuredData = {
         {work.coverImageUrl ? (
           <img src={work.coverImageUrl} alt={work.coverImageAlt || `Cover of ${work.title}`} />
         ) : (
-          <FallbackCover title={work.title} seed={work.id} label={work.publicationType.replace("-", " ")} />
+          <FallbackCover title={work.title} seed={work.id} authorName={settings.authorName} label={work.publicationType.replace("-", " ")} />
         )}
       </div>
       <div class="work-detail-copy">
@@ -108,7 +109,7 @@ const structuredData = {
   {related.length > 0 && (
     <section class="related-section">
       <div class="section-heading"><div><p class="eyebrow">Continue reading</p><h2>Related works</h2></div></div>
-      <div class="recent-grid">{related.map((item) => <WorkCard work={item} />)}</div>
+      <div class="recent-grid">{related.map((item) => <WorkCard work={item} authorName={settings.authorName} />)}</div>
     </section>
   )}
 </BaseLayout>
@@ -118,7 +119,7 @@ const structuredData = {
   const status = document.querySelector<HTMLElement>("[data-share-status]");
   share?.addEventListener("click", async () => {
     const data = {
-      title: share.dataset.title || "Eleanor Hart",
+      title: share.dataset.title || "Shared work",
       url: window.location.href,
     };
     try {
