@@ -1093,6 +1093,10 @@ textarea {
   color: #7d2634;
   font-size: 0.78rem;
 }
+.deployment-status {
+  margin-top: 0.6rem;
+  text-align: right;
+}
 .admin-header,
 .dashboard-heading {
   display: flex;
@@ -1286,6 +1290,20 @@ fieldset {
   margin: 1.5rem 0;
   font-size: 1.05rem;
 }
+.draft-safety-note {
+  padding: 1rem 1.2rem;
+  border-left: 4px solid var(--gold);
+  background: rgba(212, 164, 74, 0.12);
+}
+.draft-safety-note p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.draft-safety-note [data-local-draft-status] {
+  color: var(--plum);
+  font-weight: 600;
+}
 .editor-actions {
   position: sticky;
   bottom: -2.5rem;
@@ -1433,6 +1451,9 @@ fieldset {
   .dashboard-heading {
     align-items: start;
     flex-direction: column;
+  }
+  .deployment-status {
+    text-align: left;
   }
   .stat-grid {
     grid-template-columns: repeat(2, 1fr);
