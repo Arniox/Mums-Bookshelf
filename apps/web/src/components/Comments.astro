@@ -17,11 +17,22 @@ const { workId } = Astro.props;
     >
       <p class="eyebrow">Reader responses</p>
       <h2 id="comments-title">Comments</h2>
-      <div data-comment-list><p>Loading comments…</p></div>
+      <div data-comment-list>
+        <p>Loading comments…</p>
+      </div>
       <form data-comment-form>
         <h3>Leave a comment</h3>
-        <p>Comments are reviewed before they appear. No email address is needed.</p>
-        <label><span>Name <small>Optional</small></span><input name="displayName" maxlength="80" autocomplete="name" /></label>
+        <p>
+          Comments are reviewed before they appear. No email address is needed.
+        </p>
+        <label>
+          <>
+            <span>
+              Name <small>Optional</small>
+            </span>
+            <input name="displayName" maxlength="80" autocomplete="name" />
+          </>
+        </label>
         <label>
           <span>Comment</span>
           <textarea
@@ -29,15 +40,21 @@ const { workId } = Astro.props;
             required
             maxlength="300"
             rows="5"
-            aria-describedby="comment-character-limit"></textarea>
+            aria-describedby="comment-character-limit"
+          />
           <small id="comment-character-limit" class="character-count">
             <span data-comment-count>0</span>/300 characters
           </small>
         </label>
-        <label class="honeypot" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off" /></label>
-        <div data-turnstile></div>
-        <button class="button primary" type="submit">Submit for review</button>
-        <p class="form-status" data-comment-status aria-live="polite"></p>
+        <label class="honeypot" aria-hidden="true">
+          Website
+          <input name="website" tabindex="-1" autocomplete="off" />
+        </label>
+        <div data-turnstile />
+        <button class="button primary" type="submit">
+          Submit for review
+        </button>
+        <p class="form-status" data-comment-status aria-live="polite" />
       </form>
     </section>
   )
@@ -50,62 +67,93 @@ const { workId } = Astro.props;
     const workId = section.dataset.workId!;
     const list = section.querySelector<HTMLElement>("[data-comment-list]")!;
     const status = section.querySelector<HTMLElement>("[data-comment-status]")!;
-    const commentBody = section.querySelector<HTMLTextAreaElement>('[name="body"]')!;
-    const commentCount = section.querySelector<HTMLElement>("[data-comment-count]")!;
+    const commentBody =
+      section.querySelector<HTMLTextAreaElement>('[name="body"]')!;
+    const commentCount = section.querySelector<HTMLElement>(
+      "[data-comment-count]",
+    )!;
     let turnstileToken = "";
     const updateCommentCount = () => {
       commentCount.textContent = String(commentBody.value.length);
     };
     commentBody.addEventListener("input", updateCommentCount);
     const escape = (value: unknown) =>
-      String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
+      String(value ?? "").replace(
+        /[&<>"']/g,
+        (character) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[character]!,
+      );
 
     fetch(`${api}/api/v1/works/${encodeURIComponent(workId)}/comments`)
       .then((response) => response.json())
       .then((payload) => {
         const comments = payload.data?.items || [];
         list.innerHTML = comments.length
-          ? comments.map((comment: any) => `<article><strong>${escape(comment.displayName || "Anonymous")}</strong><p>${escape(comment.body)}</p></article>`).join("")
+          ? comments
+              .map(
+                (comment: any) =>
+                  `<article><strong>${escape(comment.displayName || "Anonymous")}</strong><p>${escape(comment.body)}</p></article>`,
+              )
+              .join("")
           : "<p>No comments yet. You could be the first.</p>";
       })
-      .catch(() => { list.innerHTML = "<p>Comments are temporarily unavailable.</p>"; });
+      .catch(() => {
+        list.innerHTML = "<p>Comments are temporarily unavailable.</p>";
+      });
 
     const siteKey = section.dataset.turnstileKey;
     if (siteKey) {
       const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.src =
+        "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
       script.async = true;
       script.defer = true;
       script.onload = () => {
         const turnstile = (window as any).turnstile;
         turnstile?.render(section.querySelector("[data-turnstile]"), {
           sitekey: siteKey,
-          callback: (token: string) => { turnstileToken = token; }
+          callback: (token: string) => {
+            turnstileToken = token;
+          },
         });
       };
       document.body.append(script);
     }
 
-    section.querySelector<HTMLFormElement>("[data-comment-form]")?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const form = event.currentTarget as HTMLFormElement;
-      const data = Object.fromEntries(new FormData(form));
-      status.textContent = "Sending…";
-      try {
-        const response = await fetch(`${api}/api/v1/works/${encodeURIComponent(workId)}/comments`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...data, turnstileToken })
-        });
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error?.message || "Comment could not be submitted.");
-        form.reset();
-        updateCommentCount();
-        status.textContent = "Thank you. Your comment is awaiting review.";
-      } catch (error) {
-        status.textContent = (error as Error).message;
-      }
-    });
+    section
+      .querySelector<HTMLFormElement>("[data-comment-form]")
+      ?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget as HTMLFormElement;
+        const data = Object.fromEntries(new FormData(form));
+        status.textContent = "Sending…";
+        try {
+          const response = await fetch(
+            `${api}/api/v1/works/${encodeURIComponent(workId)}/comments`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ ...data, turnstileToken }),
+            },
+          );
+          const payload = await response.json();
+          if (!response.ok)
+            throw new Error(
+              payload.error?.message || "Comment could not be submitted.",
+            );
+          form.reset();
+          updateCommentCount();
+          status.textContent = "Thank you. Your comment is awaiting review.";
+        } catch (error) {
+          status.textContent = (error as Error).message;
+        }
+      });
   }
 </script>
 
@@ -116,13 +164,45 @@ const { workId } = Astro.props;
     border-top: 1px solid var(--line);
     padding-top: 3rem;
   }
-  .comments-section h2 { margin: 0 0 2rem; font-size: 3rem; }
-  [data-comment-list] article { border-bottom: 1px solid var(--line); padding: 1.2rem 0; }
-  [data-comment-list] article p { margin: .4rem 0; font-family: var(--serif); font-size: 1.1rem; }
-  .comments-section form { margin-top: 3rem; display: grid; gap: 1rem; }
-  .comments-section h3 { margin: 0; font-size: 2rem; }
-  .comments-section form > p { margin: 0; color: var(--muted); font-size: .82rem; }
-  .comments-section .button { justify-self: start; }
-  .character-count { display: block; margin-top: .35rem; color: var(--muted); text-align: right; font-size: .72rem; }
-  .honeypot { position: absolute; left: -9999px; }
+  .comments-section h2 {
+    margin: 0 0 2rem;
+    font-size: 3rem;
+  }
+  [data-comment-list] article {
+    border-bottom: 1px solid var(--line);
+    padding: 1.2rem 0;
+  }
+  [data-comment-list] article p {
+    margin: 0.4rem 0;
+    font-family: var(--serif);
+    font-size: 1.1rem;
+  }
+  .comments-section form {
+    margin-top: 3rem;
+    display: grid;
+    gap: 1rem;
+  }
+  .comments-section h3 {
+    margin: 0;
+    font-size: 2rem;
+  }
+  .comments-section form > p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  .comments-section .button {
+    justify-self: start;
+  }
+  .character-count {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--muted);
+    text-align: right;
+    font-size: 0.72rem;
+  }
+  .honeypot {
+    position: absolute;
+    left: -9999px;
+  }
 </style>
