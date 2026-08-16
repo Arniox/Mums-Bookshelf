@@ -21,8 +21,8 @@ const password = await reader.question("Password (input may be visible): ");
 const confirmation = await reader.question("Confirm password: ");
 reader.close();
 
-if (password !== confirmation || password.length < 12) {
-  console.error("Passwords must match and contain at least 12 characters.");
+if (password !== confirmation || password.length < 8) {
+  console.error("Passwords must match and contain at least 8 characters.");
   process.exit(1);
 }
 
