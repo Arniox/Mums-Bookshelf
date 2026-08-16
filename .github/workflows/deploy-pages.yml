@@ -30,6 +30,16 @@ jobs:
       - run: npm test
       - run: npm run build -w @mums-bookshelf/shared
       - run: npm run build -w @mums-bookshelf/api
+      - name: Apply D1 migrations
+        run: npm run db:migrate:remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Deploy Cloudflare Worker
+        run: npm run deploy -w @mums-bookshelf/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - run: npm run build -w @mums-bookshelf/web
         env:
           PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
