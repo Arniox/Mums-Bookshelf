@@ -18,18 +18,18 @@
   },
   "dependencies": {
     "@mums-bookshelf/shared": "1.0.0",
-    "hono": "^4.7.11",
-    "jose": "^6.0.11",
+    "hono": "^4.13.2",
+    "jose": "^6.2.9",
     "zod": "^3.25.56"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260730.1",
+    "@cloudflare/workers-types": "^5.20260816.1",
     "@types/node": "^22.15.29",
-    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/coverage-v8": "^4.1.10",
     "rimraf": "^6.0.1",
-    "tsx": "^4.19.4",
+    "tsx": "^4.23.12",
     "typescript": "^5.8.3",
-    "vitest": "^3.2.4",
-    "wrangler": "^4.19.1"
+    "vitest": "^4.1.10",
+    "wrangler": "^4.123.0"
   }
 }
