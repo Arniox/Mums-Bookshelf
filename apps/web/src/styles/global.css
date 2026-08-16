@@ -887,11 +887,6 @@ textarea {
   letter-spacing: -0.04em;
 }
 
-.subtitle {
-  color: var(--plum);
-  font: italic 1.5rem var(--serif);
-}
-
 .work-blurb {
   max-width: 40rem;
   color: #514944;
@@ -916,29 +911,6 @@ textarea {
   margin: 0;
 }
 
-.reading-panel,
-.author-notes {
-  max-width: 820px;
-  margin: 2rem auto 5rem;
-  padding: 3rem;
-  border: 1px solid var(--line);
-  background: #fcf8f0;
-  box-shadow: var(--shadow);
-}
-
-.reading-panel h2,
-.author-notes h2 {
-  margin: 0.5rem 0 2rem;
-  font-size: 3rem;
-}
-
-.reading-panel blockquote {
-  margin: 0 0 2rem;
-  font-size: 2rem;
-  font-style: italic;
-  line-height: 1.35;
-}
-
 .story-content {
   max-width: 720px;
   margin: 2rem auto 6rem;
@@ -957,11 +929,6 @@ textarea {
 .story-content h2 {
   margin-top: 3.5rem;
   font-size: 2.5rem;
-}
-
-.author-notes {
-  border-left: 5px solid var(--gold);
-  box-shadow: none;
 }
 
 .social-post {
@@ -1559,10 +1526,6 @@ fieldset {
   }
   .work-detail-copy h1 {
     font-size: 3.7rem;
-  }
-  .reading-panel,
-  .author-notes {
-    padding: 2rem 1.4rem;
   }
   .story-content {
     font-size: 1.18rem;
