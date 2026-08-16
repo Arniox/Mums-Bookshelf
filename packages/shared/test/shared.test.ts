@@ -5,6 +5,7 @@ import {
   isAllowedExternalUrl,
   sanitiseMarkdown,
   slugify,
+  commentInputSchema,
   workSchema,
 } from "../src/index";
 
@@ -60,5 +61,14 @@ describe("shared domain logic", () => {
       featured: false,
     });
     expect(result.success).toBe(false);
+  });
+
+  it("limits reader comments to 300 characters", () => {
+    expect(
+      commentInputSchema.safeParse({ body: "a".repeat(300) }).success,
+    ).toBe(true);
+    expect(
+      commentInputSchema.safeParse({ body: "a".repeat(301) }).success,
+    ).toBe(false);
   });
 });
