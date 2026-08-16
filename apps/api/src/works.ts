@@ -99,7 +99,7 @@ function insertStatement(
 ) {
   return context.env.DB.prepare(
     `INSERT INTO works (${workColumns})
-     VALUES (${Array.from({ length: 22 }, () => "?").join(",")})
+     VALUES (${Array.from({ length: 23 }, () => "?").join(",")})
      ON CONFLICT(id) DO UPDATE SET
        slug = excluded.slug, title = excluded.title,
        status = excluded.status, publication_type = excluded.publication_type,
@@ -107,7 +107,8 @@ function insertStatement(
        word_count = excluded.word_count, reading_time_minutes = excluded.reading_time_minutes,
        blurb = excluded.blurb, story_content = excluded.story_content,
        content_visibility = excluded.content_visibility, publisher_name = excluded.publisher_name,
-       primary_external_url = excluded.primary_external_url, purchase_url = excluded.purchase_url,
+       primary_external_url = excluded.primary_external_url, audio_url = excluded.audio_url,
+       purchase_url = excluded.purchase_url,
        social_post_url = excluded.social_post_url, social_provider = excluded.social_provider,
        social_embed_enabled = excluded.social_embed_enabled, work_image_url = excluded.work_image_url,
        genres_json = excluded.genres_json, featured = excluded.featured`,
@@ -127,6 +128,7 @@ function insertStatement(
     work.contentVisibility,
     work.publisherName ?? null,
     work.primaryExternalUrl ?? null,
+    work.audioUrl ?? null,
     work.purchaseUrl ?? null,
     work.socialPostUrl ?? null,
     work.socialProvider ?? null,

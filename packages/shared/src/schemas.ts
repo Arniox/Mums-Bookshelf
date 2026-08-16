@@ -34,6 +34,7 @@ const workBaseSchema = z.object({
   contentVisibility: z.enum(contentVisibilities),
   publisherName: z.string().trim().max(180).optional(),
   primaryExternalUrl: optionalUrl,
+  audioUrl: optionalUrl,
   purchaseUrl: optionalUrl,
   socialPostUrl: optionalUrl,
   socialProvider: z
@@ -49,11 +50,15 @@ function validateVisibility(
   work: Record<string, unknown>,
   context: z.RefinementCtx,
 ) {
-  if (work.contentVisibility === "external-only" && !work.primaryExternalUrl) {
+  if (
+    work.contentVisibility === "external-only" &&
+    !work.primaryExternalUrl &&
+    !work.audioUrl
+  ) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["primaryExternalUrl"],
-      message: "Publication URL is required for link-only work.",
+      message: "A publication URL or audio URL is required for link-only work.",
     });
   }
   if (work.contentVisibility === "full" && !work.storyContent) {

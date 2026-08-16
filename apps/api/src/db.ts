@@ -30,6 +30,7 @@ export function rowToWork(row: WorkRow, privileged = false): Work {
   assign("readingTimeMinutes", row.reading_time_minutes);
   assign("publisherName", row.publisher_name);
   assign("primaryExternalUrl", row.primary_external_url);
+  assign("audioUrl", row.audio_url);
   assign("purchaseUrl", row.purchase_url);
   assign("socialPostUrl", row.social_post_url);
   assign("socialProvider", row.social_provider);
@@ -59,6 +60,6 @@ export function rowToSettings(row: Record<string, unknown>): PublicSettings {
 export const workColumns = `
   id, slug, title, status, publication_type, published_at, created_at, updated_at,
   word_count, reading_time_minutes, blurb, story_content, content_visibility,
-  publisher_name, primary_external_url, purchase_url, social_post_url, social_provider,
+  publisher_name, primary_external_url, audio_url, purchase_url, social_post_url, social_provider,
   social_embed_enabled, work_image_url, genres_json, featured
 `;

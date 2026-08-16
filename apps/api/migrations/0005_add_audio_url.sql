@@ -1,0 +1,1 @@
+ALTER TABLE works ADD COLUMN audio_url TEXT;

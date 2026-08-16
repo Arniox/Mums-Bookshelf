@@ -76,6 +76,7 @@ export const works: Work[] = [
     contentVisibility: "external-only",
     publisherName: "South & Salt Magazine",
     primaryExternalUrl: "https://example.com/magazine/tide-table",
+    audioUrl: "https://example.com/audio/tide-table",
     socialPostUrl: "https://example.com/social/tide-table",
     socialProvider: "facebook",
     socialEmbedEnabled: true,
