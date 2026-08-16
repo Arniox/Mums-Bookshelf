@@ -285,6 +285,31 @@ describe("API routes", () => {
     });
   });
 
+  it("publishes every draft with one database update", async () => {
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/works/publish-all",
+      {
+        method: "POST",
+        headers: {
+          Origin: "https://allowed.example",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      data: { published: 1 },
+    });
+    const statement = database.statements.find((item) =>
+      item.sql.includes("WHERE status = 'draft'"),
+    );
+    expect(statement).toBeDefined();
+    expect(statement?.sql).toContain("published_at = COALESCE");
+  });
+
   it("allows authenticated comment moderation", async () => {
     const accessToken = await activeAccessToken(database, env);
     const response = await app.request(
