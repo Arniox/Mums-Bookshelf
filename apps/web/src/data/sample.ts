@@ -23,7 +23,6 @@ export const works: Work[] = [
     id: "work-north-road",
     slug: "the-long-road-north",
     title: "The Long Road North",
-    subtitle: "A novel of homecoming",
     status: "published",
     publicationType: "book",
     publishedAt: "2025-10-14T00:00:00Z",
@@ -39,9 +38,7 @@ export const works: Work[] = [
     purchaseUrl: "https://example.com/shop/the-long-road-north",
     socialEmbedEnabled: false,
     genres: ["literary fiction", "family saga"],
-    tags: ["homecoming", "orchard", "New Zealand"],
     featured: true,
-    displayOrder: 1,
   },
   {
     id: "work-lantern",
@@ -56,18 +53,12 @@ export const works: Work[] = [
     readingTimeMinutes: 16,
     blurb:
       "On the night the power fails, a widow follows a moving light through the flooded lower paddock.",
-    excerpt:
-      "At half past nine, when the valley went dark, June saw a lantern moving below the macrocarpas.",
     storyContent:
       "At half past nine, when the valley went dark, June saw a lantern moving below the macrocarpas.\n\nShe stood at the kitchen window with both hands around a mug gone cold. The light dipped, vanished behind the old pump shed, then rose again where no path ran.\n\n“Tom,” she said, before remembering the empty chair.\n\nJune pulled on her red coat and stepped into the rain. The paddock water took the porch light and broke it into trembling pieces. Ahead, the lantern waited.\n\n## The lower field\n\nBy the gate she found a small brass lantern hanging from the latch. It was the one she had lent to her neighbour twenty-six summers ago, on the evening his daughter was born. Its glass was warm.\n\nBeyond it, the flood had carried a white lamb against the wire. June set down the lantern, waded in, and began to pull.",
-    authorNotes:
-      "Written during three days of rain. The lantern is based on one my grandmother kept beside her bed.",
     contentVisibility: "full",
     socialEmbedEnabled: false,
     genres: ["literary fiction"],
-    tags: ["rain", "grief", "rural life"],
     featured: true,
-    displayOrder: 2,
   },
   {
     id: "work-tide-table",
@@ -82,18 +73,14 @@ export const works: Work[] = [
     readingTimeMinutes: 10,
     blurb:
       "A daughter catalogues the objects her marine-biologist father leaves behind.",
-    excerpt:
-      "There were twelve tide tables, one for every year he had promised to retire.",
-    contentVisibility: "excerpt",
-    publicationName: "South & Salt Magazine",
+    contentVisibility: "external-only",
+    publisherName: "South & Salt Magazine",
     primaryExternalUrl: "https://example.com/magazine/tide-table",
     socialPostUrl: "https://example.com/social/tide-table",
     socialProvider: "facebook",
     socialEmbedEnabled: true,
     genres: ["creative nonfiction"],
-    tags: ["coast", "memory"],
     featured: false,
-    displayOrder: 3,
   },
   {
     id: "work-green-room",
@@ -108,18 +95,13 @@ export const works: Work[] = [
     readingTimeMinutes: 24,
     blurb:
       "Three strangers shelter backstage while a cyclone rearranges the town outside.",
-    excerpt: "By midnight the theatre belonged to the wind.",
-    authorNotes: "First published in the After Weather anthology.",
-    contentVisibility: "excerpt",
-    publisherName: "Blue Wren Books",
-    publicationName: "After Weather: New Stories",
+    contentVisibility: "external-only",
+    publisherName: "Blue Wren Books — After Weather: New Stories",
     primaryExternalUrl: "https://example.com/anthology/after-weather",
     purchaseUrl: "https://example.com/shop/after-weather",
     socialEmbedEnabled: false,
     genres: ["short fiction"],
-    tags: ["cyclone", "theatre"],
     featured: false,
-    displayOrder: 4,
   },
   {
     id: "work-pear-tree",
@@ -134,14 +116,11 @@ export const works: Work[] = [
     readingTimeMinutes: 9,
     blurb:
       "A tiny story about a tree, a boundary fence, and two neighbours who refuse to speak.",
-    excerpt: "The pear tree leaned exactly as far as it needed to.",
-    contentVisibility: "excerpt",
-    publicationName: "Field Notes Quarterly",
+    contentVisibility: "external-only",
+    publisherName: "Field Notes Quarterly",
     primaryExternalUrl: "https://example.com/field-notes/pear-tree",
     socialEmbedEnabled: false,
     genres: ["flash fiction"],
-    tags: ["neighbours", "garden"],
     featured: false,
-    displayOrder: 5,
   },
 ];
