@@ -182,6 +182,7 @@ export async function requireAuth(
   context: Context<AppEnvironment>,
   next: Next,
 ) {
+  context.header("Cache-Control", "no-store, private");
   const header = context.req.header("Authorization");
   if (!header?.startsWith("Bearer ")) {
     throw new ApiError(
