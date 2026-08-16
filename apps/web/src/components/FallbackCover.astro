@@ -4,10 +4,11 @@ import { getBookAppearance } from "@mums-bookshelf/shared";
 interface Props {
   title: string;
   seed: string;
+  authorName: string;
   label?: string;
 }
 
-const { title, seed, label = "A work by Eleanor Hart" } = Astro.props;
+const { title, seed, authorName, label = `A work by ${authorName}` } = Astro.props;
 const appearance = getBookAppearance(seed);
 ---
 
@@ -21,6 +22,5 @@ const appearance = getBookAppearance(seed);
   <p>{label}</p>
   <h2>{title}</h2>
   <span class="cover-ornament">✦</span>
-  <small>Eleanor Hart</small>
+  <small>{authorName}</small>
 </div>
-
