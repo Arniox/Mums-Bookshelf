@@ -30,7 +30,9 @@ const id = crypto.randomUUID();
 const hash = await hashPassword(password, pepper);
 const now = new Date().toISOString();
 const quote = (value: string) => `'${value.replaceAll("'", "''")}'`;
+const sql = `INSERT INTO admin_users (id, username, password_hash, enabled, created_at, updated_at) VALUES (${quote(id)}, ${quote(username)}, ${quote(hash)}, 1, ${quote(now)}, ${quote(now)});`;
+const powerShellQuote = (value: string) => `'${value.replaceAll("'", "''")}'`;
 console.log("\nRun this command from the repository root:\n");
 console.log(
-  `npx wrangler d1 execute author-library --remote --config apps/api/wrangler.jsonc --command "INSERT INTO admin_users (id, username, password_hash, enabled, created_at, updated_at) VALUES (${quote(id)}, ${quote(username)}, ${quote(hash)}, 1, ${quote(now)}, ${quote(now)});"`,
+  `npx wrangler d1 execute author-library --remote --config apps/api/wrangler.jsonc --command ${powerShellQuote(sql)}`,
 );
