@@ -9,6 +9,6 @@ INSERT OR REPLACE INTO site_settings (
   'Still Writing and Polishing up my First Novel - Castlands: The Secret of the Blood Key. Watch this space.',
   '{"Instagram":"https://www.instagram.com/diehl7276/","Facebook":"https://www.facebook.com/denise.diehl.946"}',
   '{"accent":"plum","shelf":"walnut"}',
-  'mailto:mumdiehl@gmail.com+bookshelf',
-  '2026-01-12T09:00:00Z'
+  'mailto:mumdiehl+bookshelf@gmail.com?subject=Bookshelf%20website',
+  '2026-08-16T02:55:45Z'
 );
