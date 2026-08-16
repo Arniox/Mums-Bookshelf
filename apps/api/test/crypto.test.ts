@@ -14,6 +14,15 @@ describe("API security helpers", () => {
     ).resolves.toBe(false);
   });
 
+  it("rejects unsupported iteration counts without invoking PBKDF2", async () => {
+    const hash = await hashPassword("a long test password", "a".repeat(32));
+    const unsupportedHash = hash.replace("$100000$", "$210000$");
+
+    await expect(
+      verifyPassword("a long test password", "a".repeat(32), unsupportedHash),
+    ).resolves.toBe(false);
+  });
+
   it("parses a strict CORS allow-list", () => {
     expect(allowedOrigins("https://one.example, https://two.example")).toEqual(
       new Set(["https://one.example", "https://two.example"]),
