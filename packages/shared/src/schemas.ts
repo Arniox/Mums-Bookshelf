@@ -116,7 +116,11 @@ export const loginSchema = z.object({
 
 export const commentInputSchema = z.object({
   displayName: z.string().trim().max(80).optional(),
-  body: z.string().trim().min(1).max(2_000),
+  body: z
+    .string()
+    .trim()
+    .min(1)
+    .max(300, "Comments must be 300 characters or fewer."),
   website: z.string().max(0).optional(),
   turnstileToken: z.string().max(2_048).optional(),
 });
