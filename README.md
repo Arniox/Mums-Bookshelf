@@ -41,7 +41,7 @@ npm run dev:web
 npm run dev:api
 npm run db:migrate:local
 npm run db:seed:local
-npm run admin:create -- --username author
+npm run admin:create -- author
 npm run deploy:api
 ```
 
