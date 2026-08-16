@@ -144,6 +144,17 @@ const structuredData = {
               </a>
             )
           }
+          {
+            work.audioUrl && (
+              <a
+                class="button secondary audio-button"
+                href={work.audioUrl}
+                rel="noopener noreferrer"
+              >
+                <span aria-hidden="true">♪</span> Listen to the audio ↗
+              </a>
+            )
+          }
         </div>
       </div>
     </header>
