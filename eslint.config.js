@@ -16,9 +16,16 @@ export default [
   ...tseslint.configs.recommended,
   ...astro.configs.recommended,
   {
-    files: ["**/*.{ts,tsx,astro}"],
+    files: ["**/*.{js,mjs,cjs,ts,tsx,astro}"],
     languageOptions: {
-      globals: { ...globals.browser, ...globals.node, ...globals.worker },
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.worker,
+        __API_BASE_URL__: "readonly",
+        __COMMENTS_ENABLED__: "readonly",
+        __TURNSTILE_SITE_KEY__: "readonly",
+      },
     },
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
