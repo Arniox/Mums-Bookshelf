@@ -10,20 +10,44 @@ interface Props {
 const { work, authorName } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const date = work.publishedAt
-  ? new Intl.DateTimeFormat("en-NZ", { year: "numeric", month: "long" }).format(new Date(work.publishedAt))
+  ? new Intl.DateTimeFormat("en-NZ", { year: "numeric", month: "long" }).format(
+      new Date(work.publishedAt),
+    )
   : "";
 ---
 
-<article class="work-card" data-work-card data-title={work.title.toLowerCase()} data-type={work.publicationType} data-genres={work.genres.join(" ").toLowerCase()} data-featured={String(work.featured)}>
-  <a class="work-card-cover" href={`${base}works/${work.slug}/`} tabindex="-1" aria-hidden="true">
-    {work.workImageUrl ? (
-      <img src={work.workImageUrl} alt="" loading="lazy" />
-    ) : (
-      <FallbackCover title={work.title} seed={work.id} authorName={authorName} label={work.publicationType.replace("-", " ")} />
-    )}
+<article
+  class="work-card"
+  data-work-card
+  data-title={work.title.toLowerCase()}
+  data-type={work.publicationType}
+  data-genres={work.genres.join(" ").toLowerCase()}
+  data-featured={String(work.featured)}
+>
+  <a
+    class="work-card-cover"
+    href={`${base}works/${work.slug}/`}
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    {
+      work.workImageUrl ? (
+        <img src={work.workImageUrl} alt="" loading="lazy" />
+      ) : (
+        <FallbackCover
+          title={work.title}
+          seed={work.id}
+          authorName={authorName}
+          label={work.publicationType.replace("-", " ")}
+        />
+      )
+    }
   </a>
   <div class="work-card-body">
-    <p class="work-meta">{work.publicationType.replace("-", " ")} {date && <span>· {date}</span>}</p>
+    <p class="work-meta">
+      {work.publicationType.replace("-", " ")}
+      {date && <span>· {date}</span>}
+    </p>
     <h2><a href={`${base}works/${work.slug}/`}>{work.title}</a></h2>
     <p>{work.blurb}</p>
     <div class="tag-row">
