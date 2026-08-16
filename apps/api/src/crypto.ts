@@ -2,7 +2,9 @@ import { SignJWT, jwtVerify } from "jose";
 import type { Bindings } from "./types";
 
 const encoder = new TextEncoder();
-const iterations = 210_000;
+// workerd caps PBKDF2 at 100,000 iterations to protect Workers from CPU abuse.
+// Passwords are additionally protected by a server-side pepper and login rate limiting.
+const iterations = 100_000;
 
 function bytesToBase64(bytes: Uint8Array): string {
   return btoa(String.fromCharCode(...bytes));
