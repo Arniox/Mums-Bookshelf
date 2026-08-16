@@ -833,6 +833,25 @@ label small {
   font-weight: 400;
 }
 
+.link-fields .field-help {
+  max-width: 34rem;
+  margin-top: 0.3rem;
+  display: block;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.matching-url-note {
+  margin-top: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border-left: 3px solid var(--gold);
+  display: block;
+  color: var(--plum);
+  background: rgba(197, 155, 82, 0.11);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
 input,
 select,
 textarea {
