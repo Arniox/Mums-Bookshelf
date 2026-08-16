@@ -50,15 +50,11 @@ function validateVisibility(
   work: Record<string, unknown>,
   context: z.RefinementCtx,
 ) {
-  if (
-    work.contentVisibility === "external-only" &&
-    !work.primaryExternalUrl &&
-    !work.audioUrl
-  ) {
+  if (work.contentVisibility === "external-only" && !work.primaryExternalUrl) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["primaryExternalUrl"],
-      message: "A publication URL or audio URL is required for link-only work.",
+      message: "Publication URL is required for link-only work.",
     });
   }
   if (work.contentVisibility === "full" && !work.storyContent) {

@@ -30,6 +30,25 @@ export function isAllowedExternalUrl(value: string): boolean {
   }
 }
 
+export function areSameExternalUrls(
+  left: string | undefined,
+  right: string | undefined,
+): boolean {
+  if (!left || !right) return false;
+  const normalise = (value: string) => {
+    const url = new URL(value.trim());
+    url.hash = "";
+    url.pathname = url.pathname.replace(/\/+$/, "") || "/";
+    url.searchParams.sort();
+    return url.href;
+  };
+  try {
+    return normalise(left) === normalise(right);
+  } catch {
+    return left.trim() === right.trim();
+  }
+}
+
 export function sanitiseMarkdown(markdown: string): string {
   const protocolSafeMarkdown = markdown.replace(
     /\b(?:javascript|vbscript|data):/giu,
