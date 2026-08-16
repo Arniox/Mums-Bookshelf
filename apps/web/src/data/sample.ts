@@ -5,6 +5,8 @@ export const settings: PublicSettings = {
   introduction: "Writes stories about the weird and wonderful.",
   biography:
     "Denise Diehl spent over 40 years working in laboratory science. After retiring with her husband to a small town in New Zealand, she wrote her first novel and short stories — a fun new adventure to match the latest decade of her life. Her writing leans towards the speculative and weird, think twilight zone. Several short stories have been published in various magazines including Frivolous Comma, Promised Protagonists, Starspun Lit, and 101 Words.",
+  profileImageUrl:
+    "https://arniox.github.io/Mums-Bookshelf/images/denise-diehl.jpg",
   announcement:
     "Still Writing and Polishing up my First Novel - Castlands: The Secret of the Blood Key. Watch this space.",
   socialLinks: {
