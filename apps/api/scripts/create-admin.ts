@@ -30,7 +30,7 @@ const id = crypto.randomUUID();
 const hash = await hashPassword(password, pepper);
 const now = new Date().toISOString();
 const quote = (value: string) => `'${value.replaceAll("'", "''")}'`;
-const sql = `INSERT INTO admin_users (id, username, password_hash, enabled, created_at, updated_at) VALUES (${quote(id)}, ${quote(username)}, ${quote(hash)}, 1, ${quote(now)}, ${quote(now)});`;
+const sql = `INSERT INTO admin_users (id, username, password_hash, enabled, created_at, updated_at) VALUES (${quote(id)}, ${quote(username)}, ${quote(hash)}, 1, ${quote(now)}, ${quote(now)}) ON CONFLICT(username) DO UPDATE SET password_hash = excluded.password_hash, enabled = 1, updated_at = excluded.updated_at;`;
 const powerShellQuote = (value: string) => `'${value.replaceAll("'", "''")}'`;
 console.log("\nRun this command from the repository root:\n");
 console.log(
