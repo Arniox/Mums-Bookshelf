@@ -35,7 +35,7 @@ const base = import.meta.env.BASE_URL;
               `--book-index:${index}`
             ].join(";");
             return (
-              <li class="book-slot">
+              <li class="book-slot" data-featured={String(work.featured)}>
                 <a
                   class:list={["book", `spine-${appearance.spineStyle}`, `material-${appearance.materialStyle}`, `title-${appearance.titlePosition}`]}
                   style={style}
@@ -43,7 +43,7 @@ const base = import.meta.env.BASE_URL;
                   aria-label={`${work.title}, ${work.publicationType.replace("-", " ")}`}
                   data-title={work.title.toLowerCase()}
                   data-type={work.publicationType}
-                  data-tags={[...work.tags, ...work.genres].join(" ").toLowerCase()}
+                  data-genres={work.genres.join(" ").toLowerCase()}
                 >
                   <span class="book-shine" aria-hidden="true" />
                   <span class="book-title">{work.title}</span>
@@ -64,7 +64,7 @@ const base = import.meta.env.BASE_URL;
     <summary>View as an accessible list</summary>
     <ul>
       {works.map((work) => (
-        <li>
+        <li data-featured={String(work.featured)}>
           <a href={`${base}works/${work.slug}/`}>{work.title}</a>
           <span>{work.publicationType.replace("-", " ")}</span>
         </li>
@@ -74,9 +74,25 @@ const base = import.meta.env.BASE_URL;
 </section>
 
 <script>
+  import { featuredFirstShuffle } from "../lib/randomiseWorks";
+
   const shelf = document.querySelector<HTMLElement>("[data-bookshelf]");
   const skip = shelf?.querySelector<HTMLButtonElement>("[data-skip-animation]");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  shelf?.querySelectorAll<HTMLOListElement>(".shelves").forEach((list) => {
+    featuredFirstShuffle(
+      [...list.querySelectorAll<HTMLElement>(".book-slot")],
+      (item) => item.dataset.featured === "true",
+    ).forEach((item) => list.append(item));
+  });
+  shelf
+    ?.querySelectorAll<HTMLUListElement>(".accessible-library ul")
+    .forEach((list) => {
+      featuredFirstShuffle(
+        [...list.querySelectorAll<HTMLElement>("li")],
+        (item) => item.dataset.featured === "true",
+      ).forEach((item) => list.append(item));
+    });
   if (shelf && !reduceMotion) {
     shelf.classList.add("is-revealing");
     if (skip) {
@@ -101,4 +117,3 @@ const base = import.meta.env.BASE_URL;
     });
   });
 </script>
-

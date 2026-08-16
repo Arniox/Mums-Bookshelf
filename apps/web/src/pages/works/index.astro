@@ -17,7 +17,7 @@ const types = [...new Set(works.map((work) => work.publicationType))];
   <section class="library-tools" aria-label="Search and filter works">
     <label>
       <span>Search</span>
-      <input type="search" placeholder="Title, genre or tag" data-work-search />
+      <input type="search" placeholder="Title or genre" data-work-search />
     </label>
     <label>
       <span>Publication type</span>
@@ -39,19 +39,27 @@ const types = [...new Set(works.map((work) => work.publicationType))];
 </BaseLayout>
 
 <script>
+  import { featuredFirstShuffle } from "../../lib/randomiseWorks";
+
   const search = document.querySelector<HTMLInputElement>("[data-work-search]");
   const filter = document.querySelector<HTMLSelectElement>("[data-work-filter]");
   const cards = [...document.querySelectorAll<HTMLElement>("[data-work-card]")];
   const count = document.querySelector<HTMLElement>("[data-result-count]");
   const empty = document.querySelector<HTMLElement>("[data-empty-results]");
   const clear = document.querySelector<HTMLButtonElement>("[data-clear-filters]");
+  const grid = document.querySelector<HTMLElement>("[data-works-grid]");
+
+  featuredFirstShuffle(
+    cards,
+    (card) => card.dataset.featured === "true",
+  ).forEach((card) => grid?.append(card));
 
   const update = () => {
     const query = search?.value.trim().toLowerCase() || "";
     const type = filter?.value || "";
     let visible = 0;
     cards.forEach((card) => {
-      const haystack = `${card.dataset.title} ${card.dataset.tags}`;
+      const haystack = `${card.dataset.title} ${card.dataset.genres}`;
       const show = (!query || haystack.includes(query)) && (!type || card.dataset.type === type);
       card.hidden = !show;
       if (show) visible += 1;

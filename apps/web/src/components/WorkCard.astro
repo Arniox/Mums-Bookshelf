@@ -14,13 +14,9 @@ const date = work.publishedAt
   : "";
 ---
 
-<article class="work-card" data-work-card data-title={work.title.toLowerCase()} data-type={work.publicationType} data-tags={[...work.tags, ...work.genres].join(" ").toLowerCase()}>
+<article class="work-card" data-work-card data-title={work.title.toLowerCase()} data-type={work.publicationType} data-genres={work.genres.join(" ").toLowerCase()} data-featured={String(work.featured)}>
   <a class="work-card-cover" href={`${base}works/${work.slug}/`} tabindex="-1" aria-hidden="true">
-    {work.coverImageUrl ? (
-      <img src={work.coverImageUrl} alt={work.coverImageAlt || `Cover of ${work.title}`} loading="lazy" />
-    ) : (
-      <FallbackCover title={work.title} seed={work.id} authorName={authorName} label={work.publicationType.replace("-", " ")} />
-    )}
+    <FallbackCover title={work.title} seed={work.id} authorName={authorName} label={work.publicationType.replace("-", " ")} />
   </a>
   <div class="work-card-body">
     <p class="work-meta">{work.publicationType.replace("-", " ")} {date && <span>· {date}</span>}</p>

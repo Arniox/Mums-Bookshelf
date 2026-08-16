@@ -2,7 +2,6 @@ export interface FilterableWork {
   title: string;
   publicationType: string;
   genres: string[];
-  tags: string[];
 }
 
 export function matchesWork(
@@ -11,7 +10,7 @@ export function matchesWork(
   publicationType: string,
 ): boolean {
   const normalisedQuery = query.trim().toLowerCase();
-  const haystack = [work.title, ...work.genres, ...work.tags]
+  const haystack = [work.title, ...work.genres]
     .join(" ")
     .toLowerCase();
   return (
