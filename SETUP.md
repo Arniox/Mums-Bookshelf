@@ -88,6 +88,24 @@ npx wrangler secret put PASSWORD_PEPPER --config apps/api/wrangler.jsonc
 npx wrangler secret put IP_HASH_SECRET --config apps/api/wrangler.jsonc
 ```
 
+### Allow the studio to update GitHub Pages automatically
+
+Create one narrowly scoped GitHub fine-grained personal access token:
+
+1. In GitHub, open **Settings → Developer settings → Personal access tokens → Fine-grained tokens**.
+2. Choose **Generate new token** and name it `Mum's Bookshelf Pages rebuild`.
+3. Select the `Arniox` resource owner.
+4. Under **Repository access**, choose **Only select repositories**, then select `Mums-Bookshelf`.
+5. Under **Repository permissions**, give **Actions: Read and write**. Leave every other optional permission at **No access**.
+6. Choose an expiration. `No expiration` avoids maintenance for this single-purpose token; use a shorter expiration if you are happy to rotate it before it expires.
+7. Generate and copy the token once, then store it directly in Cloudflare:
+
+```bash
+npx wrangler secret put GITHUB_PAGES_DEPLOY_TOKEN --config apps/api/wrangler.jsonc
+```
+
+Paste the token only into Wrangler's private prompt. Do not put it in `wrangler.jsonc`, a GitHub variable, the browser, or a committed `.env` file. If the token expires or is revoked, saved writing remains safe in D1; only automatic public-site rebuilds stop until the secret is replaced.
+
 For comments with Turnstile:
 
 ```bash
@@ -150,10 +168,11 @@ For the Worker workflow, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` 
 1. Open `https://USERNAME.github.io/REPOSITORY/admin/`.
 2. Sign in.
 3. Choose **Add new work**.
-4. Leave the status as **Draft** while editing.
-5. Choose Link only, Excerpt, or Full story. Confirm digital rights before Full story.
-6. Change the status to **Published** and save.
-7. In GitHub Actions, run **Validate and deploy GitHub Pages**. Static work URLs are generated during this build.
+4. The editor automatically keeps a recovery copy in that browser. **Save on this device** also creates one immediately.
+5. Choose **Save draft online** to store the draft privately in D1 and continue from another device.
+6. Choose Link only, Excerpt, or Full story. Confirm digital rights before publishing a Full story.
+7. Choose **Publish & update website**, read the warning, and confirm. The studio saves the published work and automatically starts **Validate and deploy GitHub Pages**.
+8. Wait a few minutes, then refresh the public site. The studio also has an **Update public website** button for retrying a failed or delayed update.
 
 Draft and archived records are never returned by public API endpoints.
 
@@ -205,6 +224,10 @@ Store exports securely: they can contain draft writing and reader comments.
 | `PASSWORD_PEPPER`                | `.dev.vars`, Worker secret       | Secret        | Yes      | Strengthens password hashes   |
 | `IP_HASH_SECRET`                 | `.dev.vars`, Worker secret       | Secret        | Yes      | Pseudonymises rate-limit keys |
 | `TURNSTILE_SECRET_KEY`           | `.dev.vars`, Worker secret       | Secret        | No       | Verifies Turnstile responses  |
+| `GITHUB_PAGES_DEPLOY_TOKEN`      | Worker secret                    | Secret        | Yes      | Starts the Pages workflow     |
+| `GITHUB_REPOSITORY`              | `wrangler.jsonc` Worker variable | Public config | Yes      | Pages source repository       |
+| `GITHUB_PAGES_WORKFLOW`          | `wrangler.jsonc` Worker variable | Public config | Yes      | Pages workflow filename       |
+| `GITHUB_DEFAULT_BRANCH`          | `wrangler.jsonc` Worker variable | Public config | Yes      | Workflow branch               |
 | `CLOUDFLARE_API_TOKEN`           | GitHub Actions secret            | Secret        | CI only  | Deploys Worker                |
 | `CLOUDFLARE_ACCOUNT_ID`          | GitHub Actions secret            | Secret        | CI only  | Selects Cloudflare account    |
 
@@ -213,7 +236,7 @@ Store exports securely: they can contain draft writing and reader comments.
 - **Pages assets return 404:** `PUBLIC_BASE_PATH` must be `/REPOSITORY` for a project site and `/` for a root or custom domain.
 - **Admin says origin is not allowed:** add the exact scheme and hostname (no path) to `ALLOWED_ORIGINS`, then redeploy the Worker.
 - **Login always fails after creating an account:** the CLI and Worker must use the identical `PASSWORD_PEPPER`.
-- **A published work is absent:** run the Pages workflow. GitHub Pages is static, so new work pages appear after a successful rebuild.
+- **A published work is absent:** choose **Update public website** in the studio. If it fails, confirm `GITHUB_PAGES_DEPLOY_TOKEN` still exists and has Actions read/write access to this repository.
 - **Build cannot read the API:** confirm `PUBLIC_API_BASE_URL` and that `GET /api/v1/works` is publicly reachable.
 - **Comments are missing:** both frontend and Worker comment flags must be true; unapproved comments only appear in the studio.
 - **Facebook post is blank:** private, deleted, region-blocked, unsupported, or tracker-blocked posts cannot embed. The normal link remains available.
