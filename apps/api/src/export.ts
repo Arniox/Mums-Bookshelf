@@ -19,7 +19,7 @@ export async function exportData(context: Context<AppEnvironment>) {
     `attachment; filename="author-library-${new Date().toISOString().slice(0, 10)}.json"`,
   );
   return success(context, {
-    formatVersion: 1,
+    formatVersion: 2,
     exportedAt: new Date().toISOString(),
     works: works.results.map((row) => rowToWork(row, true)),
     settings: settings ? rowToSettings(settings) : {},
