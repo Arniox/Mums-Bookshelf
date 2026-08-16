@@ -245,7 +245,7 @@ const authorInitials = settings.authorName
     <form class="editor-form" data-work-form>
       <input type="hidden" name="id" />
       <p class="required-note"><abbr title="required">*</abbr> Required</p>
-      <label
+      <label data-full-story-field
         ><span>Title <abbr title="required">*</abbr></span><input
           name="title"
           required
@@ -825,6 +825,8 @@ const authorInitials = settings.authorName
       "primaryExternalUrl",
     ) as HTMLInputElement;
     fullStory.required = visibility === "full";
+    fullStory.closest<HTMLElement>("[data-full-story-field]")!.hidden =
+      visibility !== "full";
     publicationUrl.required = visibility === "external-only";
     document.querySelector<HTMLElement>("[data-full-warning]")!.hidden =
       visibility !== "full";
