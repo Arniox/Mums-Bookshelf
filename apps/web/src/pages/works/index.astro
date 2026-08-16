@@ -1,13 +1,13 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import WorkCard from "../../components/WorkCard.astro";
-import { getPublicWorks } from "../../lib/contentSource";
+import { getPublicSettings, getPublicWorks } from "../../lib/contentSource";
 
-const works = await getPublicWorks();
+const [settings, works] = await Promise.all([getPublicSettings(), getPublicWorks()]);
 const types = [...new Set(works.map((work) => work.publicationType))];
 ---
 
-<BaseLayout title="Works" description="Books, short stories, essays and anthology contributions by Eleanor Hart.">
+<BaseLayout title="Works" description={`Books, short stories, essays and anthology contributions by ${settings.authorName}.`} siteSettings={settings}>
   <header class="page-heading">
     <p class="eyebrow">The collected shelf</p>
     <h1>Works</h1>
@@ -30,7 +30,7 @@ const types = [...new Set(works.map((work) => work.publicationType))];
   </section>
 
   <div class="works-grid" data-works-grid>
-    {works.map((work) => <WorkCard work={work} />)}
+    {works.map((work) => <WorkCard work={work} authorName={settings.authorName} />)}
   </div>
   <div class="empty-results" data-empty-results hidden>
     <p>No works match those filters.</p>
