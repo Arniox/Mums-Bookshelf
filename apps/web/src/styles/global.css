@@ -116,6 +116,12 @@ a {
   text-decoration: none;
 }
 
+.site-header nav a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
 .site-header nav a:hover {
   color: var(--plum);
 }
@@ -1415,7 +1421,360 @@ fieldset {
   flex: 1;
 }
 
+/* The library room keeps the existing paper-and-plum character, but makes the
+   shelf the centre of the homepage. All decoration is CSS so it remains light. */
+.library-room {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(91, 48, 67, 0.035) 1px, transparent 1px) 0 0 /
+      4.5rem 100%,
+    radial-gradient(circle at 50% 10%, #fffaf0 0, #eee2d1 72%);
+  box-shadow: inset 0 -30px 80px rgba(64, 39, 24, 0.08);
+}
+
+.library-room::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(58, 34, 25, 0.08),
+    transparent 8%,
+    transparent 92%,
+    rgba(58, 34, 25, 0.08)
+  );
+}
+
+.library-intro {
+  position: relative;
+  width: min(1180px, calc(100% - 3rem));
+  margin-inline: auto;
+  padding: 4.5rem 0 2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 760px) 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.library-sign {
+  position: relative;
+  padding: clamp(2rem, 5vw, 4rem);
+  border: 1px solid rgba(85, 55, 38, 0.22);
+  background: rgba(250, 245, 235, 0.88);
+  box-shadow:
+    0 18px 35px rgba(65, 43, 28, 0.12),
+    inset 0 0 0 8px rgba(197, 155, 82, 0.09);
+}
+
+.library-sign::before,
+.library-sign::after {
+  content: "";
+  position: absolute;
+  top: -13px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 2px 3px rgba(40, 24, 15, 0.3);
+}
+
+.library-sign::before {
+  left: 18%;
+}
+.library-sign::after {
+  right: 18%;
+}
+
+.library-sign h1 {
+  max-width: 720px;
+  margin: 0.2rem 0 1.2rem;
+  font-size: clamp(3.4rem, 6.5vw, 6.2rem);
+  letter-spacing: -0.045em;
+}
+
+.library-sign h1 em {
+  color: var(--plum);
+}
+.library-sign .text-link {
+  display: inline-block;
+  margin-top: 1.5rem;
+}
+
+.room-whisper {
+  color: rgba(91, 48, 67, 0.82);
+  font: italic clamp(1.2rem, 2.5vw, 1.75rem)/1.35 var(--serif);
+  text-align: center;
+  transform: rotate(-4deg);
+}
+
+.library-room .bookshelf-wrap {
+  position: relative;
+  width: min(1440px, calc(100% - 2rem));
+  padding: 4rem 0 0;
+}
+
+.library-room .bookshelf-wrap::before {
+  display: none;
+}
+
+.library-room .bookshelf-wrap > .section-heading {
+  width: min(1180px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.shelf-instruction {
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  font: italic 1.08rem var(--serif);
+}
+
+.library-room .bookcase {
+  position: relative;
+  min-height: 380px;
+  padding: 7.2rem clamp(1rem, 4vw, 3.5rem) 0;
+  border-width: 18px;
+  border-bottom-width: 26px;
+  border-radius: 6px 6px 2px 2px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.07),
+      transparent 18%,
+      rgba(0, 0, 0, 0.12)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 180px,
+      rgba(34, 17, 9, 0.08) 181px 183px
+    ),
+    #6c4630;
+  box-shadow:
+    inset 0 0 36px rgba(20, 10, 4, 0.55),
+    0 30px 55px rgba(58, 38, 26, 0.28);
+}
+
+.featured-note {
+  position: absolute;
+  z-index: 5;
+  top: 1rem;
+  right: clamp(1rem, 5vw, 5rem);
+  width: min(250px, 42vw);
+  min-height: 110px;
+  padding: 1.2rem 1.35rem;
+  color: #4a3924;
+  background: #f3df8e;
+  box-shadow: 5px 8px 18px rgba(30, 16, 8, 0.34);
+  text-decoration: none;
+  transform: rotate(2.5deg);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.featured-note::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 42%;
+  width: 44px;
+  height: 19px;
+  background: rgba(244, 231, 190, 0.68);
+  transform: rotate(-5deg);
+}
+
+.featured-note:hover,
+.featured-note:focus-visible {
+  transform: rotate(0) translateY(-5px);
+  box-shadow: 8px 13px 24px rgba(30, 16, 8, 0.38);
+}
+
+.featured-note span,
+.featured-note small {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.featured-note strong {
+  display: block;
+  margin: 0.3rem 0 0.5rem;
+  font: 600 1.35rem/1.05 var(--serif);
+}
+
+.library-room .book-slot {
+  height: 255px;
+  padding-bottom: 19px;
+}
+
+.library-room .book {
+  width: calc(var(--book-width) * 1.18);
+  height: calc(var(--book-height) * 1.16);
+}
+
+.library-room .book:hover,
+.library-room .book:focus-visible,
+.library-room .book.is-opening {
+  transform: translateY(-24px) translateZ(45px) rotate(0deg) rotateY(-10deg);
+  filter: brightness(1.12) saturate(1.05);
+  box-shadow:
+    inset 5px 0 8px rgba(255, 255, 255, 0.1),
+    12px 18px 18px rgba(15, 8, 4, 0.42);
+}
+
+.flying-book {
+  position: fixed;
+  z-index: 200;
+  top: 45%;
+  left: 50%;
+  width: 62px;
+  height: 220px;
+  border: 2px solid rgba(26, 15, 10, 0.5);
+  border-radius: 5px 10px 10px 5px;
+  background: var(--flying-book-color);
+  box-shadow: 18px 25px 45px rgba(24, 12, 7, 0.5);
+  pointer-events: none;
+  animation: book-to-desk 650ms cubic-bezier(0.22, 0.78, 0.22, 1) both;
+}
+
+.flying-book::after {
+  content: "";
+  position: absolute;
+  inset: 4px 6px 4px 10px;
+  border: 1px solid rgba(222, 190, 119, 0.65);
+}
+
+@keyframes book-to-desk {
+  from {
+    opacity: 0.4;
+    transform: translate(-50%, -20%) scale(0.35) rotate(-8deg);
+  }
+  55% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -12%) scale(4.4, 2.1) rotateY(-62deg);
+  }
+}
+
+.writing-desk {
+  position: relative;
+  margin-top: -1px;
+  padding: 4.5rem max(1rem, calc((100% - 1180px) / 2)) 5rem;
+  border-top: 20px solid #4a2c1d;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.045), rgba(0, 0, 0, 0.12)),
+    repeating-linear-gradient(92deg, #76503a 0 95px, #6e4934 96px 99px);
+  box-shadow:
+    inset 0 8px 18px rgba(25, 11, 5, 0.42),
+    0 -12px 30px rgba(30, 15, 8, 0.22);
+}
+
+.desk-surface {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+  gap: clamp(2rem, 8vw, 8rem);
+  align-items: center;
+}
+
+.desk-plaque {
+  max-width: 650px;
+  margin: 0;
+  padding: 1.4rem 1.6rem;
+  border: 8px ridge #b38a4a;
+  border-left-width: 8px;
+  color: #efe2c7;
+  background: #3c2922;
+  box-shadow: 0 18px 28px rgba(24, 12, 7, 0.4);
+  transform: perspective(700px) rotateX(4deg) rotate(-1deg);
+}
+
+.desk-plaque .announcement-mark {
+  color: #3c2922;
+  background: var(--gold);
+}
+.desk-plaque strong + span {
+  color: #fff9ed;
+}
+
+.desk-card {
+  padding: 1.5rem;
+  background: #f5eedf;
+  box-shadow: 8px 12px 22px rgba(24, 12, 7, 0.34);
+  transform: rotate(1.5deg);
+}
+
+.desk-card p:not(.eyebrow) {
+  font: 1.08rem/1.45 var(--serif);
+}
+
+/* Story pages become the opened book brought down from the shelf. */
+.work-detail-header {
+  position: relative;
+  margin-top: 2rem;
+  padding: clamp(2.5rem, 6vw, 5rem);
+  gap: clamp(3rem, 7vw, 7rem);
+  border: 9px solid var(--plum-dark);
+  border-radius: 7px 12px 12px 7px;
+  background: linear-gradient(
+    90deg,
+    #f9f2e5 0 49.5%,
+    #d8cbb8 50%,
+    #fbf5e9 50.7% 100%
+  );
+  box-shadow:
+    -16px 22px 40px rgba(53, 35, 25, 0.17),
+    16px 22px 40px rgba(53, 35, 25, 0.2),
+    inset 0 0 35px rgba(88, 60, 39, 0.08);
+  animation: open-on-desk 520ms ease-out both;
+  transform-origin: center bottom;
+}
+
+.work-detail-header::before {
+  content: none;
+}
+
+@keyframes open-on-desk {
+  from {
+    opacity: 0;
+    transform: perspective(1200px) rotateX(12deg) scaleX(0.72);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(0) scaleX(1);
+  }
+}
+
+.work-detail-cover {
+  height: min(440px, 52vw);
+  transform: rotate(-1deg);
+  box-shadow: 8px 12px 22px rgba(45, 28, 18, 0.18);
+}
+
+.audio-button {
+  border-color: rgba(91, 48, 67, 0.32);
+}
+
 @media (max-width: 900px) {
+  .library-intro {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .room-whisper {
+    justify-self: end;
+  }
+  .desk-surface {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .desk-card {
+    max-width: 520px;
+  }
   .hero {
     grid-template-columns: 1fr;
     gap: 5rem;
@@ -1457,6 +1816,23 @@ fieldset {
   .site-header {
     min-height: 72px;
   }
+  .wordmark {
+    font-size: 1.35rem;
+  }
+  .library-intro {
+    width: calc(100% - 2rem);
+    padding: 3rem 0 1rem;
+  }
+  .library-sign {
+    padding: 2.25rem 1.4rem;
+  }
+  .library-sign h1 {
+    font-size: clamp(3rem, 15vw, 4.2rem);
+  }
+  .room-whisper {
+    margin-right: 0.6rem;
+    font-size: 1.15rem;
+  }
   .site-header nav {
     gap: 1rem;
   }
@@ -1481,6 +1857,13 @@ fieldset {
   .bookshelf-wrap {
     padding: 4rem 0;
   }
+  .library-room .bookshelf-wrap {
+    width: 100%;
+    padding: 3rem 0 0;
+  }
+  .library-room .bookshelf-wrap > .section-heading {
+    width: calc(100% - 2rem);
+  }
   .bookshelf-wrap::before {
     height: 38rem;
     margin-top: -4rem;
@@ -1489,8 +1872,35 @@ fieldset {
     padding: 1rem 0.7rem 0;
     border-width: 8px;
   }
+  .library-room .bookcase {
+    min-height: 340px;
+    padding: 7rem 0.6rem 0;
+    border-width: 9px;
+    border-bottom-width: 16px;
+  }
+  .featured-note {
+    right: 1rem;
+    width: min(220px, 66vw);
+  }
   .book-slot {
     height: 205px;
+  }
+  .library-room .book-slot {
+    height: 218px;
+    padding-bottom: 14px;
+  }
+  .library-room .book {
+    width: var(--book-width);
+    height: var(--book-height);
+  }
+  .writing-desk {
+    padding: 3.5rem 1rem 4rem;
+    border-top-width: 13px;
+  }
+  .desk-plaque {
+    padding: 1.1rem;
+    border-width: 6px;
+    transform: rotate(-0.7deg);
   }
   .accessible-library ul {
     grid-template-columns: 1fr;
@@ -1518,14 +1928,23 @@ fieldset {
     grid-template-columns: 1fr;
   }
   .work-detail-header {
-    padding: 2.5rem 0 4rem;
+    margin-top: 1.5rem;
+    padding: 1.2rem 1.2rem 3rem;
     grid-template-columns: 1fr;
+    gap: 2.5rem;
+    border-width: 6px;
+    background: #faf3e7;
   }
   .work-detail-cover {
-    height: 430px;
+    width: min(100%, 320px);
+    height: 410px;
+    margin-inline: auto;
   }
   .work-detail-copy h1 {
-    font-size: 3.7rem;
+    font-size: clamp(3rem, 16vw, 4.3rem);
+  }
+  .work-detail-copy .button-row .button {
+    width: 100%;
   }
   .story-content {
     font-size: 1.18rem;
@@ -1558,6 +1977,9 @@ fieldset {
     display: none;
   }
   .editor-dialog {
+    width: 100%;
+    max-height: 100dvh;
+    margin: 0;
     padding: 1.2rem;
   }
   .form-grid.two,
