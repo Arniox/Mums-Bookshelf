@@ -724,7 +724,6 @@ const authorInitials = settings.authorName
       status: "draft",
       contentVisibility: "external-only",
       genres: [],
-      tags: [],
     };
     originalStatus = String(defaults.status || "draft");
     Object.entries(defaults).forEach(([key, value]) =>
@@ -760,6 +759,7 @@ const authorInitials = settings.authorName
     } catch {
       // Browser storage is an optional recovery layer.
     }
+    updateVisibilityRequirements();
     updatePreview();
     dialog.showModal();
     (workForm.elements.namedItem("title") as HTMLInputElement).focus();
@@ -814,12 +814,35 @@ const authorInitials = settings.authorName
     .querySelector("[data-save-local]")
     ?.addEventListener("click", () => saveLocalDraft(true));
 
+  const updateVisibilityRequirements = () => {
+    const visibility = (
+      workForm.elements.namedItem("contentVisibility") as RadioNodeList
+    ).value;
+    const fullStory = workForm.elements.namedItem(
+      "storyContent",
+    ) as HTMLTextAreaElement;
+    const publicationUrl = workForm.elements.namedItem(
+      "primaryExternalUrl",
+    ) as HTMLInputElement;
+    fullStory.required = visibility === "full";
+    publicationUrl.required = visibility === "external-only";
+    document.querySelector<HTMLElement>("[data-full-warning]")!.hidden =
+      visibility !== "full";
+  };
+
   workForm
     .querySelectorAll<HTMLInputElement>('[name="contentVisibility"]')
-    .forEach((radio) => {
-      radio.addEventListener("change", () => {
-        document.querySelector<HTMLElement>("[data-full-warning]")!.hidden =
-          radio.value !== "full" || !radio.checked;
+    .forEach((radio) =>
+      radio.addEventListener("change", updateVisibilityRequirements),
+    );
+
+  workForm
+    .querySelectorAll<HTMLButtonElement>("[data-editor-action]")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        (
+          workForm.elements.namedItem("publishedAt") as HTMLInputElement
+        ).required = button.dataset.editorAction === "publish";
       });
     });
 
@@ -827,11 +850,8 @@ const authorInitials = settings.authorName
     const story = (
       workForm.elements.namedItem("storyContent") as HTMLTextAreaElement
     ).value;
-    const excerpt = (
-      workForm.elements.namedItem("excerpt") as HTMLTextAreaElement
-    ).value;
     document.querySelector<HTMLElement>("[data-markdown-preview]")!.innerHTML =
-      `<p>${escape(story || excerpt || "Your preview will appear here.")
+      `<p>${escape(story || "Your preview will appear here.")
         .replace(/\n\n/g, "</p><p>")
         .replace(/\n/g, "<br>")}</p>`;
   };
@@ -850,7 +870,6 @@ const authorInitials = settings.authorName
     const payload = {
       slug: String(formData.get("slug")),
       title: String(formData.get("title")),
-      subtitle: optional("subtitle"),
       status: action === "publish" ? "published" : "draft",
       publicationType: String(formData.get("publicationType")),
       publishedAt: date ? `${date}T00:00:00Z` : undefined,
@@ -858,32 +877,18 @@ const authorInitials = settings.authorName
         ? Number(formData.get("wordCount"))
         : undefined,
       blurb: String(formData.get("blurb")),
-      excerpt: optional("excerpt"),
       storyContent: optional("storyContent"),
-      authorNotes: optional("authorNotes"),
       contentVisibility: String(formData.get("contentVisibility")),
       publisherName: optional("publisherName"),
-      publicationName: optional("publicationName"),
       primaryExternalUrl: optional("primaryExternalUrl"),
       purchaseUrl: optional("purchaseUrl"),
       socialPostUrl: optional("socialPostUrl"),
       socialEmbedEnabled: formData.get("socialEmbedEnabled") === "on",
-      coverImageUrl: optional("coverImageUrl"),
-      coverImageAlt: optional("coverImageAlt"),
       genres: String(formData.get("genres") || "")
         .split(",")
         .map((value) => value.trim())
         .filter(Boolean),
-      tags: String(formData.get("tags") || "")
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean),
       featured: formData.get("featured") === "on",
-      displayOrder: optional("displayOrder")
-        ? Number(formData.get("displayOrder"))
-        : undefined,
-      seoTitle: optional("seoTitle"),
-      seoDescription: optional("seoDescription"),
     };
     if (
       action === "publish" &&
