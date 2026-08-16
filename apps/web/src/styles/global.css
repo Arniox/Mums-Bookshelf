@@ -1344,6 +1344,18 @@ textarea {
   display: grid;
   gap: 1.3rem;
 }
+.editor-form abbr,
+.required-note abbr {
+  border: 0;
+  color: #8a2638;
+  text-decoration: none;
+}
+.required-note {
+  margin: -0.8rem 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: right;
+}
 .editor-form.narrow {
   max-width: 720px;
 }
