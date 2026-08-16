@@ -28,6 +28,7 @@ CREATE TABLE works (
   social_post_url TEXT,
   social_provider TEXT,
   social_embed_enabled INTEGER NOT NULL DEFAULT 0,
+  work_image_url TEXT,
   genres_json TEXT NOT NULL DEFAULT '[]',
   featured INTEGER NOT NULL DEFAULT 0
 );
@@ -52,6 +53,7 @@ INSERT INTO works (
   social_post_url,
   social_provider,
   social_embed_enabled,
+  work_image_url,
   genres_json,
   featured
 )
@@ -80,6 +82,7 @@ SELECT
   social_post_url,
   social_provider,
   social_embed_enabled,
+  cover_image_url,
   genres_json,
   featured
 FROM works_legacy;
