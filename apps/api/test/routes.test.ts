@@ -308,6 +308,31 @@ describe("API routes", () => {
     ).toBe(true);
   });
 
+  it("rejects reader comments longer than 300 characters", async () => {
+    env.PUBLIC_COMMENTS_ENABLED = "true";
+    const response = await app.request(
+      "/api/v1/works/work-1/comments",
+      {
+        method: "POST",
+        headers: {
+          Origin: "https://allowed.example",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ body: "a".repeat(301) }),
+      },
+      env,
+    );
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: "validation_failed",
+        message: "Comments must be 300 characters or fewer.",
+      },
+    });
+    expect(database.statements).toHaveLength(0);
+  });
+
   it("dispatches the Pages workflow for an authenticated administrator", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       Response.json({
