@@ -1,5 +1,4 @@
 import { createInterface } from "node:readline/promises";
-import { stdin, stdout } from "node:process";
 import { hashPassword } from "../src/crypto";
 
 const username = process.argv[2];
@@ -16,7 +15,10 @@ if (!pepper || pepper.length < 32) {
   process.exit(1);
 }
 
-const reader = createInterface({ input: stdin, output: stdout });
+const reader = createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 const password = await reader.question("Password (input may be visible): ");
 const confirmation = await reader.question("Confirm password: ");
 reader.close();

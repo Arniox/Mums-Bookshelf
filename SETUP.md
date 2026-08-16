@@ -7,7 +7,7 @@ These instructions assume no previous development setup.
 Install:
 
 1. [Git](https://git-scm.com/downloads).
-2. [Node.js 22 LTS](https://nodejs.org/) (npm is included).
+2. [Node.js 24 LTS](https://nodejs.org/) (npm is included).
 3. A free [GitHub](https://github.com/) account.
 4. A [Cloudflare](https://dash.cloudflare.com/sign-up) account.
 
