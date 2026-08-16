@@ -115,14 +115,14 @@ PowerShell:
 
 ```powershell
 $env:PASSWORD_PEPPER = "the-same-password-pepper"
-npm run admin:create -- --username author
+npm run admin:create -- author
 Remove-Item Env:PASSWORD_PEPPER
 ```
 
 macOS/Linux:
 
 ```bash
-PASSWORD_PEPPER='the-same-password-pepper' npm run admin:create -- --username author
+PASSWORD_PEPPER='the-same-password-pepper' npm run admin:create -- author
 ```
 
 The command securely derives the password and prints one `wrangler d1 execute` command. Run that printed command. The plaintext password is never inserted into D1.
