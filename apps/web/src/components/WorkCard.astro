@@ -4,9 +4,10 @@ import FallbackCover from "./FallbackCover.astro";
 
 interface Props {
   work: Work;
+  authorName: string;
 }
 
-const { work } = Astro.props;
+const { work, authorName } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const date = work.publishedAt
   ? new Intl.DateTimeFormat("en-NZ", { year: "numeric", month: "long" }).format(new Date(work.publishedAt))
@@ -18,7 +19,7 @@ const date = work.publishedAt
     {work.coverImageUrl ? (
       <img src={work.coverImageUrl} alt={work.coverImageAlt || `Cover of ${work.title}`} loading="lazy" />
     ) : (
-      <FallbackCover title={work.title} seed={work.id} label={work.publicationType.replace("-", " ")} />
+      <FallbackCover title={work.title} seed={work.id} authorName={authorName} label={work.publicationType.replace("-", " ")} />
     )}
   </a>
   <div class="work-card-body">
@@ -30,4 +31,3 @@ const date = work.publishedAt
     </div>
   </div>
 </article>
-
