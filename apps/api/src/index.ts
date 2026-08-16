@@ -136,7 +136,17 @@ app.onError((error, context) => {
       422,
     );
   }
-  if (context.env?.ENVIRONMENT !== "production") console.error(error);
+  console.error(
+    JSON.stringify({
+      event: "unhandled_error",
+      requestId,
+      method: context.req.method,
+      path: new URL(context.req.url).pathname,
+      errorName: error instanceof Error ? error.name : "UnknownError",
+      errorMessage:
+        error instanceof Error ? error.message : "Unknown thrown value",
+    }),
+  );
   return context.json(
     {
       error: {
