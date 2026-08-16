@@ -1,11 +1,11 @@
 import rss from "@astrojs/rss";
-import { getPublicWorks } from "../lib/contentSource";
+import { getPublicSettings, getPublicWorks } from "../lib/contentSource";
 
 export async function GET(context) {
-  const works = await getPublicWorks();
+  const [settings, works] = await Promise.all([getPublicSettings(), getPublicWorks()]);
   return rss({
-    title: "Eleanor Hart — Latest works",
-    description: "New stories, books and essays by Eleanor Hart.",
+    title: `${settings.authorName} — Latest works`,
+    description: `New stories, books and essays by ${settings.authorName}.`,
     site: context.site,
     trailingSlash: true,
     items: works.map((work) => ({
