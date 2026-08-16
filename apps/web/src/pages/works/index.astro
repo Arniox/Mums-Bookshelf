@@ -3,15 +3,25 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import WorkCard from "../../components/WorkCard.astro";
 import { getPublicSettings, getPublicWorks } from "../../lib/contentSource";
 
-const [settings, works] = await Promise.all([getPublicSettings(), getPublicWorks()]);
+const [settings, works] = await Promise.all([
+  getPublicSettings(),
+  getPublicWorks(),
+]);
 const types = [...new Set(works.map((work) => work.publicationType))];
 ---
 
-<BaseLayout title="Works" description={`Books, short stories, essays and anthology contributions by ${settings.authorName}.`} siteSettings={settings}>
+<BaseLayout
+  title="Works"
+  description={`Books, short stories, essays and anthology contributions by ${settings.authorName}.`}
+  siteSettings={settings}
+>
   <header class="page-heading">
     <p class="eyebrow">The collected shelf</p>
     <h1>Works</h1>
-    <p>Browse published stories, books, magazine pieces and anthology contributions.</p>
+    <p>
+      Browse published stories, books, magazine pieces and anthology
+      contributions.
+    </p>
   </header>
 
   <section class="library-tools" aria-label="Search and filter works">
@@ -23,18 +33,30 @@ const types = [...new Set(works.map((work) => work.publicationType))];
       <span>Publication type</span>
       <select data-work-filter>
         <option value="">All types</option>
-        {types.map((type) => <option value={type}>{type.replace("-", " ")}</option>)}
+        {
+          types.map((type) => (
+            <option value={type}>{type.replace("-", " ")}</option>
+          ))
+        }
       </select>
     </label>
-    <p class="result-count" aria-live="polite" data-result-count>{works.length} works</p>
+    <p class="result-count" aria-live="polite" data-result-count>
+      {works.length} works
+    </p>
   </section>
 
   <div class="works-grid" data-works-grid>
-    {works.map((work) => <WorkCard work={work} authorName={settings.authorName} />)}
+    {
+      works.map((work) => (
+        <WorkCard work={work} authorName={settings.authorName} />
+      ))
+    }
   </div>
   <div class="empty-results" data-empty-results hidden>
     <p>No works match those filters.</p>
-    <button class="button secondary" type="button" data-clear-filters>Clear filters</button>
+    <button class="button secondary" type="button" data-clear-filters
+      >Clear filters</button
+    >
   </div>
 </BaseLayout>
 
@@ -42,11 +64,14 @@ const types = [...new Set(works.map((work) => work.publicationType))];
   import { featuredFirstShuffle } from "../../lib/randomiseWorks";
 
   const search = document.querySelector<HTMLInputElement>("[data-work-search]");
-  const filter = document.querySelector<HTMLSelectElement>("[data-work-filter]");
+  const filter =
+    document.querySelector<HTMLSelectElement>("[data-work-filter]");
   const cards = [...document.querySelectorAll<HTMLElement>("[data-work-card]")];
   const count = document.querySelector<HTMLElement>("[data-result-count]");
   const empty = document.querySelector<HTMLElement>("[data-empty-results]");
-  const clear = document.querySelector<HTMLButtonElement>("[data-clear-filters]");
+  const clear = document.querySelector<HTMLButtonElement>(
+    "[data-clear-filters]",
+  );
   const grid = document.querySelector<HTMLElement>("[data-works-grid]");
 
   featuredFirstShuffle(
@@ -60,11 +85,14 @@ const types = [...new Set(works.map((work) => work.publicationType))];
     let visible = 0;
     cards.forEach((card) => {
       const haystack = `${card.dataset.title} ${card.dataset.genres}`;
-      const show = (!query || haystack.includes(query)) && (!type || card.dataset.type === type);
+      const show =
+        (!query || haystack.includes(query)) &&
+        (!type || card.dataset.type === type);
       card.hidden = !show;
       if (show) visible += 1;
     });
-    if (count) count.textContent = `${visible} ${visible === 1 ? "work" : "works"}`;
+    if (count)
+      count.textContent = `${visible} ${visible === 1 ? "work" : "works"}`;
     if (empty) empty.hidden = visible !== 0;
   };
   search?.addEventListener("input", update);
