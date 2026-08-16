@@ -116,8 +116,11 @@ npx wrangler secret put TURNSTILE_SECRET_KEY --config apps/api/wrangler.jsonc
 
 ```bash
 npm run build
+npm run db:migrate:remote
 npm run deploy:api
 ```
+
+Always apply pending D1 migrations before deploying an API version that reads new fields. The public website build reads the live API and will stop rather than publish stale or demonstration content when that API is unhealthy.
 
 Wrangler prints a URL such as `https://author-library-api.ACCOUNT.workers.dev`. Test:
 

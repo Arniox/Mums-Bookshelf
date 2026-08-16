@@ -21,6 +21,7 @@
     "test:coverage": "npm run build -w @mums-bookshelf/shared && npm run test:coverage --workspaces --if-present",
     "admin:create": "npm run admin:create -w @mums-bookshelf/api --",
     "db:migrate:local": "npm run db:migrate:local -w @mums-bookshelf/api",
+    "db:migrate:remote": "npm run db:migrate:remote -w @mums-bookshelf/api",
     "db:seed:local": "npm run db:seed:local -w @mums-bookshelf/api",
     "deploy:api": "npm run deploy -w @mums-bookshelf/api",
     "deploy:web": "npm run build -w @mums-bookshelf/web",
