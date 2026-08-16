@@ -497,15 +497,35 @@ const authorInitials = settings.authorName
     studio.hidden = false;
   };
 
+  const showLogin = (message = "") => {
+    accessToken = "";
+    loginPanel.hidden = false;
+    studio.hidden = true;
+    loginStatus.textContent = message;
+  };
+
+  const openStudio = async (session: { accessToken: string }) => {
+    accessToken = session.accessToken;
+    showStudio();
+    deploymentStatus.textContent = "Loading the bookshelf…";
+    try {
+      await loadDashboard();
+      deploymentStatus.textContent = "";
+    } catch (error) {
+      deploymentStatus.textContent = `You are signed in, but the bookshelf could not be loaded. ${(error as Error).message} Refresh the page to try again.`;
+    }
+  };
+
   const refreshSession = async () => {
     try {
       const session = await request("/api/v1/auth/refresh", { method: "POST" });
-      accessToken = session.accessToken;
-      showStudio();
-      await loadDashboard();
-    } catch {
-      loginPanel.hidden = false;
-      studio.hidden = true;
+      await openStudio(session);
+    } catch (error) {
+      showLogin(
+        (error as Error).message === "Session is invalid or expired."
+          ? ""
+          : `The author studio could not be reached. ${(error as Error).message}`,
+      );
     }
   };
 
@@ -522,10 +542,8 @@ const authorInitials = settings.authorName
           method: "POST",
           body: JSON.stringify(data),
         });
-        accessToken = session.accessToken;
         loginStatus.textContent = "";
-        showStudio();
-        await loadDashboard();
+        await openStudio(session);
       } catch (error) {
         loginStatus.textContent = (error as Error).message;
       }

@@ -30,7 +30,11 @@ const authorInitials = authorName
   .toUpperCase();
 const pageTitle = title || `${authorName} — Author`;
 const pageDescription = description || settings.introduction;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+const canonicalPath =
+  Astro.url.pathname.endsWith("/") || /\.[^/]+$/.test(Astro.url.pathname)
+    ? Astro.url.pathname
+    : `${Astro.url.pathname}/`;
+const canonical = new URL(canonicalPath, Astro.site);
 const fullTitle = pageTitle.includes(authorName)
   ? pageTitle
   : `${pageTitle} — ${authorName}`;

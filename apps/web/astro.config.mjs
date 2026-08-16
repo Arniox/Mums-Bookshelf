@@ -9,7 +9,7 @@ export default defineConfig({
   site,
   base,
   output: "static",
-  trailingSlash: "always",
+  trailingSlash: "ignore",
   build: {
     assets: "_assets",
   },
