@@ -341,7 +341,7 @@ const authorInitials = settings.authorName
         </p>
       </fieldset>
 
-      <div class="form-grid two">
+      <div class="form-grid two link-fields">
         <label
           ><span
             >Publisher <small>Include the publication name here too</small
@@ -350,28 +350,42 @@ const authorInitials = settings.authorName
         >
         <label
           ><span
-            >Publication URL <abbr
-              title="publication or audio is required for Link Only">*</abbr
-            ><small>Publication or audio is required for Link Only</small></span
+            >Publication URL <abbr title="required for Link Only">*</abbr><small
+              class="field-help"
+              >The original post from the publication that published your story.
+              Required when using Link Only.</small
+            ></span
           ><input name="primaryExternalUrl" type="url" /></label
         >
         <label
-          ><span>Audio URL <small>Podcast or audiobook</small></span><input
-            name="audioUrl"
-            type="url"
-          /></label
+          ><span
+            >Audio URL <small class="field-help"
+              >Optional. A link to a podcast, audiobook or other audio version,
+              if one has been made.</small
+            ></span
+          ><input name="audioUrl" type="url" /></label
         >
         <label
-          ><span>Purchase URL</span><input
-            name="purchaseUrl"
-            type="url"
-          /></label
+          ><span
+            >Purchase URL <small class="field-help"
+              >Optional. Where readers can buy the physical book or purchase a
+              subscription to access the story. It is okay if this is the same
+              as the Publication URL.</small
+            ></span
+          ><input name="purchaseUrl" type="url" /><small
+            class="matching-url-note"
+            data-matching-url-note
+            hidden
+            >These URLs match. Visitors will see one “View this work” button.</small
+          ></label
         >
         <label
-          ><span>Social post URL</span><input
-            name="socialPostUrl"
-            type="url"
-          /></label
+          ><span
+            >Social media post URL <small class="field-help"
+              >Optional. A link to your own social media post announcing that
+              the story was published.</small
+            ></span
+          ><input name="socialPostUrl" type="url" /></label
         >
         <label class="checkbox"
           ><input name="socialEmbedEnabled" type="checkbox" /><span
@@ -439,6 +453,7 @@ const authorInitials = settings.authorName
 </BaseLayout>
 
 <script>
+  import { areSameExternalUrls } from "@mums-bookshelf/shared";
   import {
     localWorkDraftKey,
     parseLocalWorkDraft,
@@ -893,14 +908,17 @@ const authorInitials = settings.authorName
     const audioUrl = workForm.elements.namedItem(
       "audioUrl",
     ) as HTMLInputElement;
+    const purchaseUrl = workForm.elements.namedItem(
+      "purchaseUrl",
+    ) as HTMLInputElement;
     fullStory.required = visibility === "full";
     fullStory.closest<HTMLElement>("[data-full-story-field]")!.hidden =
       visibility !== "full";
     const linkOnly = visibility === "external-only";
-    const hasAudio = Boolean(audioUrl.value.trim());
-    const hasPublication = Boolean(publicationUrl.value.trim());
-    publicationUrl.required = linkOnly && !hasAudio;
-    audioUrl.required = linkOnly && !hasPublication;
+    publicationUrl.required = linkOnly;
+    audioUrl.required = false;
+    document.querySelector<HTMLElement>("[data-matching-url-note]")!.hidden =
+      !areSameExternalUrls(publicationUrl.value, purchaseUrl.value);
     document.querySelector<HTMLElement>("[data-full-warning]")!.hidden =
       visibility !== "full";
   };

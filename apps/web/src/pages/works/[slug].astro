@@ -1,5 +1,5 @@
 ---
-import { sanitiseMarkdown } from "@mums-bookshelf/shared";
+import { areSameExternalUrls, sanitiseMarkdown } from "@mums-bookshelf/shared";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Comments from "../../components/Comments.astro";
 import FallbackCover from "../../components/FallbackCover.astro";
@@ -34,6 +34,10 @@ const related = works
   )
   .slice(0, 2);
 const storyHtml = work.storyContent ? sanitiseMarkdown(work.storyContent) : "";
+const publicationIsPurchase = areSameExternalUrls(
+  work.primaryExternalUrl,
+  work.purchaseUrl,
+);
 const base = import.meta.env.BASE_URL;
 const schemaType =
   work.publicationType === "book"
@@ -129,12 +133,13 @@ const structuredData = {
                 href={work.primaryExternalUrl}
                 rel="noopener noreferrer"
               >
-                View publication ↗
+                {publicationIsPurchase ? "View this work" : "View publication"}{" "}
+                ↗
               </a>
             )
           }
           {
-            work.purchaseUrl && (
+            work.purchaseUrl && !publicationIsPurchase && (
               <a
                 class="button secondary"
                 href={work.purchaseUrl}
