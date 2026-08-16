@@ -5,11 +5,9 @@ INSERT OR REPLACE INTO site_settings (
   1,
   'Denise Diehl',
   'Writes stories about the weird and wonderful.',
-  'Denise Diehl spent over 40 years working in laboratory science. 
-  After retiring with her husband to a small town in New Zealand, she wrote her first novel and short stories — a fun new adventure to match the latest decade of her life.
-  Her writing leans towards the speulative and weird think twilight zone. Several short stories have been published in various magazines including Frivolous Comma, Promise Protagnosits, Starspun Lit, and 101 Words.',
-  'Still Writing Polishing up my first novel - Castlands: The Secret of the Blood Key. Watch this Space.',
-  '{"instagram":"https://www.instagram.com/diehl7276/","facebook":"https://www.facebook.com/denise.diehl.946"}',
+  'Denise Diehl spent over 40 years working in laboratory science. After retiring with her husband to a small town in New Zealand, she wrote her first novel and short stories — a fun new adventure to match the latest decade of her life. Her writing leans towards the speculative and weird, think twilight zone. Several short stories have been published in various magazines including Frivolous Comma, Promised Protagonists, Starspun Lit, and 101 Words.',
+  'Still Writing and Polishing up my First Novel - Castlands: The Secret of the Blood Key. Watch this space.',
+  '{"Instagram":"https://www.instagram.com/diehl7276/","Facebook":"https://www.facebook.com/denise.diehl.946"}',
   '{"accent":"plum","shelf":"walnut"}',
   'mailto:mumdiehl@gmail.com+bookshelf',
   '2026-01-12T09:00:00Z'
