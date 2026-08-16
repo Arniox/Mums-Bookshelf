@@ -182,24 +182,46 @@ blockquote {
 }
 
 .announcement {
-  display: inline-flex;
-  gap: 0.6rem;
-  align-items: center;
-  margin: 0 0 2rem;
-  padding: 0.4rem 0.8rem;
-  border: 1px solid rgba(91, 48, 67, 0.24);
-  border-radius: 999px;
+  position: relative;
+  max-width: 38rem;
+  margin: 0 0 2.5rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid rgba(91, 48, 67, 0.2);
+  border-left: 4px solid var(--gold);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem;
+  align-items: start;
   color: var(--plum);
-  font-size: 0.78rem;
+  background: rgba(255, 253, 247, 0.72);
+  box-shadow: 0 10px 30px rgba(62, 43, 35, 0.07);
 }
 
-.announcement span {
-  padding: 0.08rem 0.4rem;
-  border-radius: 999px;
-  color: white;
+.announcement-mark {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--paper);
   background: var(--plum);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
+}
+
+.announcement > span:last-child {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.announcement strong {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.announcement strong + span {
+  color: var(--ink);
+  font: 1.03rem/1.45 var(--serif);
 }
 
 .button-row {
