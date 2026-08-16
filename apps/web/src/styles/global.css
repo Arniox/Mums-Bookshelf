@@ -1002,6 +1002,21 @@ textarea {
   background: var(--plum);
 }
 
+.author-portrait {
+  aspect-ratio: 4/5;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--plum);
+}
+
+.author-portrait img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
 .portrait-placeholder span {
   font: 5rem var(--serif);
 }
