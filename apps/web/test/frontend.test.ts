@@ -2,10 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getBookAppearance } from "@mums-bookshelf/shared";
 import { works } from "../src/data/sample";
 import { matchesWork } from "../src/lib/filterWorks";
-import {
-  localWorkDraftKey,
-  parseLocalWorkDraft,
-} from "../src/lib/localDraft";
+import { localWorkDraftKey, parseLocalWorkDraft } from "../src/lib/localDraft";
 
 describe("public library", () => {
   it("renders a populated public shelf without drafts", () => {

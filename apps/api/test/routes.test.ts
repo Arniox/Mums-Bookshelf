@@ -345,7 +345,7 @@ describe("API routes", () => {
   });
 
   it("reports when automatic Pages deployment is not configured", async () => {
-    env.GITHUB_PAGES_DEPLOY_TOKEN = undefined;
+    delete env.GITHUB_PAGES_DEPLOY_TOKEN;
     const fetchMock = vi.spyOn(globalThis, "fetch");
     const accessToken = await activeAccessToken(database, env);
     const response = await app.request(
