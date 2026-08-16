@@ -10,9 +10,7 @@ export function matchesWork(
   publicationType: string,
 ): boolean {
   const normalisedQuery = query.trim().toLowerCase();
-  const haystack = [work.title, ...work.genres]
-    .join(" ")
-    .toLowerCase();
+  const haystack = [work.title, ...work.genres].join(" ").toLowerCase();
   return (
     (!normalisedQuery || haystack.includes(normalisedQuery)) &&
     (!publicationType || work.publicationType === publicationType)
