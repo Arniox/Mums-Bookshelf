@@ -20,7 +20,7 @@ const personSchema = {
 ---
 
 <BaseLayout>
-  <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(personSchema)} />
   <section class="hero">
     <div class="hero-copy">
       {settings.announcement && <p class="announcement"><span>New</span> {settings.announcement.replace("New story: ", "")}</p>}

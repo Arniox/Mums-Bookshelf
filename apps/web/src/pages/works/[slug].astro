@@ -38,7 +38,7 @@ const structuredData = {
 ---
 
 <BaseLayout title={work.seoTitle || work.title} description={work.seoDescription || work.blurb}>
-  <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   <article class="work-detail">
     <a class="back-link" href={`${base}works/`}>← All works</a>
     <header class="work-detail-header">
@@ -117,7 +117,10 @@ const structuredData = {
   const share = document.querySelector<HTMLButtonElement>("[data-share]");
   const status = document.querySelector<HTMLElement>("[data-share-status]");
   share?.addEventListener("click", async () => {
-    const data = { title: share.dataset.title, url: window.location.href };
+    const data = {
+      title: share.dataset.title || "Eleanor Hart",
+      url: window.location.href,
+    };
     try {
       if (navigator.share) await navigator.share(data);
       else {

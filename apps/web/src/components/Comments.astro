@@ -71,7 +71,7 @@ const { workId } = Astro.props;
 
     section.querySelector<HTMLFormElement>("[data-comment-form]")?.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const form = event.currentTarget;
+      const form = event.currentTarget as HTMLFormElement;
       const data = Object.fromEntries(new FormData(form));
       status.textContent = "Sending…";
       try {
@@ -107,4 +107,3 @@ const { workId } = Astro.props;
   .comments-section .button { justify-self: start; }
   .honeypot { position: absolute; left: -9999px; }
 </style>
-
