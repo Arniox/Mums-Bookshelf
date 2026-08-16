@@ -19,33 +19,47 @@ const personSchema = {
 };
 ---
 
-<BaseLayout>
+<BaseLayout siteSettings={settings}>
   <script is:inline type="application/ld+json" set:html={JSON.stringify(personSchema)} />
   <section class="hero">
     <div class="hero-copy">
-      {settings.announcement && <p class="announcement"><span>New</span> {settings.announcement.replace("New story: ", "")}</p>}
+      {settings.announcement && <p class="announcement">{settings.announcement}</p>}
       <p class="eyebrow">Fiction · Essays · Small observations</p>
       <h1>Stories for the<br /><em>quietly curious.</em></h1>
       <p class="hero-intro">{settings.introduction}</p>
       <div class="button-row">
         <a class="button primary" href={`${base}works/`}>Explore the works <span aria-hidden="true">→</span></a>
-        <a class="button secondary" href={`${base}about/`}>About Eleanor</a>
+        <a class="button secondary" href={`${base}about/`}>About {settings.authorName.split(/\s+/)[0]}</a>
       </div>
     </div>
-    <div class="hero-feature" aria-label="Featured work">
-      <div class="paper-stack">
-        <article>
-          <p class="eyebrow">Featured reading</p>
-          <span class="ornament">✦</span>
-          <h2>{featured[1]?.title || featured[0]?.title}</h2>
-          <p>{featured[1]?.blurb || featured[0]?.blurb}</p>
-          <a href={`${base}works/${featured[1]?.slug || featured[0]?.slug}/`}>
-            Read the story <span aria-hidden="true">→</span>
-          </a>
-        </article>
+    {featured.length > 0 ? (
+      <div class="hero-feature" aria-label="Featured work">
+        <div class="paper-stack">
+          <article>
+            <p class="eyebrow">Featured reading</p>
+            <span class="ornament">✦</span>
+            <h2>{featured[1]?.title || featured[0]?.title}</h2>
+            <p>{featured[1]?.blurb || featured[0]?.blurb}</p>
+            <a href={`${base}works/${featured[1]?.slug || featured[0]?.slug}/`}>
+              Read the story <span aria-hidden="true">→</span>
+            </a>
+          </article>
+        </div>
+        <p class="hand-note" aria-hidden="true">a good place to begin ↗</p>
       </div>
-      <p class="hand-note" aria-hidden="true">a good place to begin ↗</p>
-    </div>
+    ) : (
+      <div class="hero-feature" aria-label="Bookshelf coming soon">
+        <div class="paper-stack">
+          <article>
+            <p class="eyebrow">From the writing desk</p>
+            <span class="ornament">✦</span>
+            <h2>The shelf is being prepared</h2>
+            <p>Books and stories will appear here as they are published.</p>
+            <a href={`${base}about/`}>Meet the author <span aria-hidden="true">→</span></a>
+          </article>
+        </div>
+      </div>
+    )}
   </section>
 
   <BookShelf works={works} />
@@ -59,13 +73,13 @@ const personSchema = {
       <a class="text-link" href={`${base}works/`}>View all works <span aria-hidden="true">→</span></a>
     </div>
     <div class="recent-grid">
-      {recent.map((work) => <WorkCard work={work} />)}
+      {recent.map((work) => <WorkCard work={work} authorName={settings.authorName} />)}
     </div>
   </section>
 
   <section class="closing-note">
     <span aria-hidden="true">“</span>
-    <blockquote>Every story is a door left slightly open.</blockquote>
-    <p>— Eleanor Hart</p>
+    <blockquote>{settings.introduction}</blockquote>
+    <p>— {settings.authorName}</p>
   </section>
 </BaseLayout>
