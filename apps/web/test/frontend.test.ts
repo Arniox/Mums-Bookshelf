@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { getBookAppearance } from "@mums-bookshelf/shared";
 import { works } from "../src/data/sample";
 import { matchesWork } from "../src/lib/filterWorks";
+import {
+  localWorkDraftKey,
+  parseLocalWorkDraft,
+} from "../src/lib/localDraft";
 
 describe("public library", () => {
   it("renders a populated public shelf without drafts", () => {
@@ -37,5 +41,22 @@ describe("public library", () => {
     expect(getBookAppearance(works[0]!.id)).toEqual(
       getBookAppearance(works[0]!.id),
     );
+  });
+
+  it("validates local editor drafts before restoring them", () => {
+    expect(localWorkDraftKey("work-1")).toBe(
+      "mums-bookshelf:work-draft:work-1",
+    );
+    expect(
+      parseLocalWorkDraft(
+        JSON.stringify({
+          version: 1,
+          savedAt: "2026-08-16T00:00:00.000Z",
+          fields: { title: "A draft", featured: false },
+        }),
+      ),
+    ).toMatchObject({ fields: { title: "A draft" } });
+    expect(parseLocalWorkDraft("not json")).toBeNull();
+    expect(parseLocalWorkDraft(JSON.stringify({ version: 2 }))).toBeNull();
   });
 });

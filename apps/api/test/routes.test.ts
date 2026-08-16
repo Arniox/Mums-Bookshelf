@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { app } from "../src/index";
 import { createAccessToken, hashPassword } from "../src/crypto";
 import type { Bindings } from "../src/types";
@@ -67,6 +67,10 @@ function bindings(database: FakeDatabase): Bindings {
     JWT_SIGNING_SECRET: "jwt-secret-that-is-long-enough-for-tests",
     PASSWORD_PEPPER: "password-pepper-that-is-long-enough",
     IP_HASH_SECRET: "ip-hash-secret-that-is-long-enough",
+    GITHUB_PAGES_DEPLOY_TOKEN: "github-token-for-tests",
+    GITHUB_REPOSITORY: "Arniox/Mums-Bookshelf",
+    GITHUB_PAGES_WORKFLOW: "deploy-pages.yml",
+    GITHUB_DEFAULT_BRANCH: "main",
     ENVIRONMENT: "test",
     PUBLIC_COMMENTS_ENABLED: "false",
   };
@@ -77,6 +81,7 @@ describe("API routes", () => {
   let env: Bindings;
 
   beforeEach(() => {
+    vi.restoreAllMocks();
     database = new FakeDatabase();
     env = bindings(database);
   });
@@ -301,6 +306,65 @@ describe("API routes", () => {
         statement.sql.includes("UPDATE comments SET moderation_status"),
       ),
     ).toBe(true);
+  });
+
+  it("dispatches the Pages workflow for an authenticated administrator", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      Response.json({
+        workflow_run_id: 123,
+        html_url: "https://github.com/Arniox/Mums-Bookshelf/actions/runs/123",
+      }),
+    );
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/deployments/pages",
+      {
+        method: "POST",
+        headers: {
+          Origin: "https://allowed.example",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      data: {
+        queued: true,
+        runId: 123,
+      },
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.github.com/repos/Arniox/Mums-Bookshelf/actions/workflows/deploy-pages.yml/dispatches",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ ref: "main" }),
+      }),
+    );
+  });
+
+  it("reports when automatic Pages deployment is not configured", async () => {
+    env.GITHUB_PAGES_DEPLOY_TOKEN = undefined;
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/deployments/pages",
+      {
+        method: "POST",
+        headers: {
+          Origin: "https://allowed.example",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+      env,
+    );
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      error: { code: "deployment_not_configured" },
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 

@@ -8,6 +8,10 @@ export interface Bindings {
   PASSWORD_PEPPER: string;
   IP_HASH_SECRET: string;
   TURNSTILE_SECRET_KEY?: string;
+  GITHUB_PAGES_DEPLOY_TOKEN?: string;
+  GITHUB_REPOSITORY: string;
+  GITHUB_PAGES_WORKFLOW: string;
+  GITHUB_DEFAULT_BRANCH: string;
   ENVIRONMENT: string;
   PUBLIC_COMMENTS_ENABLED: string;
 }

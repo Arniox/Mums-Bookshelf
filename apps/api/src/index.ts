@@ -11,6 +11,7 @@ import {
   moderateComment,
 } from "./comments";
 import { exportData } from "./export";
+import { triggerPagesDeployment } from "./deployments";
 import {
   ApiError,
   corsMiddleware,
@@ -102,6 +103,7 @@ app.get("/api/v1/admin/comments", listAdminComments);
 app.patch("/api/v1/admin/comments/:id", moderateComment);
 app.delete("/api/v1/admin/comments/:id", deleteComment);
 app.get("/api/v1/admin/export", exportData);
+app.post("/api/v1/admin/deployments/pages", triggerPagesDeployment);
 
 app.notFound((context) =>
   context.json(
