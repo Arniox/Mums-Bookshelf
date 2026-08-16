@@ -31,7 +31,11 @@ export function isAllowedExternalUrl(value: string): boolean {
 }
 
 export function sanitiseMarkdown(markdown: string): string {
-  const raw = marked.parse(markdown, {
+  const protocolSafeMarkdown = markdown.replace(
+    /\b(?:javascript|vbscript|data):/giu,
+    "",
+  );
+  const raw = marked.parse(protocolSafeMarkdown, {
     async: false,
     gfm: true,
     breaks: false,

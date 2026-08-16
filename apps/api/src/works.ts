@@ -4,7 +4,6 @@ import {
   slugify,
   workInputSchema,
   workPatchSchema,
-  type Work,
 } from "@mums-bookshelf/shared";
 import type { Context } from "hono";
 import { rowToWork, workColumns } from "./db";

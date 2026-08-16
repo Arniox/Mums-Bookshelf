@@ -41,6 +41,7 @@ app.use("*", async (context, next) => {
 app.use("*", secureHeaders());
 app.use("/api/*", corsMiddleware);
 app.use("/api/v1/auth/*", async (context, next) => {
+  context.header("Cache-Control", "no-store, private");
   if (context.req.method === "POST")
     return requireAllowedMutationOrigin(context, next);
   return next();
