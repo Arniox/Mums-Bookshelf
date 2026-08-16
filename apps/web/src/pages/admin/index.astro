@@ -1,11 +1,21 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublicSettings } from "../../lib/contentSource";
+
+const settings = await getPublicSettings();
+const authorInitials = settings.authorName
+  .split(/\s+/)
+  .map((name) => name[0])
+  .filter(Boolean)
+  .slice(0, 2)
+  .join("")
+  .toUpperCase();
 ---
 
-<BaseLayout title="Author studio" description="Private editorial workspace." noindex>
+<BaseLayout title="Author studio" description="Private editorial workspace." siteSettings={settings} noindex>
   <div class="admin-shell" data-admin-app data-api={__API_BASE_URL__}>
     <section class="login-panel" data-login-panel aria-labelledby="login-title">
-      <div class="login-mark" aria-hidden="true">EH</div>
+      <div class="login-mark" aria-hidden="true">{authorInitials}</div>
       <p class="eyebrow">Private editorial space</p>
       <h1 id="login-title">Author studio</h1>
       <p>Sign in to manage the bookshelf, stories and reader comments.</p>
@@ -26,7 +36,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     <section class="admin-studio" data-admin-studio hidden>
       <header class="admin-header">
         <div>
-          <p class="eyebrow">Eleanor Hart</p>
+          <p class="eyebrow">{settings.authorName}</p>
           <h1>Author studio</h1>
         </div>
         <div class="button-row">
