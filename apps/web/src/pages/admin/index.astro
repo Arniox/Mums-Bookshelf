@@ -74,7 +74,7 @@ const authorInitials = settings.authorName
         >
         <button type="button" data-tab="works">Works</button>
         <button type="button" data-tab="comments">Comments</button>
-        <button type="button" data-tab="settings">Site settings</button>
+        <button type="button" data-tab="settings">Author &amp; website</button>
       </nav>
 
       <div data-panel="dashboard">
@@ -128,52 +128,97 @@ const authorInitials = settings.authorName
 
       <div data-panel="settings" hidden>
         <div class="dashboard-heading">
-          <div><p class="eyebrow">Public details</p><h2>Site settings</h2></div>
+          <div>
+            <p class="eyebrow">Public details</p>
+            <h2>Author &amp; website</h2>
+            <p class="settings-intro">
+              Update the words, photo, announcement and links visitors see.
+              Saving automatically rebuilds the public website.
+            </p>
+          </div>
         </div>
-        <form class="editor-form narrow" data-settings-form>
-          <label
-            ><span>Author name</span><input
-              name="authorName"
-              required
-              maxlength="160"
-            /></label
-          >
-          <label
-            ><span>Introduction</span><textarea
-              name="introduction"
-              rows="3"
-              maxlength="2000"></textarea></label
-          >
-          <label
-            ><span>Biography <small>Markdown supported</small></span><textarea
-              name="biography"
-              rows="10"></textarea></label
-          >
-          <label
-            ><span>Profile image URL</span><input
-              name="profileImageUrl"
-              type="url"
-            /></label
-          >
-          <label
-            ><span>Announcement</span><input
-              name="announcement"
-              maxlength="500"
-            /></label
-          >
-          <label
-            ><span>Contact URL</span><input
-              name="contactLink"
-              type="url"
-            /></label
-          >
-          <label
-            ><span
-              >Social links <small>One per line: Label: https://…</small></span
-            ><textarea name="socialLinks" rows="5"></textarea></label
-          >
-          <button class="button primary" type="submit">Save settings</button>
-          <p class="form-status" data-settings-status aria-live="polite"></p>
+        <form class="settings-form" data-settings-form>
+          <section class="settings-card" aria-labelledby="author-profile-title">
+            <div class="settings-card-heading">
+              <div>
+                <p class="eyebrow">Identity</p>
+                <h3 id="author-profile-title">Author profile</h3>
+              </div>
+              <img
+                class="settings-profile-preview"
+                data-profile-preview
+                alt="Current author profile preview"
+                hidden
+              />
+            </div>
+            <label>
+              <span>Author name</span>
+              <input name="authorName" required maxlength="160" />
+            </label>
+            <label>
+              <span>Homepage introduction <small>A short author blurb</small></span>
+              <textarea
+                name="introduction"
+                rows="3"
+                maxlength="2000"></textarea>
+            </label>
+            <label>
+              <span>Full biography <small>Shown on the About page</small></span>
+              <textarea name="biography" rows="10"></textarea>
+            </label>
+            <label>
+              <span>Profile image URL</span>
+              <input name="profileImageUrl" type="url" />
+            </label>
+          </section>
+
+          <section class="settings-card" aria-labelledby="announcement-title">
+            <p class="eyebrow">Homepage</p>
+            <h3 id="announcement-title">Announcement</h3>
+            <p class="settings-help">
+              Use this for current news, a forthcoming book, an event or a new
+              publication. Leave it blank to hide the announcement.
+            </p>
+            <label>
+              <span>Announcement text</span>
+              <textarea
+                name="announcement"
+                rows="4"
+                maxlength="500"
+                aria-describedby="announcement-count"></textarea>
+              <small id="announcement-count" class="character-count">
+                <span data-announcement-count>0</span>/500 characters
+              </small>
+            </label>
+          </section>
+
+          <section class="settings-card" aria-labelledby="links-title">
+            <p class="eyebrow">Find me elsewhere</p>
+            <h3 id="links-title">Contact &amp; social links</h3>
+            <p class="settings-help">
+              Add as many social profiles or author pages as you need. Their
+              labels and links will appear on the About page.
+            </p>
+            <label>
+              <span>Contact link</span>
+              <input
+                name="contactLink"
+                type="url"
+                placeholder="mailto:name@example.com or https://…"
+              />
+            </label>
+            <div class="social-link-editor" data-social-links></div>
+            <button class="text-button add-social-link" type="button" data-add-social>
+              + Add social link
+            </button>
+          </section>
+
+          <div class="settings-actions">
+            <button class="button primary" type="submit">
+              Save &amp; update website
+            </button>
+            <p class="form-status" data-settings-status aria-live="polite"></p>
+          </div>
         </form>
       </div>
     </section>
