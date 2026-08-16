@@ -244,21 +244,17 @@ const authorInitials = settings.authorName
     </header>
     <form class="editor-form" data-work-form>
       <input type="hidden" name="id" />
-      <div class="form-grid two">
-        <label
-          ><span>Title</span><input
-            name="title"
-            required
-            maxlength="180"
-          /></label
-        >
-        <label
-          ><span>Subtitle</span><input name="subtitle" maxlength="240" /></label
-        >
-      </div>
+      <p class="required-note"><abbr title="required">*</abbr> Required</p>
+      <label
+        ><span>Title <abbr title="required">*</abbr></span><input
+          name="title"
+          required
+          maxlength="180"
+        /></label
+      >
       <div class="form-grid three">
         <label>
-          <span>Publication type</span>
+          <span>Publication type <abbr title="required">*</abbr></span>
           <select name="publicationType" required>
             <option value="book">Book</option><option value="novella"
               >Novella</option
@@ -275,7 +271,10 @@ const authorInitials = settings.authorName
           </select>
         </label>
         <label
-          ><span>Publication date</span><input
+          ><span
+            >Publication date <abbr title="required when publishing">*</abbr
+            ><small>Required when publishing</small></span
+          ><input
             name="publishedAt"
             type="date"
           /></label
@@ -289,55 +288,43 @@ const authorInitials = settings.authorName
         >
       </div>
       <label
-        ><span>URL slug</span><input
+        ><span>URL slug <abbr title="required">*</abbr></span><input
           name="slug"
           required
           pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
         /></label
       >
       <label
-        ><span>Blurb</span><textarea
+        ><span>Blurb <abbr title="required">*</abbr></span><textarea
           name="blurb"
           rows="4"
           required
           maxlength="4000"></textarea></label
       >
       <label
-        ><span>Excerpt <small>Markdown supported</small></span><textarea
-          name="excerpt"
-          rows="7"></textarea></label
-      >
-      <label
-        ><span>Full story <small>Markdown supported</small></span><textarea
+        ><span
+          >Full story <abbr title="required when Full Story is selected">*</abbr
+          ><small>Markdown supported; required for Full Story</small></span
+        ><textarea
           name="storyContent"
           rows="15"></textarea></label
       >
-      <label
-        ><span>Author notes <small>Markdown supported</small></span><textarea
-          name="authorNotes"
-          rows="6"></textarea></label
-      >
 
       <fieldset>
-        <legend>What visitors can read</legend>
+        <legend>
+          What visitors can read <abbr title="required">*</abbr>
+        </legend>
         <label class="radio-card">
           <input
             type="radio"
             name="contentVisibility"
             value="external-only"
+            required
             checked
           />
           <span
             ><strong>Link only</strong><small
               >Visitors see the blurb and external link, but not the story.</small
-            ></span
-          >
-        </label>
-        <label class="radio-card">
-          <input type="radio" name="contentVisibility" value="excerpt" />
-          <span
-            ><strong>Excerpt</strong><small
-              >Visitors see the blurb and excerpt.</small
             ></span
           >
         </label>
@@ -355,12 +342,16 @@ const authorInitials = settings.authorName
       </fieldset>
 
       <div class="form-grid two">
-        <label><span>Publisher</span><input name="publisherName" /></label>
         <label
-          ><span>Publication name</span><input name="publicationName" /></label
+          ><span
+            >Publisher <small>Include the publication name here too</small></span
+          ><input name="publisherName" /></label
         >
         <label
-          ><span>Publication URL</span><input
+          ><span
+            >Publication URL <abbr title="required for Link Only">*</abbr
+            ><small>Required for Link Only</small></span
+          ><input
             name="primaryExternalUrl"
             type="url"
           /></label
@@ -383,52 +374,17 @@ const authorInitials = settings.authorName
           ></label
         >
         <label
-          ><span>Cover image URL</span><input
-            name="coverImageUrl"
-            type="url"
-          /></label
-        >
-        <label
-          ><span>Cover image alt text</span><input
-            name="coverImageAlt"
-          /></label
-        >
-        <label
           ><span>Genres <small>Comma separated</small></span><input
             name="genres"
           /></label
         >
-        <label
-          ><span>Tags <small>Comma separated</small></span><input
-            name="tags"
-          /></label
-        >
       </div>
       <input type="hidden" name="status" value="draft" />
-      <div class="form-grid two">
-        <label
-          ><span>Display order</span><input
-            name="displayOrder"
-            type="number"
-          /></label
-        >
-        <label class="checkbox"
-          ><input name="featured" type="checkbox" /><span
-            >Feature this work</span
-          ></label
-        >
-      </div>
-      <div class="form-grid two">
-        <label
-          ><span>SEO title</span><input name="seoTitle" maxlength="70" /></label
-        >
-        <label
-          ><span>SEO description</span><textarea
-            name="seoDescription"
-            rows="2"
-            maxlength="180"></textarea></label
-        >
-      </div>
+      <label class="checkbox"
+        ><input name="featured" type="checkbox" /><span
+          >Feature this work <small>Featured work stays at the top</small></span
+        ></label
+      >
       <details class="preview-panel">
         <summary>Preview draft text</summary>
         <div data-markdown-preview class="story-content"></div>

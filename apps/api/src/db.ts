@@ -16,7 +16,6 @@ export function rowToWork(row: WorkRow, privileged = false): Work {
     contentVisibility: visibility,
     socialEmbedEnabled: Boolean(row.social_embed_enabled),
     genres: JSON.parse(String(row.genres_json || "[]")),
-    tags: JSON.parse(String(row.tags_json || "[]")),
     featured: Boolean(row.featured),
   } as Work;
 
@@ -26,28 +25,17 @@ export function rowToWork(row: WorkRow, privileged = false): Work {
     }
   };
 
-  assign("subtitle", row.subtitle);
   assign("publishedAt", row.published_at);
   assign("wordCount", row.word_count);
   assign("readingTimeMinutes", row.reading_time_minutes);
   assign("publisherName", row.publisher_name);
-  assign("publicationName", row.publication_name);
   assign("primaryExternalUrl", row.primary_external_url);
   assign("purchaseUrl", row.purchase_url);
   assign("socialPostUrl", row.social_post_url);
   assign("socialProvider", row.social_provider);
-  assign("coverImageUrl", row.cover_image_url);
-  assign("coverImageAlt", row.cover_image_alt);
-  assign("displayOrder", row.display_order);
-  assign("seoTitle", row.seo_title);
-  assign("seoDescription", row.seo_description);
 
-  if (privileged || visibility === "excerpt" || visibility === "full")
-    assign("excerpt", row.excerpt);
   if (privileged || visibility === "full")
     assign("storyContent", row.story_content);
-  if (privileged || visibility === "full")
-    assign("authorNotes", row.author_notes);
 
   return base;
 }
@@ -68,9 +56,8 @@ export function rowToSettings(row: Record<string, unknown>): PublicSettings {
 }
 
 export const workColumns = `
-  id, slug, title, subtitle, status, publication_type, published_at, created_at, updated_at,
-  word_count, reading_time_minutes, blurb, excerpt, story_content, author_notes,
-  content_visibility, publisher_name, publication_name, primary_external_url, purchase_url,
-  social_post_url, social_provider, social_embed_enabled, cover_image_url, cover_image_alt,
-  genres_json, tags_json, featured, display_order, seo_title, seo_description
+  id, slug, title, status, publication_type, published_at, created_at, updated_at,
+  word_count, reading_time_minutes, blurb, story_content, content_visibility,
+  publisher_name, primary_external_url, purchase_url, social_post_url, social_provider,
+  social_embed_enabled, genres_json, featured
 `;

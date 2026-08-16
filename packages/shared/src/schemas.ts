@@ -11,11 +11,7 @@ export const publicationTypes = [
   "anthology",
   "other",
 ] as const;
-export const contentVisibilities = [
-  "external-only",
-  "excerpt",
-  "full",
-] as const;
+export const contentVisibilities = ["external-only", "full"] as const;
 
 const optionalUrl = z
   .union([z.string().url(), z.literal(""), z.null()])
@@ -26,7 +22,6 @@ const workBaseSchema = z.object({
   id: z.string().min(1).max(64),
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   title: z.string().trim().min(1).max(180),
-  subtitle: z.string().trim().max(240).optional(),
   status: z.enum(workStatuses),
   publicationType: z.enum(publicationTypes),
   publishedAt: z.string().datetime({ offset: true }).optional(),
@@ -35,12 +30,9 @@ const workBaseSchema = z.object({
   wordCount: z.number().int().nonnegative().max(10_000_000).optional(),
   readingTimeMinutes: z.number().int().positive().max(100_000).optional(),
   blurb: z.string().trim().min(1).max(4_000),
-  excerpt: z.string().max(20_000).optional(),
   storyContent: z.string().max(1_000_000).optional(),
-  authorNotes: z.string().max(100_000).optional(),
   contentVisibility: z.enum(contentVisibilities),
   publisherName: z.string().trim().max(180).optional(),
-  publicationName: z.string().trim().max(180).optional(),
   primaryExternalUrl: optionalUrl,
   purchaseUrl: optionalUrl,
   socialPostUrl: optionalUrl,
@@ -48,25 +40,19 @@ const workBaseSchema = z.object({
     .enum(["facebook", "instagram", "threads", "x", "other"])
     .optional(),
   socialEmbedEnabled: z.boolean().default(false),
-  coverImageUrl: optionalUrl,
-  coverImageAlt: z.string().trim().max(300).optional(),
   genres: z.array(z.string().trim().min(1).max(60)).max(20).default([]),
-  tags: z.array(z.string().trim().min(1).max(60)).max(30).default([]),
   featured: z.boolean().default(false),
-  displayOrder: z.number().int().min(-10_000).max(10_000).optional(),
-  seoTitle: z.string().trim().max(70).optional(),
-  seoDescription: z.string().trim().max(180).optional(),
 });
 
 function validateVisibility(
   work: Record<string, unknown>,
   context: z.RefinementCtx,
 ) {
-  if (work.contentVisibility === "excerpt" && !work.excerpt) {
+  if (work.contentVisibility === "external-only" && !work.primaryExternalUrl) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ["excerpt"],
-      message: "Excerpt is required when visibility is excerpt.",
+      path: ["primaryExternalUrl"],
+      message: "Publication URL is required for link-only work.",
     });
   }
   if (work.contentVisibility === "full" && !work.storyContent) {
