@@ -156,11 +156,11 @@ const authorInitials = settings.authorName
               <input name="authorName" required maxlength="160" />
             </label>
             <label>
-              <span>Homepage introduction <small>A short author blurb</small></span>
-              <textarea
-                name="introduction"
-                rows="3"
-                maxlength="2000"></textarea>
+              <span
+                >Homepage introduction <small>A short author blurb</small></span
+              >
+              <textarea name="introduction" rows="3" maxlength="2000"
+              ></textarea>
             </label>
             <label>
               <span>Full biography <small>Shown on the About page</small></span>
@@ -208,7 +208,11 @@ const authorInitials = settings.authorName
               />
             </label>
             <div class="social-link-editor" data-social-links></div>
-            <button class="text-button add-social-link" type="button" data-add-social>
+            <button
+              class="text-button add-social-link"
+              type="button"
+              data-add-social
+            >
               + Add social link
             </button>
           </section>
@@ -1007,66 +1011,159 @@ const authorInitials = settings.authorName
     }
   });
 
-  const loadSettings = async () => {
-    const settings = await request("/api/v1/admin/settings");
-    const form = document.querySelector<HTMLFormElement>(
-      "[data-settings-form]",
-    )!;
-    Object.entries(settings).forEach(([key, value]) => {
-      const input = form.elements.namedItem(key) as
-        HTMLInputElement | HTMLTextAreaElement | null;
-      if (input)
-        input.value =
-          key === "socialLinks"
-            ? Object.entries(value as Record<string, string>)
-                .map(([label, url]) => `${label}: ${url}`)
-                .join("\n")
-            : String(value ?? "");
-    });
+  const settingsForm = document.querySelector<HTMLFormElement>(
+    "[data-settings-form]",
+  )!;
+  const socialLinksEditor = settingsForm.querySelector<HTMLElement>(
+    "[data-social-links]",
+  )!;
+  const announcementInput = settingsForm.elements.namedItem(
+    "announcement",
+  ) as HTMLTextAreaElement;
+  const announcementCount = settingsForm.querySelector<HTMLElement>(
+    "[data-announcement-count]",
+  )!;
+  const profileImageInput = settingsForm.elements.namedItem(
+    "profileImageUrl",
+  ) as HTMLInputElement;
+  const profilePreview = settingsForm.querySelector<HTMLImageElement>(
+    "[data-profile-preview]",
+  )!;
+  let currentThemeSettings: Record<string, string> = {};
+
+  const updateAnnouncementCount = () => {
+    announcementCount.textContent = String(announcementInput.value.length);
   };
 
-  document
-    .querySelector<HTMLFormElement>("[data-settings-form]")
-    ?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const form = new FormData(event.currentTarget as HTMLFormElement);
-      const socialLinks = Object.fromEntries(
-        String(form.get("socialLinks") || "")
-          .split("\n")
-          .map((line) => {
-            const split = line.indexOf(": ");
-            return split > 0
-              ? [line.slice(0, split), line.slice(split + 2)]
-              : null;
-          })
-          .filter(Boolean) as [string, string][],
-      );
-      const payload = {
-        authorName: form.get("authorName"),
-        introduction: form.get("introduction"),
-        biography: form.get("biography"),
-        profileImageUrl: form.get("profileImageUrl") || undefined,
-        announcement: form.get("announcement") || undefined,
-        contactLink: form.get("contactLink") || undefined,
-        socialLinks,
-        themeSettings: {},
-      };
-      const status = document.querySelector<HTMLElement>(
-        "[data-settings-status]",
-      )!;
-      status.textContent = "Saving…";
-      try {
-        await request("/api/v1/admin/settings", {
-          method: "PUT",
-          body: JSON.stringify(payload),
-        });
-        await triggerDeployment(status);
-        status.textContent =
-          "Settings saved. The website update has started and should appear in a few minutes.";
-      } catch (error) {
-        status.textContent = (error as Error).message;
-      }
+  const updateProfilePreview = () => {
+    const url = profileImageInput.value.trim();
+    if (!url) {
+      profilePreview.hidden = true;
+      profilePreview.removeAttribute("src");
+      return;
+    }
+    profilePreview.src = url;
+    profilePreview.hidden = false;
+  };
+
+  const addSocialLinkRow = (label = "", url = "") => {
+    const row = document.createElement("div");
+    row.className = "social-link-row";
+
+    const labelField = document.createElement("label");
+    const labelCaption = document.createElement("span");
+    labelCaption.textContent = "Label";
+    const labelInput = document.createElement("input");
+    labelInput.type = "text";
+    labelInput.maxLength = 80;
+    labelInput.required = true;
+    labelInput.value = label;
+    labelInput.dataset.socialLabel = "";
+    labelField.append(labelCaption, labelInput);
+
+    const urlField = document.createElement("label");
+    const urlCaption = document.createElement("span");
+    urlCaption.textContent = "Link";
+    const urlInput = document.createElement("input");
+    urlInput.type = "url";
+    urlInput.required = true;
+    urlInput.placeholder = "https://…";
+    urlInput.value = url;
+    urlInput.dataset.socialUrl = "";
+    urlField.append(urlCaption, urlInput);
+
+    const removeButton = document.createElement("button");
+    removeButton.className = "text-button";
+    removeButton.type = "button";
+    removeButton.textContent = "Remove";
+    removeButton.setAttribute("aria-label", `Remove ${label || "social"} link`);
+    removeButton.addEventListener("click", () => row.remove());
+
+    row.append(labelField, urlField, removeButton);
+    socialLinksEditor.append(row);
+  };
+
+  const renderSocialLinks = (socialLinks: Record<string, string>) => {
+    socialLinksEditor.replaceChildren();
+    Object.entries(socialLinks).forEach(([label, url]) =>
+      addSocialLinkRow(label, url),
+    );
+  };
+
+  const collectSocialLinks = () => {
+    const socialLinks: Record<string, string> = {};
+    socialLinksEditor
+      .querySelectorAll<HTMLElement>(".social-link-row")
+      .forEach((row) => {
+        const label = row
+          .querySelector<HTMLInputElement>("[data-social-label]")!
+          .value.trim();
+        const url = row
+          .querySelector<HTMLInputElement>("[data-social-url]")!
+          .value.trim();
+        if (label && url) socialLinks[label] = url;
+      });
+    return socialLinks;
+  };
+
+  const loadSettings = async () => {
+    const settings = await request("/api/v1/admin/settings");
+    currentThemeSettings = settings.themeSettings || {};
+    [
+      "authorName",
+      "introduction",
+      "biography",
+      "profileImageUrl",
+      "announcement",
+      "contactLink",
+    ].forEach((key) => {
+      const input = settingsForm.elements.namedItem(key) as
+        HTMLInputElement | HTMLTextAreaElement | null;
+      if (input) input.value = String(settings[key] ?? "");
     });
+    renderSocialLinks(settings.socialLinks || {});
+    updateAnnouncementCount();
+    updateProfilePreview();
+  };
+
+  announcementInput.addEventListener("input", updateAnnouncementCount);
+  profileImageInput.addEventListener("input", updateProfilePreview);
+  profilePreview.addEventListener("error", () => {
+    profilePreview.hidden = true;
+  });
+  settingsForm
+    .querySelector("[data-add-social]")
+    ?.addEventListener("click", () => addSocialLinkRow());
+
+  settingsForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget as HTMLFormElement);
+    const payload = {
+      authorName: form.get("authorName"),
+      introduction: form.get("introduction"),
+      biography: form.get("biography"),
+      profileImageUrl: form.get("profileImageUrl") || undefined,
+      announcement: form.get("announcement") || undefined,
+      contactLink: form.get("contactLink") || undefined,
+      socialLinks: collectSocialLinks(),
+      themeSettings: currentThemeSettings,
+    };
+    const status = document.querySelector<HTMLElement>(
+      "[data-settings-status]",
+    )!;
+    status.textContent = "Saving…";
+    try {
+      await request("/api/v1/admin/settings", {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+      await triggerDeployment(status);
+      status.textContent =
+        "Settings saved. The website update has started and should appear in a few minutes.";
+    } catch (error) {
+      status.textContent = (error as Error).message;
+    }
+  });
 
   document
     .querySelector("[data-rebuild]")
