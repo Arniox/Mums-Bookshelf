@@ -5,18 +5,18 @@
   "compatibility_date": "2025-06-01",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
-    "ALLOWED_ORIGINS": "http://localhost:4321",
+    "ALLOWED_ORIGINS": "https://arniox.github.io",
     "AUTH_TOKEN_ISSUER": "author-library-api",
     "AUTH_ACCESS_TOKEN_TTL_SECONDS": "900",
     "AUTH_REFRESH_TOKEN_TTL_SECONDS": "2592000",
-    "ENVIRONMENT": "development",
+    "ENVIRONMENT": "production",
     "PUBLIC_COMMENTS_ENABLED": "false",
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "author-library",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "2451d313-8648-4f54-b743-d120b47e2f5e",
       "migrations_dir": "migrations",
     },
   ],
