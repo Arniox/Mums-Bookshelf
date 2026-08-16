@@ -35,7 +35,8 @@ const fullTitle = pageTitle.includes(authorName)
   ? pageTitle
   : `${pageTitle} — ${authorName}`;
 const base = import.meta.env.BASE_URL;
-const socialImage = image || `${base}og.png?v=denise-diehl`;
+const socialImage = image || `${base}denise-diehl-social-card-v2.png`;
+const socialImageUrl = new URL(socialImage, Astro.site).href;
 ---
 
 <!doctype html>
@@ -47,13 +48,34 @@ const socialImage = image || `${base}og.png?v=denise-diehl`;
     <meta name="description" content={pageDescription} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
-    <link rel="alternate" type="application/rss+xml" title={`${authorName}'s latest work`} href={`${base}rss.xml`} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${authorName}'s latest work`}
+      href={`${base}rss.xml`}
+    />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={pageDescription} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={new URL(socialImage, Astro.site)} />
+    <meta property="og:site_name" content={`${authorName}'s Bookshelf`} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:secure_url" content={socialImageUrl} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1731" />
+    <meta property="og:image:height" content="909" />
+    <meta
+      property="og:image:alt"
+      content={`${authorName} — Stories for the quietly curious`}
+    />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    <meta
+      name="twitter:image:alt"
+      content={`${authorName} — Stories for the quietly curious`}
+    />
     {noindex && <meta name="robots" content="noindex,nofollow" />}
     <title>{fullTitle}</title>
   </head>
@@ -72,7 +94,10 @@ const socialImage = image || `${base}og.png?v=denise-diehl`;
       <slot />
     </main>
     <footer class="site-footer">
-      <p><span class="footer-mark">{authorInitials}</span> {settings.introduction}</p>
+      <p>
+        <span class="footer-mark">{authorInitials}</span>
+        {settings.introduction}
+      </p>
       <nav aria-label="Footer navigation">
         <a href={`${base}rss.xml`}>RSS</a>
         <a href={`${base}admin/`}>Author sign in</a>
