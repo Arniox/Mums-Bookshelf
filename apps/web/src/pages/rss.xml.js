@@ -2,7 +2,10 @@ import rss from "@astrojs/rss";
 import { getPublicSettings, getPublicWorks } from "../lib/contentSource";
 
 export async function GET(context) {
-  const [settings, works] = await Promise.all([getPublicSettings(), getPublicWorks()]);
+  const [settings, works] = await Promise.all([
+    getPublicSettings(),
+    getPublicWorks(),
+  ]);
   return rss({
     title: `${settings.authorName} — Latest works`,
     description: `New stories, books and essays by ${settings.authorName}.`,
