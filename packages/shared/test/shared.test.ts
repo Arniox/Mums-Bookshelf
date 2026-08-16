@@ -62,7 +62,7 @@ describe("shared domain logic", () => {
     expect(result.success).toBe(false);
   });
 
-  it("requires a publication URL for link-only work", () => {
+  it("requires a publication or audio URL for link-only work", () => {
     const result = workSchema.safeParse({
       id: "1",
       slug: "missing-link",
@@ -79,6 +79,26 @@ describe("shared domain logic", () => {
       featured: false,
     });
     expect(result.success).toBe(false);
+  });
+
+  it("accepts an audio URL for link-only work", () => {
+    const result = workSchema.safeParse({
+      id: "audio-1",
+      slug: "audio-only",
+      title: "Audio Only",
+      status: "published",
+      publicationType: "short-story",
+      publishedAt: "2026-01-01T00:00:00Z",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+      blurb: "A story to listen to.",
+      contentVisibility: "external-only",
+      audioUrl: "https://example.com/audio/story",
+      socialEmbedEnabled: false,
+      genres: [],
+      featured: false,
+    });
+    expect(result.success).toBe(true);
   });
 
   it("limits reader comments to 300 characters", () => {
