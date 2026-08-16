@@ -2,6 +2,7 @@ node_modules/
 dist/
 .astro/
 .wrangler/
+.wrangler-config/
 .dev.vars
 .env
 .env.local
@@ -11,4 +12,3 @@ test-results/
 *.log
 .DS_Store
 Thumbs.db
-
