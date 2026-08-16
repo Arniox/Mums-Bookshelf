@@ -61,7 +61,12 @@ const authorInitials = settings.authorName
           >
         </div>
       </header>
-      <p class="form-status deployment-status" data-deployment-status aria-live="polite"></p>
+      <p
+        class="form-status deployment-status"
+        data-deployment-status
+        aria-live="polite"
+      >
+      </p>
 
       <nav class="admin-tabs" aria-label="Studio sections">
         <button type="button" aria-current="page" data-tab="dashboard"
@@ -181,7 +186,8 @@ const authorInitials = settings.authorName
   >
     <form method="dialog" class="dialog-close-row">
       <button class="icon-button" value="cancel" aria-label="Close editor"
-        >×</button>
+        >×</button
+      >
     </form>
     <header>
       <p class="eyebrow">Work editor</p>
@@ -381,7 +387,9 @@ const authorInitials = settings.authorName
       <aside class="draft-safety-note">
         <strong>Your writing is protected while you edit.</strong>
         <p>
-          A recovery copy is saved in this browser. Use <em>Save draft online</em>
+          A recovery copy is saved in this browser. Use <em
+            >Save draft online</em
+          >
           to continue on another device. Nothing becomes public until you choose
           <em>Publish &amp; update website</em>.
         </p>
@@ -393,7 +401,7 @@ const authorInitials = settings.authorName
         >
         <span class="spacer"></span>
         <button class="text-button" type="button" data-cancel-editor
-          >Cancel</button
+          >Close</button
         >
         <button class="button secondary" type="button" data-save-local
           >Save on this device</button
@@ -719,6 +727,8 @@ const authorInitials = settings.authorName
     );
     if (work?.publishedAt)
       setValue("publishedAt", work.publishedAt.slice(0, 10));
+    (workForm.elements.namedItem("slug") as HTMLInputElement).dataset.auto =
+      work ? "false" : "true";
     dirty = false;
     localDraftStatus.textContent = "";
     try {
@@ -739,7 +749,8 @@ const authorInitials = settings.authorName
           setValue(key, value),
         );
         dirty = true;
-        localDraftStatus.textContent = "Recovered the draft saved on this device.";
+        localDraftStatus.textContent =
+          "Recovered the draft saved on this device.";
       }
     } catch {
       // Browser storage is an optional recovery layer.
@@ -755,10 +766,23 @@ const authorInitials = settings.authorName
   document
     .querySelector("[data-cancel-editor]")
     ?.addEventListener("click", () => {
-      if (!dirty || confirm("Discard your unsaved changes?")) dialog.close();
+      if (!dirty) return dialog.close();
+      saveLocalDraft(true);
+      if (
+        confirm(
+          "Close the editor? A recovery copy will remain saved on this device.",
+        )
+      )
+        dialog.close();
     });
   dialog.addEventListener("cancel", (event) => {
-    if (dirty && !confirm("Discard your unsaved changes?"))
+    if (!dirty) return;
+    saveLocalDraft(true);
+    if (
+      !confirm(
+        "Close the editor? A recovery copy will remain saved on this device.",
+      )
+    )
       event.preventDefault();
   });
 
@@ -809,6 +833,10 @@ const authorInitials = settings.authorName
 
   workForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const action =
+      (event as SubmitEvent).submitter instanceof HTMLElement
+        ? (event as SubmitEvent).submitter?.dataset.editorAction
+        : "draft";
     const formData = new FormData(workForm);
     const id = String(formData.get("id") || "");
     const optional = (name: string) =>
@@ -818,7 +846,7 @@ const authorInitials = settings.authorName
       slug: String(formData.get("slug")),
       title: String(formData.get("title")),
       subtitle: optional("subtitle"),
-      status: String(formData.get("status")),
+      status: action === "publish" ? "published" : "draft",
       publicationType: String(formData.get("publicationType")),
       publishedAt: date ? `${date}T00:00:00Z` : undefined,
       wordCount: optional("wordCount")
@@ -853,12 +881,29 @@ const authorInitials = settings.authorName
       seoDescription: optional("seoDescription"),
     };
     if (
+      action === "publish" &&
       payload.contentVisibility === "full" &&
       !confirm(
-        "Publish the complete story on the public website? Confirm that you hold the digital rights.",
+        "This will publish the complete story for anyone to read. Confirm that you hold the digital rights.",
       )
     )
       return;
+    if (
+      action === "publish" &&
+      !confirm(
+        "Ready to publish? This will make the work public and start a website update, which normally takes a few minutes.",
+      )
+    )
+      return;
+    if (
+      action === "draft" &&
+      originalStatus === "published" &&
+      !confirm(
+        "Save this published work as a draft? It will be removed from the public website when the automatic update finishes.",
+      )
+    )
+      return;
+    const wasPublished = originalStatus === "published";
     editorStatus.textContent = "Saving…";
     try {
       await request(id ? `/api/v1/admin/works/${id}` : "/api/v1/admin/works", {
@@ -866,9 +911,27 @@ const authorInitials = settings.authorName
         body: JSON.stringify(payload),
       });
       dirty = false;
-      editorStatus.textContent = "Saved.";
+      window.clearTimeout(localSaveTimer);
+      clearLocalDraft();
+      originalStatus = payload.status;
       await loadDashboard();
-      window.setTimeout(() => dialog.close(), 500);
+      const needsWebsiteUpdate = action === "publish" || wasPublished;
+      if (needsWebsiteUpdate) {
+        try {
+          await triggerDeployment(editorStatus);
+          editorStatus.textContent =
+            action === "publish"
+              ? "Published. The website update has started and should appear in a few minutes."
+              : "Draft saved. The website update has started to remove the public version.";
+          window.setTimeout(() => dialog.close(), 1800);
+        } catch (deploymentError) {
+          editorStatus.textContent = (deploymentError as Error).message;
+        }
+      } else {
+        editorStatus.textContent =
+          "Draft saved online. You can continue on another device.";
+        window.setTimeout(() => dialog.close(), 1200);
+      }
     } catch (error) {
       editorStatus.textContent = (error as Error).message;
     }
@@ -883,10 +946,20 @@ const authorInitials = settings.authorName
       )
     )
       return;
-    await request(`/api/v1/admin/works/${id}`, { method: "DELETE" });
-    dirty = false;
-    dialog.close();
-    await loadDashboard();
+    editorStatus.textContent = "Archiving…";
+    try {
+      await request(`/api/v1/admin/works/${id}`, { method: "DELETE" });
+      dirty = false;
+      window.clearTimeout(localSaveTimer);
+      clearLocalDraft();
+      await loadDashboard();
+      await triggerDeployment(editorStatus);
+      editorStatus.textContent =
+        "Archived. The website update has started and should appear in a few minutes.";
+      window.setTimeout(() => dialog.close(), 1800);
+    } catch (error) {
+      editorStatus.textContent = (error as Error).message;
+    }
   });
 
   const loadSettings = async () => {
@@ -942,9 +1015,21 @@ const authorInitials = settings.authorName
           method: "PUT",
           body: JSON.stringify(payload),
         });
-        status.textContent = "Settings saved.";
+        await triggerDeployment(status);
+        status.textContent =
+          "Settings saved. The website update has started and should appear in a few minutes.";
       } catch (error) {
         status.textContent = (error as Error).message;
+      }
+    });
+
+  document
+    .querySelector("[data-rebuild]")
+    ?.addEventListener("click", async () => {
+      try {
+        await triggerDeployment();
+      } catch (error) {
+        deploymentStatus.textContent = (error as Error).message;
       }
     });
 
@@ -962,7 +1047,10 @@ const authorInitials = settings.authorName
     });
 
   window.addEventListener("beforeunload", (event) => {
-    if (dirty) event.preventDefault();
+    if (dirty) {
+      saveLocalDraft();
+      event.preventDefault();
+    }
   });
   refreshSession();
 </script>
