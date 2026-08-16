@@ -12,6 +12,15 @@ function commentsEnabled(context: Context<AppEnvironment>) {
   return context.env.PUBLIC_COMMENTS_ENABLED.toLowerCase() === "true";
 }
 
+function sanitiseCommentText(value: string): string {
+  return [...value]
+    .filter((character) => {
+      const code = character.charCodeAt(0);
+      return code === 9 || code === 10 || code === 13 || code >= 32;
+    })
+    .join("");
+}
+
 export async function listPublicComments(context: Context<AppEnvironment>) {
   if (!commentsEnabled(context))
     return success(context, { items: [], enabled: false });
@@ -93,7 +102,7 @@ export async function createComment(context: Context<AppEnvironment>) {
       crypto.randomUUID(),
       context.req.param("id"),
       parsed.data.displayName || null,
-      parsed.data.body.replaceAll("<", "&lt;").replaceAll(">", "&gt;"),
+      sanitiseCommentText(parsed.data.body),
       new Date().toISOString(),
       await sha256(`${ip}:${context.env.IP_HASH_SECRET}`),
     )
