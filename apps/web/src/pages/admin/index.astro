@@ -574,6 +574,11 @@ wordHtmlToStoryHtml,
     return payload.data;
   };
 
+  const setButtonBusy = (button: HTMLButtonElement, busy: boolean) => {
+    button.classList.toggle("is-loading", busy);
+    button.setAttribute("aria-busy", String(busy));
+  };
+
   const loginPanel = document.querySelector<HTMLElement>("[data-login-panel]")!;
   const studio = document.querySelector<HTMLElement>("[data-admin-studio]")!;
   const loginStatus = document.querySelector<HTMLElement>(
@@ -730,10 +735,16 @@ wordHtmlToStoryHtml,
     .querySelector<HTMLFormElement>("[data-login-form]")
     ?.addEventListener("submit", async (event) => {
       event.preventDefault();
+      const submitButton = (event as SubmitEvent)
+        .submitter as HTMLButtonElement | null;
       loginStatus.textContent = "Signing in…";
       const data = Object.fromEntries(
         new FormData(event.currentTarget as HTMLFormElement),
       );
+      if (submitButton) {
+        setButtonBusy(submitButton, true);
+        submitButton.disabled = true;
+      }
       try {
         const session = await request("/api/v1/auth/login", {
           method: "POST",
@@ -743,17 +754,30 @@ wordHtmlToStoryHtml,
         await openStudio(session);
       } catch (error) {
         loginStatus.textContent = (error as Error).message;
+      } finally {
+        if (submitButton) {
+          setButtonBusy(submitButton, false);
+          submitButton.disabled = false;
+        }
       }
     });
 
   document
     .querySelector("[data-logout]")
-    ?.addEventListener("click", async () => {
-      await request("/api/v1/auth/logout", { method: "POST" }).catch(
-        () => undefined,
-      );
-      accessToken = "";
-      window.location.reload();
+    ?.addEventListener("click", async (event) => {
+      const button = event.currentTarget as HTMLButtonElement;
+      setButtonBusy(button, true);
+      button.disabled = true;
+      try {
+        await request("/api/v1/auth/logout", { method: "POST" }).catch(
+          () => undefined,
+        );
+        accessToken = "";
+        window.location.reload();
+      } finally {
+        setButtonBusy(button, false);
+        button.disabled = false;
+      }
     });
 
   const escape = (value: unknown) =>
@@ -833,6 +857,7 @@ wordHtmlToStoryHtml,
 
       publishAllButtons.forEach((publishButton) => {
         publishButton.disabled = true;
+        setButtonBusy(publishButton, true);
       });
       deploymentStatus.textContent = "Publishing all drafts…";
       try {
@@ -855,6 +880,10 @@ wordHtmlToStoryHtml,
         publishAllButtons.forEach((publishButton) => {
           publishButton.disabled = false;
         });
+      } finally {
+        publishAllButtons.forEach((publishButton) =>
+          setButtonBusy(publishButton, false),
+        );
       }
     }),
   );
@@ -879,13 +908,23 @@ wordHtmlToStoryHtml,
       .querySelectorAll<HTMLButtonElement>("[data-comment-action]")
       .forEach((button) => {
         button.addEventListener("click", async () => {
-          await request(`/api/v1/admin/comments/${button.dataset.commentId}`, {
-            method: "PATCH",
-            body: JSON.stringify({
-              moderationStatus: button.dataset.commentAction,
-            }),
-          });
-          button.closest("article")?.remove();
+          setButtonBusy(button, true);
+          button.disabled = true;
+          try {
+            await request(
+              `/api/v1/admin/comments/${button.dataset.commentId}`,
+              {
+                method: "PATCH",
+                body: JSON.stringify({
+                  moderationStatus: button.dataset.commentAction,
+                }),
+              },
+            );
+            button.closest("article")?.remove();
+          } finally {
+            setButtonBusy(button, false);
+            button.disabled = false;
+          }
         });
       });
   };

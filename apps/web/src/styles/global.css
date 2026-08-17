@@ -284,6 +284,33 @@ blockquote {
   cursor: pointer;
 }
 
+button.is-loading {
+  cursor: progress;
+}
+
+button.is-loading::before {
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  content: "";
+  display: inline-block;
+  animation: button-spinner 650ms linear infinite;
+}
+
+@keyframes button-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button.is-loading::before {
+    animation-duration: 1.8s;
+  }
+}
+
 .hero-feature {
   position: relative;
   perspective: 900px;
