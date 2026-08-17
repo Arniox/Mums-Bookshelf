@@ -66,8 +66,8 @@ const types = [...new Set(works.map((work) => work.publicationType))];
 
 <script>
   import { getBookAppearance, type Work } from "@mums-bookshelf/shared";
-  import { featuredFirstShuffle } from "../../lib/randomiseWorks";
-  import { getRuntimePublicWorks } from "../../lib/runtimeContent";
+import { featuredFirstShuffle } from "../../lib/randomiseWorks";
+import { getRuntimePublicWorks } from "../../lib/runtimeContent";
 
   const search = document.querySelector<HTMLInputElement>("[data-work-search]");
   const filter =
