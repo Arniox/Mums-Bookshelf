@@ -76,9 +76,12 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
       [...element.attributes].forEach((attribute) => {
         if (
           (attribute.name === "data-indent" ||
-            attribute.name === "data-first-line-indent") &&
+            attribute.name === "data-first-line-indent" ||
+            attribute.name === "data-drop-cap") &&
           attribute.value === "true"
         )
+          return;
+        if (attribute.name === "data-drop-cap" && attribute.value === "false")
           return;
         if (
           attribute.name !== "href" ||

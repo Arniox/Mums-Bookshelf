@@ -404,6 +404,12 @@ const authorInitials = settings.authorName
           >
           </div>
         </div>
+        <div class="checkbox story-drop-cap-control">
+          <input type="checkbox" data-story-drop-cap checked />
+          <span
+            >Use the large opening letter <small>Matches the reader view</small></span
+          >
+        </div>
         <textarea name="storyContent" rows="15" hidden></textarea></label
       >
 
@@ -1064,6 +1070,9 @@ wordHtmlToStoryHtml,
   const storyEditor = document.querySelector<HTMLElement>(
     "[data-story-editor]",
   )!;
+  const storyDropCap = document.querySelector<HTMLInputElement>(
+    "[data-story-drop-cap]",
+  )!;
   const fullStoryField = workForm.elements.namedItem(
     "storyContent",
   ) as HTMLTextAreaElement;
@@ -1081,6 +1090,18 @@ wordHtmlToStoryHtml,
         String(value ?? ""),
         document,
       );
+    if (name === "storyContent") updateDropCapControl();
+  };
+
+  const firstStoryParagraph = () =>
+    Array.from(storyEditor.children).find(
+      (element) => element.tagName === "P",
+    ) as HTMLElement | undefined;
+
+  const updateDropCapControl = () => {
+    const paragraph = firstStoryParagraph();
+    storyDropCap.disabled = !paragraph;
+    storyDropCap.checked = paragraph?.dataset.dropCap !== "false";
   };
 
   const currentDraftKey = () => {
@@ -1147,6 +1168,7 @@ wordHtmlToStoryHtml,
     workForm.reset();
     storyEditor.innerHTML = "";
     fullStoryField.value = "";
+    updateDropCapControl();
     editorStatus.textContent = "";
     document.querySelector<HTMLElement>("[data-editor-title]")!.textContent =
       work ? "Edit work" : "Add a new work";
@@ -1285,7 +1307,11 @@ wordHtmlToStoryHtml,
   };
 
   storyEditor.addEventListener("input", () => syncStoryEditor());
-  storyEditor.addEventListener("blur", () => syncStoryEditor(true));
+  storyEditor.addEventListener("input", updateDropCapControl);
+  storyEditor.addEventListener("blur", () => {
+    syncStoryEditor(true);
+    updateDropCapControl();
+  });
   storyEditor.addEventListener("paste", (event) => {
     const html = event.clipboardData?.getData("text/html");
     const text = event.clipboardData?.getData("text/plain") || "";
@@ -1295,6 +1321,14 @@ wordHtmlToStoryHtml,
         ? wordHtmlToStoryHtml(html, document)
         : storyTextToEditorHtml(text, document),
     );
+    syncStoryEditor(true);
+    updateDropCapControl();
+  });
+  storyDropCap.addEventListener("change", () => {
+    const paragraph = firstStoryParagraph();
+    if (!paragraph) return;
+    if (storyDropCap.checked) delete paragraph.dataset.dropCap;
+    else paragraph.dataset.dropCap = "false";
     syncStoryEditor(true);
   });
 
