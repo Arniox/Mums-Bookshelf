@@ -40,8 +40,9 @@ Use this skill for end-to-end repository operations for `Arniox/Mums-Bookshelf`.
 
 ### Inspect And Summarize
 
-- Use `git status`, `git diff`, `git diff --staged`, `git log`, and `git show` to explain local and remote changes precisely.
-- Use `gh repo view`, `gh pr view/list/diff`, `gh run list/view`, `gh variable list`, and `gh secret list` for GitHub state when the GitHub CLI is authenticated. Fall back to the GitHub API only when required.
+- Use the Git CLI (`git status`, `git diff`, `git diff --staged`, `git log`, `git show`, and `git remote -v`) for local history, working-tree state, configured remotes, and commit comparisons. Do not treat `git` as a way to inspect GitHub Actions, pull requests, or repository settings.
+- Use the GitHub CLI (`gh repo view`, `gh pr view/list/diff`, `gh run list/view`, `gh variable list`, and `gh secret list`) for GitHub state. Before relying on it, verify that `gh` is installed and authenticated with `Get-Command gh` and `gh auth status`.
+- When `gh` is unavailable or unauthenticated, use a user-provided Actions log or the GitHub API only when it can be accessed without introducing credentials. State the limitation plainly; do not install, authenticate, or request a token solely to inspect a run.
 - Name uncommitted or unexpected changes before proceeding. Never include them in a commit unless the user explicitly asks.
 
 ### Commit And Push
