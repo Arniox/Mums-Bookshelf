@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { app } from "../src/index";
 import { createAccessToken, hashPassword } from "../src/crypto";
+import { app } from "../src/index";
 import type { Bindings } from "../src/types";
 
 class FakeStatement {
