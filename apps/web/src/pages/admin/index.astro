@@ -67,6 +67,29 @@ const authorInitials = settings.authorName
         aria-live="polite"
       >
       </p>
+      <section
+        class="deployment-progress"
+        data-deployment-progress
+        aria-live="polite"
+        hidden
+      >
+        <div class="deployment-progress-heading">
+          <p class="eyebrow">Making your share page</p>
+          <strong data-deployment-progress-title></strong>
+        </div>
+        <div
+          class="deployment-progress-track"
+          role="progressbar"
+          aria-label="Share page refresh progress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          data-deployment-progress-bar
+        >
+          <span></span>
+        </div>
+        <p data-deployment-progress-detail></p>
+      </section>
 
       <nav class="admin-tabs" aria-label="Studio sections">
         <button type="button" aria-current="page" data-tab="dashboard"
@@ -514,16 +537,16 @@ const authorInitials = settings.authorName
 
 <script>
   import { areSameExternalUrls } from "@mums-bookshelf/shared";
-  import {
-    localWorkDraftKey,
-    parseLocalWorkDraft,
-    type LocalWorkDraft,
-  } from "../../lib/localDraft";
-  import {
-    normaliseStoryHtml,
-    storyTextToEditorHtml,
-    wordHtmlToStoryHtml,
-  } from "../../lib/wordPaste";
+import {
+localWorkDraftKey,
+parseLocalWorkDraft,
+type LocalWorkDraft,
+} from "../../lib/localDraft";
+import {
+normaliseStoryHtml,
+storyTextToEditorHtml,
+wordHtmlToStoryHtml,
+} from "../../lib/wordPaste";
 
   type ApiWork = Record<string, any>;
   const app = document.querySelector<HTMLElement>("[data-admin-app]")!;
@@ -562,12 +585,100 @@ const authorInitials = settings.authorName
   const publishAllButtons = Array.from(
     document.querySelectorAll<HTMLButtonElement>("[data-publish-all]"),
   );
+  const deploymentProgress = document.querySelector<HTMLElement>(
+    "[data-deployment-progress]",
+  )!;
+  const deploymentProgressTitle = document.querySelector<HTMLElement>(
+    "[data-deployment-progress-title]",
+  )!;
+  const deploymentProgressDetail = document.querySelector<HTMLElement>(
+    "[data-deployment-progress-detail]",
+  )!;
+  const deploymentProgressBar = document.querySelector<HTMLElement>(
+    "[data-deployment-progress-bar]",
+  )!;
+  let deploymentPollTimer: number | undefined;
+  let deploymentSince = "";
+
+  const deploymentMessages = {
+    starting: {
+      progress: 15,
+      title: "Tucking the new page into place…",
+      detail: "The book is already visible on the website.",
+    },
+    queued: {
+      progress: 35,
+      title: "The page is waiting its turn…",
+      detail: "The book is already on the shelf while we get its own little page ready.",
+    },
+    building: {
+      progress: 70,
+      title: "Polishing the page…",
+      detail: "Nearly there. We are preparing the page people see when they share the link.",
+    },
+    ready: {
+      progress: 100,
+      title: "This book now has its own page, ready to share.",
+      detail: "Its share preview, RSS and sitemap are all up to date too.",
+    },
+    failed: {
+      progress: 100,
+      title: "This refresh needs a little help.",
+      detail: "The book is still visible on the website. Try Refresh SEO files again later.",
+    },
+  };
+
+  const showDeploymentProgress = (
+    state: keyof typeof deploymentMessages,
+  ) => {
+    const message = deploymentMessages[state];
+    deploymentProgress.hidden = false;
+    deploymentProgressTitle.textContent = message.title;
+    deploymentProgressDetail.textContent = message.detail;
+    deploymentProgressBar.setAttribute("aria-valuenow", String(message.progress));
+    deploymentProgressBar.dataset.state = state;
+    deploymentProgressBar.firstElementChild?.setAttribute(
+      "style",
+      `width: ${message.progress}%`,
+    );
+  };
+
+  const checkDeploymentProgress = async () => {
+    try {
+      const query = deploymentSince
+        ? `?since=${encodeURIComponent(deploymentSince)}`
+        : "";
+      const deployment = await request(
+        `/api/v1/admin/deployments/pages${query}`,
+      );
+      if (deployment.state === "idle") return;
+      showDeploymentProgress(deployment.state);
+      if (
+        deployment.state === "starting" ||
+        deployment.state === "queued" ||
+        deployment.state === "building"
+      ) {
+        window.clearTimeout(deploymentPollTimer);
+        deploymentPollTimer = window.setTimeout(checkDeploymentProgress, 8_000);
+      }
+    } catch {
+      showDeploymentProgress("failed");
+    }
+  };
+
+  const trackDeployment = (requestedAt: string) => {
+    deploymentSince = requestedAt;
+    window.clearTimeout(deploymentPollTimer);
+    showDeploymentProgress("starting");
+    deploymentPollTimer = window.setTimeout(checkDeploymentProgress, 2_000);
+  };
 
   const triggerDeployment = async (status = deploymentStatus) => {
     status.textContent = "Starting the background SEO refresh…";
     const deployment = await request("/api/v1/admin/deployments/pages", {
       method: "POST",
     });
+    trackDeployment(deployment.requestedAt);
     status.textContent = deployment.runId
       ? "SEO refresh started. Static pages, RSS and sitemap will update in a few minutes."
       : "SEO refresh queued. Static pages, RSS and sitemap will update in a few minutes.";
@@ -592,6 +703,7 @@ const authorInitials = settings.authorName
     try {
       await loadDashboard();
       deploymentStatus.textContent = "";
+      void checkDeploymentProgress();
     } catch (error) {
       deploymentStatus.textContent = `You are signed in, but the bookshelf could not be loaded. ${(error as Error).message} Refresh the page to try again.`;
     }
