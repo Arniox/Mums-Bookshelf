@@ -18,6 +18,7 @@ import { exportData } from "./export";
 import {
   ApiError,
   corsMiddleware,
+  noStorePublicContent,
   parseJsonBody,
   requireAllowedMutationOrigin,
   success,
@@ -45,6 +46,9 @@ app.use("*", async (context, next) => {
 });
 app.use("*", secureHeaders());
 app.use("/api/*", corsMiddleware);
+app.use("/api/v1/works", noStorePublicContent);
+app.use("/api/v1/works/*", noStorePublicContent);
+app.use("/api/v1/settings/public", noStorePublicContent);
 app.use("/api/v1/auth/*", async (context, next) => {
   context.header("Cache-Control", "no-store, private");
   if (context.req.method === "POST")

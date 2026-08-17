@@ -24,6 +24,7 @@ async function apiGet<T>(path: string): Promise<T> {
   if (!api) throw new Error("No deployed content API is configured.");
   const response = await fetch(`${api}${path}`, {
     headers: { Accept: "application/json" },
+    cache: "no-store",
     signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok)
