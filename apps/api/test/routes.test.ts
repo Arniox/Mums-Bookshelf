@@ -208,6 +208,23 @@ describe("API routes", () => {
     expect(response.status).toBe(401);
   });
 
+  it("orders the full admin collection by publication date", async () => {
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/works",
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    const statement = database.statements.find((item) =>
+      item.sql.includes("SELECT * FROM works"),
+    );
+    expect(statement?.sql).toContain(
+      "ORDER BY published_at DESC, updated_at DESC",
+    );
+  });
+
   it("rejects CORS preflight from an unlisted origin", async () => {
     const response = await app.request(
       "/api/v1/works",
