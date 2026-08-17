@@ -59,7 +59,9 @@ const personSchema = {
       recent.length > 0 && (
         <aside class="recent-slip" aria-labelledby="recent-title" data-recent>
           <div class="recent-slip-heading">
-            <span class="recent-slip-mark" aria-hidden="true">◈</span>
+            <span class="recent-slip-mark" aria-hidden="true">
+              ◈
+            </span>
             <div>
               <p class="eyebrow">Fresh from the desk</p>
               <h2 id="recent-title">Recently published</h2>
@@ -87,7 +89,10 @@ const personSchema = {
       )
     }
 
-    <BookShelf works={works} recentWorkSlugs={recent.map((work) => work.slug)} />
+    <BookShelf
+      works={works}
+      recentWorkSlugs={recent.map((work) => work.slug)}
+    />
   </div>
 
   <section class="closing-note">
@@ -100,9 +105,8 @@ const personSchema = {
 <script>
   import { getRuntimePublicWorks } from "../lib/runtimeContent";
 
-  const recentList = document.querySelector<HTMLOListElement>(
-    "[data-recent-list]",
-  );
+  const recentList =
+    document.querySelector<HTMLOListElement>("[data-recent-list]");
   const base = import.meta.env.BASE_URL;
   const formatDate = (publishedAt: string) =>
     new Intl.DateTimeFormat("en", {
@@ -110,7 +114,9 @@ const personSchema = {
       year: "numeric",
     }).format(new Date(publishedAt));
 
-  const renderRecent = (works: Awaited<ReturnType<typeof getRuntimePublicWorks>>) => {
+  const renderRecent = (
+    works: Awaited<ReturnType<typeof getRuntimePublicWorks>>,
+  ) => {
     if (!recentList) return;
     const recent = [...works]
       .sort(
@@ -137,5 +143,7 @@ const personSchema = {
     );
   };
 
-  void getRuntimePublicWorks().then(renderRecent).catch(() => undefined);
+  void getRuntimePublicWorks()
+    .then(renderRecent)
+    .catch(() => undefined);
 </script>
