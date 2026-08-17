@@ -1,14 +1,14 @@
-import { describe, expect, it } from "vitest";
 import { getBookAppearance } from "@mums-bookshelf/shared";
+import { Window } from "happy-dom";
+import { describe, expect, it } from "vitest";
 import { works } from "../src/data/sample";
 import { matchesWork } from "../src/lib/filterWorks";
 import { localWorkDraftKey, parseLocalWorkDraft } from "../src/lib/localDraft";
 import { featuredFirstShuffle } from "../src/lib/randomiseWorks";
 import {
-  storyTextToEditorHtml,
-  wordHtmlToStoryHtml,
+    storyTextToEditorHtml,
+    wordHtmlToStoryHtml,
 } from "../src/lib/wordPaste";
-import { Window } from "happy-dom";
 
 describe("public library", () => {
   it("renders a populated public shelf without drafts", () => {

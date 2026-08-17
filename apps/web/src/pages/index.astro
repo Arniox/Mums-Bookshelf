@@ -1,6 +1,6 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
 import BookShelf from "../components/BookShelf.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
 import { getPublicSettings, getPublicWorks } from "../lib/contentSource";
 
 const [settings, works] = await Promise.all([
