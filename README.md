@@ -2,7 +2,7 @@
 
 **[Visit Mum's Bookshelf](https://denisediehl.com/)**
 
-A small author website with a warm, animated CSS bookshelf and a private editorial studio. The public site deploys to GitHub Pages, where its static HTML provides a resilient fallback and SEO surface. Published works are refreshed from the Cloudflare Worker API in the browser, while content, sessions, settings, and moderated comments live in Cloudflare D1.
+A small author website with a warm, animated CSS bookshelf and a private editorial studio. The public site deploys to GitHub Pages, where its static HTML provides a resilient fallback and SEO surface. Published works and story comments are refreshed from the Cloudflare Worker API in the browser, while content, sessions, settings, and comments live in Cloudflare D1.
 
 The studio keeps local recovery drafts, supports private online drafts from any device, and publishes works immediately through D1. Publishing automatically starts a background GitHub Pages refresh for static work pages, the sitemap, RSS, and social metadata; it does not delay readers seeing the new work.
 
