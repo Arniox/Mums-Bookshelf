@@ -108,7 +108,7 @@ export const commentInputSchema = z.object({
     .string()
     .trim()
     .min(1)
-    .max(300, "Comments must be 300 characters or fewer."),
+    .max(250, "Comments must be 250 characters or fewer."),
   website: z.string().max(0).optional(),
   turnstileToken: z.string().max(2_048).optional(),
 });
