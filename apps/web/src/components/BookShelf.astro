@@ -68,6 +68,7 @@ const featuredWork = works.find((work) => work.featured);
                   { "is-recent-release": recentWorkSlugs.includes(work.slug) },
                 ]}
                 data-featured={String(work.featured)}
+                data-order-key={work.id}
               >
                 <a
                   class:list={[
@@ -106,7 +107,7 @@ const featuredWork = works.find((work) => work.featured);
     <ul data-accessible-list>
       {
         works.map((work) => (
-          <li data-featured={String(work.featured)}>
+          <li data-featured={String(work.featured)} data-order-key={work.id}>
             <a href={`${base}works/${work.slug}/`}>{work.title}</a>
             <span>{work.publicationType.replace("-", " ")}</span>
           </li>
@@ -119,6 +120,7 @@ const featuredWork = works.find((work) => work.featured);
 <script>
   import { getBookAppearance, type Work } from "@mums-bookshelf/shared";
   import { featuredFirstShuffle } from "../lib/randomiseWorks";
+    import { dailyFeaturedOrder } from "../lib/randomiseWorks";
   import { getRuntimePublicWorks } from "../lib/runtimeContent";
 
   const shelf = document.querySelector<HTMLElement>("[data-bookshelf]");
@@ -140,12 +142,15 @@ const featuredWork = works.find((work) => work.featured);
   const orderShelf = () => {
     if (!shelfList || !accessibleList) return;
     featuredFirstShuffle(
+    dailyFeaturedOrder(
       [...shelfList.querySelectorAll<HTMLElement>(".book-slot")],
       (item) => item.dataset.featured === "true",
+      (item) => item.dataset.orderKey || "",
     ).forEach((item) => shelfList.append(item));
-    featuredFirstShuffle(
+    dailyFeaturedOrder(
       [...accessibleList.querySelectorAll<HTMLElement>("li")],
       (item) => item.dataset.featured === "true",
+      (item) => item.dataset.orderKey || "",
     ).forEach((item) => accessibleList.append(item));
   };
 
@@ -204,6 +209,7 @@ const featuredWork = works.find((work) => work.featured);
       const slot = document.createElement("li");
       slot.className = "book-slot";
       slot.dataset.featured = String(work.featured);
+      slot.dataset.orderKey = work.id;
       if (recentSlugs.includes(work.slug))
         slot.classList.add("is-recent-release");
 
@@ -250,6 +256,7 @@ const featuredWork = works.find((work) => work.featured);
 
       const item = document.createElement("li");
       item.dataset.featured = String(work.featured);
+      item.dataset.orderKey = work.id;
       const link = document.createElement("a");
       link.href = workUrl(work.slug);
       link.textContent = work.title;
