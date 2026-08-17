@@ -1411,6 +1411,46 @@ fieldset {
   margin: 1.5rem 0;
   font-size: 1.05rem;
 }
+.rich-story-editor {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #fffdf7;
+}
+.rich-story-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(91, 48, 70, 0.06);
+}
+.rich-story-toolbar button {
+  min-height: 34px;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink);
+  background: var(--paper);
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+.rich-story-toolbar button:hover,
+.rich-story-toolbar button:focus-visible {
+  border-color: var(--plum);
+  color: var(--plum);
+}
+.rich-story-canvas {
+  min-height: 24rem;
+  padding: 1.1rem;
+  outline: none;
+  line-height: 1.7;
+}
+.rich-story-canvas:focus {
+  box-shadow: inset 0 0 0 2px rgba(91, 48, 70, 0.2);
+}
+.rich-story-canvas > :first-child {
+  margin-top: 0;
+}
 .draft-safety-note {
   padding: 1rem 1.2rem;
   border-left: 4px solid var(--gold);
