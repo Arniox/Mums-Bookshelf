@@ -135,6 +135,12 @@ describe("public library", () => {
       '<p data-first-line-indent="true">A <strong>bold</strong>, <em>italic</em>, <u>underlined</u> and <s>struck</s> line.<br>Another line.</p><p data-indent="true">Indented paragraph.</p>',
     );
     expect(
+      wordHtmlToStoryHtml(
+        `<p style="mso-list:l0 level1 lfo1">• First item</p><p style="mso-list:l0 level1 lfo1">• Second item</p>`,
+        document,
+      ),
+    ).toBe("<ul><li>• First item</li><li>• Second item</li></ul>");
+    expect(
       storyTextToEditorHtml("## A heading\n\nA **bold** line", document),
     ).toBe("<h2>A heading</h2><p>A <strong>bold</strong> line</p>");
     expect(

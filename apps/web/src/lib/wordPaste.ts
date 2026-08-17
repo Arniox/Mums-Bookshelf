@@ -129,6 +129,13 @@ function normaliseNode(node: Node, document: Document): Node[] {
     if (title) element.setAttribute("title", title);
   }
   appendChildren(source, element, document);
+  if (isWordListItem) {
+    element.dataset.wordList = /^\s*(?:\d+|[a-z])[.)]\s/iu.test(
+      source.textContent || "",
+    )
+      ? "ol"
+      : "ul";
+  }
   if (tag === "p" || tag === "li") {
     if (
       source.dataset.indent === "true" ||
@@ -169,6 +176,21 @@ export function normaliseStoryHtml(html: string, document: Document) {
   source.body.innerHTML = html;
   const output = document.createElement("div");
   appendChildren(source.body, output, document);
+  let currentList: HTMLOListElement | HTMLUListElement | undefined;
+  Array.from(output.children).forEach((element) => {
+    if (!(element instanceof HTMLLIElement) || !element.dataset.wordList) {
+      currentList = undefined;
+      return;
+    }
+    const listTag = element.dataset.wordList;
+    if (!currentList || currentList.tagName.toLowerCase() !== listTag) {
+      currentList = document.createElement(listTag) as
+        HTMLOListElement | HTMLUListElement;
+      element.before(currentList);
+    }
+    delete element.dataset.wordList;
+    currentList.append(element);
+  });
   return output.innerHTML;
 }
 
