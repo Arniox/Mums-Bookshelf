@@ -10,9 +10,11 @@ export function slugify(value: string): string {
     .slice(0, 100);
 }
 
+export const AUSTRALIA_NEW_ZEALAND_READING_WORDS_PER_MINUTE = 230;
+
 export function calculateReadingTime(
   content: string,
-  wordsPerMinute = 220,
+  wordsPerMinute = AUSTRALIA_NEW_ZEALAND_READING_WORDS_PER_MINUTE,
 ): number {
   const words = content.trim() ? content.trim().split(/\s+/u).length : 0;
   return calculateReadingTimeFromWordCount(words, wordsPerMinute);
@@ -20,7 +22,7 @@ export function calculateReadingTime(
 
 export function calculateReadingTimeFromWordCount(
   wordCount: number,
-  wordsPerMinute = 220,
+  wordsPerMinute = AUSTRALIA_NEW_ZEALAND_READING_WORDS_PER_MINUTE,
 ): number {
   return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
 }
