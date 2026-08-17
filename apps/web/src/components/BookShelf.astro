@@ -159,16 +159,26 @@ const featuredWork = works.find((work) => work.featured);
     )
       return;
     event.preventDefault();
+    const bounds = book.getBoundingClientRect();
     book.classList.add("is-opening");
-    const flyingBook = document.createElement("span");
-    flyingBook.className = "flying-book";
-    flyingBook.style.setProperty(
-      "--flying-book-color",
-      book.dataset.bookColor || "#5b3043",
-    );
+    const flyingBook = book.cloneNode(true) as HTMLAnchorElement;
+    flyingBook.classList.add("flying-book");
+    flyingBook.removeAttribute("href");
     flyingBook.setAttribute("aria-hidden", "true");
+    flyingBook.style.top = `${bounds.top}px`;
+    flyingBook.style.left = `${bounds.left}px`;
+    flyingBook.style.width = `${bounds.width}px`;
+    flyingBook.style.height = `${bounds.height}px`;
+    flyingBook.style.setProperty(
+      "--book-fly-x",
+      `${window.innerWidth / 2 - (bounds.left + bounds.width / 2)}px`,
+    );
+    flyingBook.style.setProperty(
+      "--book-fly-y",
+      `${window.innerHeight / 2 - (bounds.top + bounds.height / 2)}px`,
+    );
     document.body.append(flyingBook);
-    window.setTimeout(() => window.location.assign(book.href), 620);
+    window.setTimeout(() => window.location.assign(book.href), 560);
   };
 
   const bindBookOpening = () => {

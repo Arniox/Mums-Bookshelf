@@ -219,12 +219,6 @@ const structuredData = {
 </BaseLayout>
 
 <script>
-  const base = import.meta.env.BASE_URL;
-  const workSlug = window.location.pathname.split("/").filter(Boolean).at(-1);
-  const liveReaderUrl = `${base}works/read/?work=${encodeURIComponent(workSlug || "")}`;
-  if (window.location.href !== liveReaderUrl)
-    window.location.replace(liveReaderUrl);
-
   const share = document.querySelector<HTMLButtonElement>("[data-share]");
   const status = document.querySelector<HTMLElement>("[data-share-status]");
   share?.addEventListener("click", async () => {
