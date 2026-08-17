@@ -144,6 +144,15 @@ describe("public library", () => {
       storyTextToEditorHtml("## A heading\n\nA **bold** line", document),
     ).toBe("<h2>A heading</h2><p>A <strong>bold</strong> line</p>");
     expect(
+      storyTextToEditorHtml("###\n\n#####\n\n### A heading", document),
+    ).toBe("<hr><hr><h3>A heading</h3>");
+    expect(
+      wordHtmlToStoryHtml(
+        '<p data-drop-cap="false">A plain opening.</p>',
+        document,
+      ),
+    ).toBe('<p data-drop-cap="false">A plain opening.</p>');
+    expect(
       storyTextToEditorHtml(
         `<!-- /* Font Definitions */\n@font-face { font-family: "Cambria Math"; }\n-->\nI shouldn't be here.\n\nDaddy's home.`,
         document,
