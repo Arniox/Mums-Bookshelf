@@ -57,7 +57,7 @@ const personSchema = {
 
     {
       recent.length > 0 && (
-        <aside class="recent-slip" aria-labelledby="recent-title">
+        <aside class="recent-slip" aria-labelledby="recent-title" data-recent>
           <div class="recent-slip-heading">
             <span class="recent-slip-mark" aria-hidden="true">◈</span>
             <div>
@@ -65,7 +65,7 @@ const personSchema = {
               <h2 id="recent-title">Recently published</h2>
             </div>
           </div>
-          <ol>
+          <ol data-recent-list>
             {recent.map((work) => (
               <li>
                 <a href={`${base}works/${work.slug}/`}>{work.title}</a>
@@ -96,3 +96,46 @@ const personSchema = {
     <p>— {settings.authorName}</p>
   </section>
 </BaseLayout>
+
+<script>
+  import { getRuntimePublicWorks } from "../lib/runtimeContent";
+
+  const recentList = document.querySelector<HTMLOListElement>(
+    "[data-recent-list]",
+  );
+  const base = import.meta.env.BASE_URL;
+  const formatDate = (publishedAt: string) =>
+    new Intl.DateTimeFormat("en", {
+      month: "short",
+      year: "numeric",
+    }).format(new Date(publishedAt));
+
+  const renderRecent = (works: Awaited<ReturnType<typeof getRuntimePublicWorks>>) => {
+    if (!recentList) return;
+    const recent = [...works]
+      .sort(
+        (left, right) =>
+          Date.parse(right.publishedAt || "") -
+          Date.parse(left.publishedAt || ""),
+      )
+      .slice(0, 3);
+    recentList.replaceChildren(
+      ...recent.map((work) => {
+        const item = document.createElement("li");
+        const link = document.createElement("a");
+        link.href = `${base}works/${work.slug}/`;
+        link.textContent = work.title;
+        item.append(link);
+        if (work.publishedAt) {
+          const date = document.createElement("time");
+          date.dateTime = work.publishedAt;
+          date.textContent = formatDate(work.publishedAt);
+          item.append(date);
+        }
+        return item;
+      }),
+    );
+  };
+
+  void getRuntimePublicWorks().then(renderRecent).catch(() => undefined);
+</script>
