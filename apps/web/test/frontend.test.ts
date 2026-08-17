@@ -4,6 +4,8 @@ import { works } from "../src/data/sample";
 import { matchesWork } from "../src/lib/filterWorks";
 import { localWorkDraftKey, parseLocalWorkDraft } from "../src/lib/localDraft";
 import { featuredFirstShuffle } from "../src/lib/randomiseWorks";
+import { wordHtmlToMarkdown } from "../src/lib/wordPaste";
+import { Window } from "happy-dom";
 
 describe("public library", () => {
   it("renders a populated public shelf without drafts", () => {
@@ -73,5 +75,17 @@ describe("public library", () => {
     ).toMatchObject({ fields: { title: "A draft" } });
     expect(parseLocalWorkDraft("not json")).toBeNull();
     expect(parseLocalWorkDraft(JSON.stringify({ version: 2 }))).toBeNull();
+  });
+
+  it("converts Word-style rich text into story Markdown", () => {
+    const document = new Window().document;
+    expect(
+      wordHtmlToMarkdown(
+        `<h2>A heading</h2><p>One <strong>important</strong> thought.</p><ul><li>First item</li><li><em>Second item</em></li></ul><p><a href="https://example.com">Read more</a></p>`,
+        document,
+      ),
+    ).toBe(
+      "## A heading\n\nOne **important** thought.\n\n- First item\n- *Second item*\n\n[Read more](https://example.com)",
+    );
   });
 });

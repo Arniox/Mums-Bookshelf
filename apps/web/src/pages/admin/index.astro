@@ -306,7 +306,10 @@ const authorInitials = settings.authorName
       <label data-full-story-field
         ><span
           >Full story <abbr title="required when Full Story is selected">*</abbr
-          ><small>Markdown supported; required for Full Story</small></span
+          ><small
+            >Markdown supported. Pasting from Word keeps paragraphs, headings,
+            bold, italics, quotes and lists; required for Full Story.</small
+          ></span
         ><textarea name="storyContent" rows="15"></textarea></label
       >
 
@@ -459,6 +462,7 @@ const authorInitials = settings.authorName
     parseLocalWorkDraft,
     type LocalWorkDraft,
   } from "../../lib/localDraft";
+  import { wordHtmlToMarkdown } from "../../lib/wordPaste";
 
   type ApiWork = Record<string, any>;
   const app = document.querySelector<HTMLElement>("[data-admin-app]")!;
@@ -889,6 +893,26 @@ const authorInitials = settings.authorName
     updatePreview();
     window.clearTimeout(localSaveTimer);
     localSaveTimer = window.setTimeout(() => saveLocalDraft(true), 750);
+  });
+
+  const fullStoryField = workForm.elements.namedItem(
+    "storyContent",
+  ) as HTMLTextAreaElement;
+  fullStoryField.addEventListener("paste", (event) => {
+    const html = event.clipboardData?.getData("text/html");
+    if (!html) return;
+
+    const markdown = wordHtmlToMarkdown(html, document);
+    if (!markdown) return;
+
+    event.preventDefault();
+    fullStoryField.setRangeText(
+      markdown,
+      fullStoryField.selectionStart,
+      fullStoryField.selectionEnd,
+      "end",
+    );
+    fullStoryField.dispatchEvent(new Event("input", { bubbles: true }));
   });
 
   document
