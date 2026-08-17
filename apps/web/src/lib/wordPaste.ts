@@ -102,10 +102,11 @@ function inlineMarkdownToHtml(value: string) {
 }
 
 export function storyTextToEditorHtml(value: string, document: Document) {
-  if (/<[a-z][\s\S]*>/iu.test(value))
-    return normaliseStoryHtml(value, document);
+  const cleanedValue = value.replace(/<!--[\s\S]*?-->/gu, "").trim();
+  if (/<[a-z][\s\S]*>/iu.test(cleanedValue))
+    return normaliseStoryHtml(cleanedValue, document);
 
-  const lines = value.replace(/\r\n?/g, "\n").split("\n");
+  const lines = cleanedValue.replace(/\r\n?/g, "\n").split("\n");
   const output: string[] = [];
   let index = 0;
   while (index < lines.length) {

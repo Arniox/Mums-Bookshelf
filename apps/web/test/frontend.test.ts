@@ -129,5 +129,11 @@ describe("public library", () => {
     expect(
       storyTextToEditorHtml("## A heading\n\nA **bold** line", document),
     ).toBe("<h2>A heading</h2><p>A <strong>bold</strong> line</p>");
+    expect(
+      storyTextToEditorHtml(
+        `<!-- /* Font Definitions */\n@font-face { font-family: "Cambria Math"; }\n-->\nI shouldn't be here.\n\nDaddy's home.`,
+        document,
+      ),
+    ).toBe("<p>I shouldn't be here.</p><p>Daddy's home.</p>");
   });
 });
