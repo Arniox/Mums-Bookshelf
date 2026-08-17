@@ -861,6 +861,8 @@ const authorInitials = settings.authorName
 
   const openEditor = (work?: ApiWork) => {
     workForm.reset();
+    storyEditor.innerHTML = "";
+    fullStoryField.value = "";
     editorStatus.textContent = "";
     document.querySelector<HTMLElement>("[data-editor-title]")!.textContent =
       work ? "Edit work" : "Add a new work";
@@ -963,6 +965,14 @@ const authorInitials = settings.authorName
     fullStoryField.value = storyEditor.innerHTML.trim();
     fullStoryField.dispatchEvent(new Event("input", { bubbles: true }));
   };
+  const executeRichTextCommand = (command: string, value?: string) =>
+    (
+      Reflect.get(document, "execCommand") as (
+        commandId: string,
+        showUi?: boolean,
+        value?: string,
+      ) => boolean
+    )(command, false, value);
 
   storyEditor.addEventListener("input", () => syncStoryEditor());
   storyEditor.addEventListener("blur", () => syncStoryEditor(true));
@@ -970,13 +980,14 @@ const authorInitials = settings.authorName
     const html = event.clipboardData?.getData("text/html");
     if (!html) return;
     event.preventDefault();
-    document.execCommand("insertHTML", false, wordHtmlToStoryHtml(html, document));
+    executeRichTextCommand("insertHTML", wordHtmlToStoryHtml(html, document));
     syncStoryEditor(true);
   });
 
   document
     .querySelectorAll<HTMLButtonElement>("[data-story-command]")
     .forEach((button) => {
+      button.addEventListener("mousedown", (event) => event.preventDefault());
       button.addEventListener("click", () => {
         storyEditor.focus();
         const command = button.dataset.storyCommand!;
@@ -985,16 +996,17 @@ const authorInitials = settings.authorName
             ? prompt("Paste the link address (https://…)")
             : undefined;
         if (command !== "createLink" || value)
-          document.execCommand(command, false, value || undefined);
+          executeRichTextCommand(command, value || undefined);
         syncStoryEditor();
       });
     });
   document
     .querySelectorAll<HTMLButtonElement>("[data-story-block]")
     .forEach((button) => {
+      button.addEventListener("mousedown", (event) => event.preventDefault());
       button.addEventListener("click", () => {
         storyEditor.focus();
-        document.execCommand("formatBlock", false, button.dataset.storyBlock!);
+        executeRichTextCommand("formatBlock", button.dataset.storyBlock!);
         syncStoryEditor();
       });
     });
@@ -1019,7 +1031,11 @@ const authorInitials = settings.authorName
     const purchaseUrl = workForm.elements.namedItem(
       "purchaseUrl",
     ) as HTMLInputElement;
-    fullStory.required = visibility === "full";
+    fullStory.required = false;
+    storyEditor.setAttribute(
+      "aria-required",
+      String(visibility === "full"),
+    );
     fullStory.closest<HTMLElement>("[data-full-story-field]")!.hidden =
       visibility !== "full";
     const linkOnly = visibility === "external-only";
@@ -1048,17 +1064,23 @@ const authorInitials = settings.authorName
     });
 
   const updatePreview = () => {
-    const story = (
-      workForm.elements.namedItem("storyContent") as HTMLTextAreaElement
-    ).value;
+    const story = normaliseStoryHtml(storyEditor.innerHTML, document);
     document.querySelector<HTMLElement>("[data-markdown-preview]")!.innerHTML =
-      `<p>${escape(story || "Your preview will appear here.")
-        .replace(/\n\n/g, "</p><p>")
-        .replace(/\n/g, "<br>")}</p>`;
+      story || "<p>Your preview will appear here.</p>";
   };
 
   workForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    syncStoryEditor(true);
+    const visibility = String(
+      (workForm.elements.namedItem("contentVisibility") as RadioNodeList)
+        .value,
+    );
+    if (visibility === "full" && !fullStoryField.value.trim()) {
+      editorStatus.textContent = "Add the full story before saving this work.";
+      storyEditor.focus();
+      return;
+    }
     const action =
       (event as SubmitEvent).submitter instanceof HTMLElement
         ? (event as SubmitEvent).submitter?.dataset.editorAction

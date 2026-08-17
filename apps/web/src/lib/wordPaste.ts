@@ -20,24 +20,31 @@ function isSafeLink(value: string | null) {
   return Boolean(value && /^(?:https?:|mailto:)/iu.test(value.trim()));
 }
 
-function appendChildren(source: Node, target: Node, document: Document): void {
+function appendChildren(
+  source: Node,
+  target: DocumentFragment | HTMLElement,
+  document: Document,
+): void {
   Array.from(source.childNodes).forEach((child) =>
     target.append(...normaliseNode(child, document)),
   );
 }
 
 function normaliseNode(node: Node, document: Document): Node[] {
-  if (node.nodeType === Node.TEXT_NODE)
+  if (node.nodeType === 3)
     return [
-      document.createTextNode(
-        node.textContent?.replace(/\u00a0/g, " ") || "",
-      ),
+      document.createTextNode(node.textContent?.replace(/\u00a0/g, " ") || ""),
     ];
-  if (node.nodeType !== Node.ELEMENT_NODE) return [];
+  if (node.nodeType !== 1) return [];
 
   const source = node as HTMLElement;
   const tagName = source.tagName.toLowerCase();
-  const tag = tagName === "h1" || tagName === "h5" || tagName === "h6" ? "h2" : tagName;
+  const tag =
+    tagName === "h1" || tagName === "h5" || tagName === "h6"
+      ? "h2"
+      : tagName === "div"
+        ? "p"
+        : tagName;
   const style = (source.getAttribute("style") || "").toLowerCase();
   const bold = /font-weight\s*:\s*(?:bold|[6-9]00)/u.test(style);
   const italic = /font-style\s*:\s*italic/u.test(style);
@@ -88,17 +95,15 @@ function inlineMarkdownToHtml(value: string) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
   return output
-    .replace(
-      /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gu,
-      '<a href="$2">$1</a>',
-    )
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gu, '<a href="$2">$1</a>')
     .replace(/\*\*\*([^*]+)\*\*\*/gu, "<strong><em>$1</em></strong>")
     .replace(/\*\*([^*]+)\*\*/gu, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/gu, "<em>$1</em>");
 }
 
 export function storyTextToEditorHtml(value: string, document: Document) {
-  if (/<[a-z][\s\S]*>/iu.test(value)) return normaliseStoryHtml(value, document);
+  if (/<[a-z][\s\S]*>/iu.test(value))
+    return normaliseStoryHtml(value, document);
 
   const lines = value.replace(/\r\n?/g, "\n").split("\n");
   const output: string[] = [];

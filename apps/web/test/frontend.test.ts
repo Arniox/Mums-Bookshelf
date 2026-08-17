@@ -81,14 +81,14 @@ describe("public library", () => {
   });
 
   it("keeps Word-style rich text in the story editor", () => {
-    const document = new Window().document;
+    const document = new Window().document as unknown as Document;
     expect(
       wordHtmlToStoryHtml(
         `<h2>A heading</h2><p>One <strong>important</strong> thought.</p><ul><li>First item</li><li><em>Second item</em></li></ul><p><a href="https://example.com">Read more</a></p>`,
         document,
       ),
     ).toBe(
-      "<h2>A heading</h2><p>One <strong>important</strong> thought.</p><ul><li>First item</li><li><em>Second item</em></li></ul><p><a href=\"https://example.com\">Read more</a></p>",
+      '<h2>A heading</h2><p>One <strong>important</strong> thought.</p><ul><li>First item</li><li><em>Second item</em></li></ul><p><a href="https://example.com">Read more</a></p>',
     );
     expect(
       storyTextToEditorHtml("## A heading\n\nA **bold** line", document),
