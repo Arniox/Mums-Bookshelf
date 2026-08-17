@@ -31,6 +31,8 @@ class FakeStatement {
     if (this.sql.includes("FROM sessions s JOIN admin_users")) {
       return this.database.session as T;
     }
+    if (this.sql.includes("SELECT id FROM works WHERE id"))
+      return { id: "work-1" } as T;
     return null;
   }
 
@@ -361,6 +363,35 @@ describe("API routes", () => {
       },
     });
     expect(database.statements).toHaveLength(0);
+  });
+
+  it("approves a valid reader comment for immediate display", async () => {
+    env.PUBLIC_COMMENTS_ENABLED = "true";
+    const response = await app.request(
+      "/api/v1/works/work-1/comments",
+      {
+        method: "POST",
+        headers: {
+          Origin: "https://allowed.example",
+          "Content-Type": "application/json",
+          "CF-Connecting-IP": "192.0.2.1",
+        },
+        body: JSON.stringify({
+          displayName: "A reader",
+          body: "This stayed with me long after I finished reading.",
+        }),
+      },
+      env,
+    );
+
+    expect(response.status).toBe(201);
+    expect(await response.json()).toMatchObject({
+      data: { approved: true },
+    });
+    const statement = database.statements.find((item) =>
+      item.sql.includes("INSERT INTO comments"),
+    );
+    expect(statement?.sql).toContain("'approved'");
   });
 
   it("dispatches the Pages workflow for an authenticated administrator", async () => {
