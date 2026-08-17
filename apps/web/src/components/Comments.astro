@@ -25,39 +25,47 @@ const { workId } = Astro.props;
           <p class="comment-empty">Gathering reader notes…</p>
         </div>
         <p class="comment-overflow" data-comment-overflow hidden></p>
-      <form data-comment-form>
+        <button class="button secondary" type="button" data-open-comment-dialog>
+          Add a comment
+        </button>
+      </div>
+      <dialog class="comment-dialog" data-comment-dialog aria-labelledby="comment-dialog-title">
+        <form method="dialog" class="dialog-close-row">
+          <button class="icon-button" value="cancel" aria-label="Close comment form">
+            ×
+          </button>
+        </form>
+        <form data-comment-form>
           <h3>Leave a little note</h3>
           <p>No email needed. Your note will appear here straight away.</p>
-        <label>
-          <span>
-            Name <small>Optional</small>
-          </span>
-          <input name="displayName" maxlength="80" autocomplete="name" />
-        </label>
-        <label>
-          <span>Comment</span>
-          <textarea
-            name="body"
-            required
-            maxlength="250"
-            rows="4"
-            aria-describedby="comment-character-limit"
-          />
-          <small id="comment-character-limit" class="character-count">
-            <span data-comment-count>0</span>/250 characters
-          </small>
-        </label>
-        <label class="honeypot" aria-hidden="true">
-          Website
-          <input name="website" tabindex="-1" autocomplete="off" />
-        </label>
-        <div data-turnstile />
-        <button class="button primary" type="submit">
-          Add comment
-        </button>
-        <p class="form-status" data-comment-status aria-live="polite" />
-      </form>
-      </div>
+          <label>
+            <span>
+              Name <small>Optional</small>
+            </span>
+            <input name="displayName" maxlength="80" autocomplete="name" />
+          </label>
+          <label>
+            <span>Comment</span>
+            <textarea
+              name="body"
+              required
+              maxlength="250"
+              rows="4"
+              aria-describedby="comment-character-limit"
+            />
+            <small id="comment-character-limit" class="character-count">
+              <span data-comment-count>0</span>/250 characters
+            </small>
+          </label>
+          <label class="honeypot" aria-hidden="true">
+            Website
+            <input name="website" tabindex="-1" autocomplete="off" />
+          </label>
+          <div data-turnstile />
+          <button class="button primary" type="submit">Add comment</button>
+          <p class="form-status" data-comment-status aria-live="polite" />
+        </form>
+      </dialog>
     </section>
   )
 }
@@ -69,6 +77,12 @@ const { workId } = Astro.props;
     const list = section.querySelector<HTMLElement>("[data-comment-list]")!;
     const overflow = section.querySelector<HTMLElement>(
       "[data-comment-overflow]",
+    )!;
+    const dialog = section.querySelector<HTMLDialogElement>(
+      "[data-comment-dialog]",
+    )!;
+    const openDialogButton = section.querySelector<HTMLButtonElement>(
+      "[data-open-comment-dialog]",
     )!;
     const status = section.querySelector<HTMLElement>("[data-comment-status]")!;
     const commentBody =
@@ -92,6 +106,11 @@ const { workId } = Astro.props;
       commentCount.textContent = String(commentBody.value.length);
     };
     commentBody.addEventListener("input", updateCommentCount);
+    openDialogButton.addEventListener("click", () => {
+      status.textContent = "";
+      dialog.showModal();
+      commentBody.focus();
+    });
 
     const commentBubble = (comment: PublicComment) => {
       const bubble = document.createElement("article");
@@ -208,6 +227,7 @@ const { workId } = Astro.props;
           ];
           renderComments(comments);
           status.textContent = "Your note is now on the page.";
+          dialog.close();
         } catch (error) {
           status.textContent = (error as Error).message;
         }
@@ -219,13 +239,11 @@ const { workId } = Astro.props;
   .comments-section {
     margin: 5rem 0 0;
     border-top: 1px solid var(--line);
-    padding-top: 2.5rem;
+    padding-top: 2rem;
   }
   .comment-stage {
-    position: relative;
-    min-height: 39rem;
-    overflow: hidden;
-    border: 1px solid rgba(91, 48, 67, 0.22);
+    padding: 1.5rem;
+    border: 1px solid var(--line);
     background:
       linear-gradient(rgba(91, 48, 67, 0.045) 1px, transparent 1px) 0 0 / 100%
         2rem,
@@ -233,28 +251,23 @@ const { workId } = Astro.props;
     box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.25);
   }
   .comment-stage-heading {
-    position: absolute;
-    z-index: 3;
-    top: 1.5rem;
-    left: 50%;
-    width: min(31rem, calc(100% - 2rem));
-    transform: translateX(-50%);
-    text-align: center;
+    max-width: 38rem;
+    margin: 0 auto 1.2rem;
+    text-align: left;
   }
   .comment-stage-heading .eyebrow {
     margin-bottom: 0.3rem;
   }
   .comment-stage-heading h2 {
     margin: 0;
-    font-size: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
   }
   [data-comment-list] {
-    position: absolute;
-    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
   }
   .comment-bubble {
-    position: absolute;
-    width: min(15rem, 34vw);
     padding: 0.9rem 1rem;
     border: 1px solid rgba(76, 50, 35, 0.2);
     border-radius: 2px 12px 12px 12px;
@@ -293,85 +306,56 @@ const { workId } = Astro.props;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 4;
   }
-  .comment-bubble:nth-child(1) {
-    top: 7.5rem;
-    left: 4%;
-    --bubble-tilt: -2deg;
-  }
-  .comment-bubble:nth-child(2) {
-    top: 7rem;
-    right: 5%;
-    --bubble-tilt: 2deg;
-  }
-  .comment-bubble:nth-child(3) {
-    bottom: 3rem;
-    left: 8%;
-    --bubble-tilt: 1.5deg;
-  }
-  .comment-bubble:nth-child(4) {
-    right: 8%;
-    bottom: 3.5rem;
-    --bubble-tilt: -1.5deg;
-  }
-  .comment-bubble:nth-child(5) {
-    top: 16.5rem;
-    left: 1%;
-    --bubble-tilt: 2deg;
-  }
-  .comment-bubble:nth-child(6) {
-    top: 16rem;
-    right: 1%;
-    --bubble-tilt: -2deg;
-  }
-  .comment-bubble:nth-child(7),
-  .comment-bubble:nth-child(8) {
-    display: none;
-  }
+  .comment-bubble:nth-child(1) { --bubble-tilt: -1deg; }
+  .comment-bubble:nth-child(2) { --bubble-tilt: 1deg; }
+  .comment-bubble:nth-child(3) { --bubble-tilt: 0.6deg; }
+  .comment-bubble:nth-child(4) { --bubble-tilt: -0.6deg; }
+  .comment-bubble:nth-child(5) { --bubble-tilt: 1.2deg; }
+  .comment-bubble:nth-child(6) { --bubble-tilt: -1.2deg; }
   .comment-empty {
-    position: absolute;
-    top: 7.2rem;
-    left: 50%;
-    width: min(21rem, calc(100% - 2rem));
-    margin: 0;
-    transform: translateX(-50%);
+    grid-column: 1 / -1;
+    margin: 0.5rem 0;
     color: var(--muted);
     font: italic 1.05rem var(--serif);
-    text-align: center;
+    text-align: left;
   }
   .comment-overflow {
-    position: absolute;
-    bottom: 1rem;
-    left: 50%;
-    z-index: 3;
-    margin: 0;
-    transform: translateX(-50%);
+    margin: 1rem 0 0;
     color: var(--muted);
     font-size: 0.72rem;
   }
-  .comments-section form {
-    position: absolute;
-    z-index: 2;
-    top: 50%;
-    left: 50%;
-    width: min(25rem, calc(100% - 2rem));
+  .comment-stage > .button {
+    margin-top: 1.2rem;
+  }
+  .comment-dialog {
+    width: min(32rem, calc(100% - 2rem));
+    padding: 2rem;
+    border: 0;
+    color: var(--ink);
+    background: var(--paper);
+    box-shadow: 0 24px 70px rgba(31, 23, 20, 0.35);
+  }
+  .comment-dialog::backdrop {
+    background: rgba(31, 23, 20, 0.62);
+    backdrop-filter: blur(2px);
+  }
+  .comment-dialog [data-comment-form] {
     padding: 1.25rem;
     display: grid;
     gap: 1rem;
     border: 1px solid rgba(91, 48, 67, 0.32);
     background: rgba(255, 253, 247, 0.97);
-    box-shadow: 0 14px 28px rgba(62, 38, 25, 0.2);
-    transform: translate(-50%, -34%);
   }
-  .comments-section h3 {
+  .comment-dialog h3 {
     margin: 0;
     font-size: 1.8rem;
   }
-  .comments-section form > p {
+  .comment-dialog form > p {
     margin: 0;
     color: var(--muted);
     font-size: 0.82rem;
   }
-  .comments-section .button {
+  .comment-dialog .button {
     justify-self: center;
   }
   .character-count {
@@ -386,39 +370,10 @@ const { workId } = Astro.props;
     left: -9999px;
   }
   @media (max-width: 700px) {
-    .comment-stage {
-      min-height: 45rem;
-    }
-    .comment-bubble {
-      width: min(11rem, 40vw);
-      padding: 0.65rem 0.75rem;
-    }
+    [data-comment-list] { grid-template-columns: 1fr; }
     .comment-bubble p {
       font-size: 0.9rem;
       -webkit-line-clamp: 3;
-    }
-    .comment-bubble:nth-child(1) {
-      top: 7rem;
-      left: 2%;
-    }
-    .comment-bubble:nth-child(2) {
-      top: 7rem;
-      right: 2%;
-    }
-    .comment-bubble:nth-child(3) {
-      bottom: 2rem;
-      left: 2%;
-    }
-    .comment-bubble:nth-child(4) {
-      right: 2%;
-      bottom: 2rem;
-    }
-    .comment-bubble:nth-child(5),
-    .comment-bubble:nth-child(6) {
-      display: none;
-    }
-    .comments-section form {
-      transform: translate(-50%, -38%);
     }
   }
 </style>
