@@ -957,25 +957,47 @@ const authorInitials = settings.authorName
     localSaveTimer = window.setTimeout(() => saveLocalDraft(true), 750);
   });
 
-  const fullStoryField = workForm.elements.namedItem(
-    "storyContent",
-  ) as HTMLTextAreaElement;
-  fullStoryField.addEventListener("paste", (event) => {
+  const syncStoryEditor = (normalise = false) => {
+    if (normalise)
+      storyEditor.innerHTML = normaliseStoryHtml(storyEditor.innerHTML, document);
+    fullStoryField.value = storyEditor.innerHTML.trim();
+    fullStoryField.dispatchEvent(new Event("input", { bubbles: true }));
+  };
+
+  storyEditor.addEventListener("input", () => syncStoryEditor());
+  storyEditor.addEventListener("blur", () => syncStoryEditor(true));
+  storyEditor.addEventListener("paste", (event) => {
     const html = event.clipboardData?.getData("text/html");
     if (!html) return;
-
-    const markdown = wordHtmlToMarkdown(html, document);
-    if (!markdown) return;
-
     event.preventDefault();
-    fullStoryField.setRangeText(
-      markdown,
-      fullStoryField.selectionStart,
-      fullStoryField.selectionEnd,
-      "end",
-    );
-    fullStoryField.dispatchEvent(new Event("input", { bubbles: true }));
+    document.execCommand("insertHTML", false, wordHtmlToStoryHtml(html, document));
+    syncStoryEditor(true);
   });
+
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-story-command]")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        storyEditor.focus();
+        const command = button.dataset.storyCommand!;
+        const value =
+          command === "createLink"
+            ? prompt("Paste the link address (https://…)")
+            : undefined;
+        if (command !== "createLink" || value)
+          document.execCommand(command, false, value || undefined);
+        syncStoryEditor();
+      });
+    });
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-story-block]")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        storyEditor.focus();
+        document.execCommand("formatBlock", false, button.dataset.storyBlock!);
+        syncStoryEditor();
+      });
+    });
 
   document
     .querySelector("[data-save-local]")
