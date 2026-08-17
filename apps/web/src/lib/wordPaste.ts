@@ -30,7 +30,9 @@ function stripClipboardComments(value: string) {
 
 type FirstLineIndent = "small" | "medium" | "large";
 
-function textIndentToFirstLineIndent(value: string) {
+function textIndentToFirstLineIndent(
+  value: string,
+): FirstLineIndent | undefined {
   const match = value
     .trim()
     .toLowerCase()
@@ -56,12 +58,14 @@ function textIndentToFirstLineIndent(value: string) {
   return "large";
 }
 
-function firstLineIndentFromStyle(value: string) {
+function firstLineIndentFromStyle(value: string): FirstLineIndent | undefined {
   const match = value.match(/(?:^|;)\s*text-indent\s*:\s*([^;]+)/iu);
   return match ? textIndentToFirstLineIndent(match[1]!) : undefined;
 }
 
-function wordDefaultFirstLineIndent(value: string) {
+function wordDefaultFirstLineIndent(
+  value: string,
+): FirstLineIndent | undefined {
   const comments =
     value.match(/<!--[\s\S]*?-->|&lt;!--[\s\S]*?--&gt;/giu) || [];
   for (const comment of comments) {
