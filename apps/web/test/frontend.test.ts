@@ -4,7 +4,10 @@ import { works } from "../src/data/sample";
 import { matchesWork } from "../src/lib/filterWorks";
 import { localWorkDraftKey, parseLocalWorkDraft } from "../src/lib/localDraft";
 import { featuredFirstShuffle } from "../src/lib/randomiseWorks";
-import { wordHtmlToMarkdown } from "../src/lib/wordPaste";
+import {
+  storyTextToEditorHtml,
+  wordHtmlToStoryHtml,
+} from "../src/lib/wordPaste";
 import { Window } from "happy-dom";
 
 describe("public library", () => {
@@ -77,15 +80,18 @@ describe("public library", () => {
     expect(parseLocalWorkDraft(JSON.stringify({ version: 2 }))).toBeNull();
   });
 
-  it("converts Word-style rich text into story Markdown", () => {
+  it("keeps Word-style rich text in the story editor", () => {
     const document = new Window().document;
     expect(
-      wordHtmlToMarkdown(
+      wordHtmlToStoryHtml(
         `<h2>A heading</h2><p>One <strong>important</strong> thought.</p><ul><li>First item</li><li><em>Second item</em></li></ul><p><a href="https://example.com">Read more</a></p>`,
         document,
       ),
     ).toBe(
-      "## A heading\n\nOne **important** thought.\n\n- First item\n- *Second item*\n\n[Read more](https://example.com)",
+      "<h2>A heading</h2><p>One <strong>important</strong> thought.</p><ul><li>First item</li><li><em>Second item</em></li></ul><p><a href=\"https://example.com\">Read more</a></p>",
     );
+    expect(
+      storyTextToEditorHtml("## A heading\n\nA **bold** line", document),
+    ).toBe("<h2>A heading</h2><p>A <strong>bold</strong> line</p>");
   });
 });
