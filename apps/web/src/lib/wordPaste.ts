@@ -31,15 +31,16 @@ function stripClipboardComments(value: string) {
 type FirstLineIndent = "small" | "medium" | "large";
 
 function textIndentToFirstLineIndent(value: string) {
-  const match = value.trim().toLowerCase().match(
-    /^([+]?(?:\d+\.?\d*|\.\d+))\s*(px|pt|pc|in|cm|mm|em|rem)$/u,
-  );
+  const match = value
+    .trim()
+    .toLowerCase()
+    .match(/^([+]?(?:\d+\.?\d*|\.\d+))\s*(px|pt|pc|in|cm|mm|em|rem)$/u);
   if (!match) return undefined;
   const amount = Number(match[1]);
   if (!Number.isFinite(amount) || amount <= 0) return undefined;
   const pixels =
     amount *
-    ({
+    {
       px: 1,
       pt: 96 / 72,
       pc: 16,
@@ -48,7 +49,7 @@ function textIndentToFirstLineIndent(value: string) {
       mm: 96 / 25.4,
       em: 16,
       rem: 16,
-    })[match[2]!]!;
+    }[match[2]!]!;
   if (pixels > 90) return undefined;
   if (pixels <= 24) return "small";
   if (pixels <= 54) return "medium";
@@ -61,7 +62,8 @@ function firstLineIndentFromStyle(value: string) {
 }
 
 function wordDefaultFirstLineIndent(value: string) {
-  const comments = value.match(/<!--[\s\S]*?-->|&lt;!--[\s\S]*?--&gt;/giu) || [];
+  const comments =
+    value.match(/<!--[\s\S]*?-->|&lt;!--[\s\S]*?--&gt;/giu) || [];
   for (const comment of comments) {
     if (!/\bMso(?:Normal|PapDefault)\b/u.test(comment)) continue;
     const matches = comment.matchAll(/text-indent\s*:\s*([^;}]+)/giu);

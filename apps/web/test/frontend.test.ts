@@ -172,7 +172,9 @@ describe("public library", () => {
         '<p style="text-indent: calc(2rem + 1px)">Ignored.</p><p style="text-indent: -12pt">Also ignored.</p><p style="text-indent: 15px">Small indent.</p>',
         document,
       ),
-    ).toBe('<p>Ignored.</p><p>Also ignored.</p><p data-first-line-indent="small">Small indent.</p>');
+    ).toBe(
+      '<p>Ignored.</p><p>Also ignored.</p><p data-first-line-indent="small">Small indent.</p>',
+    );
     expect(
       wordHtmlToStoryHtml(
         "&lt;!-- /* Font Definitions */ --&gt;<p>Clean story text.</p>",
