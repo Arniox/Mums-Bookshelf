@@ -176,16 +176,15 @@ export function normaliseStoryHtml(html: string, document: Document) {
   source.body.innerHTML = html;
   const output = document.createElement("div");
   appendChildren(source.body, output, document);
-  let currentList: HTMLOListElement | HTMLUListElement | undefined;
+  let currentList: HTMLElement | undefined;
   Array.from(output.children).forEach((element) => {
-    if (!(element instanceof HTMLLIElement) || !element.dataset.wordList) {
+    if (element.tagName !== "LI" || !element.dataset.wordList) {
       currentList = undefined;
       return;
     }
-    const listTag = element.dataset.wordList;
+    const listTag = element.dataset.wordList as "ol" | "ul";
     if (!currentList || currentList.tagName.toLowerCase() !== listTag) {
-      currentList = document.createElement(listTag) as
-        HTMLOListElement | HTMLUListElement;
+      currentList = document.createElement(listTag);
       element.before(currentList);
     }
     delete element.dataset.wordList;
