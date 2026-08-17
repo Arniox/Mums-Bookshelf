@@ -28,6 +28,51 @@ function stripClipboardComments(value: string) {
     .replace(/&lt;!--[\s\S]*?--&gt;/giu, "");
 }
 
+type FirstLineIndent = "small" | "medium" | "large";
+
+function textIndentToFirstLineIndent(value: string) {
+  const match = value.trim().toLowerCase().match(
+    /^([+]?(?:\d+\.?\d*|\.\d+))\s*(px|pt|pc|in|cm|mm|em|rem)$/u,
+  );
+  if (!match) return undefined;
+  const amount = Number(match[1]);
+  if (!Number.isFinite(amount) || amount <= 0) return undefined;
+  const pixels =
+    amount *
+    ({
+      px: 1,
+      pt: 96 / 72,
+      pc: 16,
+      in: 96,
+      cm: 96 / 2.54,
+      mm: 96 / 25.4,
+      em: 16,
+      rem: 16,
+    })[match[2]!]!;
+  if (pixels > 90) return undefined;
+  if (pixels <= 24) return "small";
+  if (pixels <= 54) return "medium";
+  return "large";
+}
+
+function firstLineIndentFromStyle(value: string) {
+  const match = value.match(/(?:^|;)\s*text-indent\s*:\s*([^;]+)/iu);
+  return match ? textIndentToFirstLineIndent(match[1]!) : undefined;
+}
+
+function wordDefaultFirstLineIndent(value: string) {
+  const comments = value.match(/<!--[\s\S]*?-->|&lt;!--[\s\S]*?--&gt;/giu) || [];
+  for (const comment of comments) {
+    if (!/\bMso(?:Normal|PapDefault)\b/u.test(comment)) continue;
+    const matches = comment.matchAll(/text-indent\s*:\s*([^;}]+)/giu);
+    for (const match of matches) {
+      const indent = textIndentToFirstLineIndent(match[1]!);
+      if (indent) return indent;
+    }
+  }
+  return undefined;
+}
+
 export function hasStructuredStoryHtml(value: string) {
   return /<(?:p|div|h[1-6]|blockquote|ul|ol|li|br|pre|table)\b/iu.test(value);
 }
@@ -156,11 +201,15 @@ function normaliseNode(node: Node, document: Document): Node[] {
       /(?:margin|padding)-left\s*:\s*(?!0(?:[a-z%]+)?(?:;|$))/u.test(style)
     )
       element.dataset.indent = "true";
-    if (
-      source.dataset.firstLineIndent === "true" ||
-      /text-indent\s*:\s*(?!0(?:[a-z%]+)?(?:;|$))/u.test(style)
-    )
-      element.dataset.firstLineIndent = "true";
+    const firstLineIndent =
+      source.dataset.firstLineIndent === "true"
+        ? "medium"
+        : source.dataset.firstLineIndent === "small" ||
+            source.dataset.firstLineIndent === "medium" ||
+            source.dataset.firstLineIndent === "large"
+          ? source.dataset.firstLineIndent
+          : firstLineIndentFromStyle(style);
+    if (firstLineIndent) element.dataset.firstLineIndent = firstLineIndent;
   }
   if (tag === "p" && bold) {
     const strong = document.createElement("strong");
@@ -185,7 +234,11 @@ function normaliseNode(node: Node, document: Document): Node[] {
   return [element];
 }
 
-export function normaliseStoryHtml(html: string, document: Document) {
+export function normaliseStoryHtml(
+  html: string,
+  document: Document,
+  defaultFirstLineIndent = wordDefaultFirstLineIndent(html),
+) {
   const source = document.implementation.createHTMLDocument("Story editor");
   source.body.innerHTML = stripClipboardComments(html);
   const output = document.createElement("div");
@@ -205,6 +258,11 @@ export function normaliseStoryHtml(html: string, document: Document) {
     delete listItem.dataset.wordList;
     currentList.append(listItem);
   });
+  if (defaultFirstLineIndent)
+    output.querySelectorAll<HTMLElement>("p").forEach((paragraph) => {
+      if (!paragraph.dataset.firstLineIndent)
+        paragraph.dataset.firstLineIndent = defaultFirstLineIndent;
+    });
   return output.innerHTML;
 }
 
@@ -225,9 +283,10 @@ function inlineMarkdownToHtml(value: string) {
 }
 
 export function storyTextToEditorHtml(value: string, document: Document) {
+  const defaultFirstLineIndent = wordDefaultFirstLineIndent(value);
   const cleanedValue = stripClipboardComments(value).trim();
   if (hasStructuredStoryHtml(cleanedValue))
-    return normaliseStoryHtml(cleanedValue, document);
+    return normaliseStoryHtml(cleanedValue, document, defaultFirstLineIndent);
 
   const lines = cleanedValue.replace(/\r\n?/g, "\n").split("\n");
   const output: string[] = [];
@@ -280,5 +339,5 @@ export function storyTextToEditorHtml(value: string, document: Document) {
     }
     index += 1;
   }
-  return normaliseStoryHtml(output.join(""), document);
+  return normaliseStoryHtml(output.join(""), document, defaultFirstLineIndent);
 }

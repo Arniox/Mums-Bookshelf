@@ -1029,9 +1029,21 @@ textarea {
   margin-left: 2.25rem;
 }
 
+.story-content [data-first-line-indent="small"],
+.rich-story-canvas [data-first-line-indent="small"] {
+  text-indent: 1.25rem;
+}
+
 .story-content [data-first-line-indent="true"],
-.rich-story-canvas [data-first-line-indent="true"] {
+.story-content [data-first-line-indent="medium"],
+.rich-story-canvas [data-first-line-indent="true"],
+.rich-story-canvas [data-first-line-indent="medium"] {
   text-indent: 2.25rem;
+}
+
+.story-content [data-first-line-indent="large"],
+.rich-story-canvas [data-first-line-indent="large"] {
+  text-indent: 3.25rem;
 }
 
 .social-post {

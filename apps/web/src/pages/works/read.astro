@@ -81,6 +81,11 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
           attribute.value === "true"
         )
           return;
+        if (
+          attribute.name === "data-first-line-indent" &&
+          /^(?:small|medium|large)$/u.test(attribute.value)
+        )
+          return;
         if (attribute.name === "data-drop-cap" && attribute.value === "false")
           return;
         if (

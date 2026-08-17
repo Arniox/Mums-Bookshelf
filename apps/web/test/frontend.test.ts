@@ -133,7 +133,7 @@ describe("public library", () => {
         document,
       ),
     ).toBe(
-      '<p data-first-line-indent="true">A <strong>bold</strong>, <em>italic</em>, <u>underlined</u> and <s>struck</s> line.<br>Another line.</p><p data-indent="true">Indented paragraph.</p>',
+      '<p data-first-line-indent="medium">A <strong>bold</strong>, <em>italic</em>, <u>underlined</u> and <s>struck</s> line.<br>Another line.</p><p data-indent="true">Indented paragraph.</p>',
     );
     expect(
       wordHtmlToStoryHtml(
@@ -159,6 +159,20 @@ describe("public library", () => {
         document,
       ),
     ).toBe("<p>I shouldn't be here.</p><p>Daddy's home.</p>");
+    expect(
+      storyTextToEditorHtml(
+        `<!-- p.MsoNormal { text-indent: 36pt; line-height: 200%; } -->\nFirst paragraph.\n\nSecond paragraph.`,
+        document,
+      ),
+    ).toBe(
+      '<p data-first-line-indent="medium">First paragraph.</p><p data-first-line-indent="medium">Second paragraph.</p>',
+    );
+    expect(
+      wordHtmlToStoryHtml(
+        '<p style="text-indent: calc(2rem + 1px)">Ignored.</p><p style="text-indent: -12pt">Also ignored.</p><p style="text-indent: 15px">Small indent.</p>',
+        document,
+      ),
+    ).toBe('<p>Ignored.</p><p>Also ignored.</p><p data-first-line-indent="small">Small indent.</p>');
     expect(
       wordHtmlToStoryHtml(
         "&lt;!-- /* Font Definitions */ --&gt;<p>Clean story text.</p>",
