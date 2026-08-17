@@ -1247,13 +1247,40 @@ wordHtmlToStoryHtml,
       ) => boolean
     )(command, false, value);
 
+  const insertStoryHtml = (html: string) => {
+    const selection = window.getSelection();
+    const range =
+      selection?.rangeCount && storyEditor.contains(selection.anchorNode)
+        ? selection.getRangeAt(0)
+        : null;
+    if (!range) {
+      storyEditor.insertAdjacentHTML("beforeend", html);
+      return;
+    }
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    const lastNode = template.content.lastChild;
+    range.deleteContents();
+    range.insertNode(template.content);
+    if (lastNode) {
+      range.setStartAfter(lastNode);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  };
+
   storyEditor.addEventListener("input", () => syncStoryEditor());
   storyEditor.addEventListener("blur", () => syncStoryEditor(true));
   storyEditor.addEventListener("paste", (event) => {
     const html = event.clipboardData?.getData("text/html");
-    if (!html) return;
+    const text = event.clipboardData?.getData("text/plain") || "";
     event.preventDefault();
-    executeRichTextCommand("insertHTML", wordHtmlToStoryHtml(html, document));
+    insertStoryHtml(
+      html
+        ? wordHtmlToStoryHtml(html, document)
+        : storyTextToEditorHtml(text, document),
+    );
     syncStoryEditor(true);
   });
 
