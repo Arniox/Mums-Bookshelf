@@ -8,6 +8,12 @@
     "apps/*",
     "packages/*"
   ],
+  "allowScripts": {
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.1": true,
+    "esbuild@0.28.2": true,
+    "workerd@1.20260811.1": true
+  },
   "scripts": {
     "dev": "npm run build -w @mums-bookshelf/shared && concurrently -n web,api -c magenta,cyan \"npm run dev -w @mums-bookshelf/web\" \"npm run dev -w @mums-bookshelf/api\"",
     "dev:web": "npm run dev -w @mums-bookshelf/web",

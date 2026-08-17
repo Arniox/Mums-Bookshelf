@@ -31,4 +31,21 @@ export default [
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  {
+    files: ["apps/api/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@mums-bookshelf/shared",
+              message:
+                "Use a runtime-safe shared subpath such as /schemas or /content in the Worker.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];
