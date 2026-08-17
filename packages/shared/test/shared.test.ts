@@ -117,12 +117,12 @@ describe("shared domain logic", () => {
     expect(result.success).toBe(false);
   });
 
-  it("limits reader comments to 300 characters", () => {
+  it("limits reader comments to 250 characters", () => {
     expect(
-      commentInputSchema.safeParse({ body: "a".repeat(300) }).success,
+      commentInputSchema.safeParse({ body: "a".repeat(250) }).success,
     ).toBe(true);
     expect(
-      commentInputSchema.safeParse({ body: "a".repeat(301) }).success,
+      commentInputSchema.safeParse({ body: "a".repeat(251) }).success,
     ).toBe(false);
   });
 });

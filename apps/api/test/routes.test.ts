@@ -338,7 +338,7 @@ describe("API routes", () => {
     ).toBe(true);
   });
 
-  it("rejects reader comments longer than 300 characters", async () => {
+  it("rejects reader comments longer than 250 characters", async () => {
     env.PUBLIC_COMMENTS_ENABLED = "true";
     const response = await app.request(
       "/api/v1/works/work-1/comments",
@@ -348,7 +348,7 @@ describe("API routes", () => {
           Origin: "https://allowed.example",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ body: "a".repeat(301) }),
+        body: JSON.stringify({ body: "a".repeat(251) }),
       },
       env,
     );
@@ -357,7 +357,7 @@ describe("API routes", () => {
     expect(await response.json()).toMatchObject({
       error: {
         code: "validation_failed",
-        message: "Comments must be 300 characters or fewer.",
+        message: "Comments must be 250 characters or fewer.",
       },
     });
     expect(database.statements).toHaveLength(0);
