@@ -17,7 +17,7 @@
     "GITHUB_PAGES_WORKFLOW": "deploy-pages.yml",
     "GITHUB_DEFAULT_BRANCH": "main",
     "ENVIRONMENT": "production",
-    "PUBLIC_COMMENTS_ENABLED": "false",
+    "PUBLIC_COMMENTS_ENABLED": "true",
   },
   "d1_databases": [
     {
