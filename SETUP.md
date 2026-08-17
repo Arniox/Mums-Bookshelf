@@ -78,7 +78,7 @@ Edit `apps/api/wrangler.jsonc`:
 
 - Set `ALLOWED_ORIGINS` to the exact Pages origin, such as `https://USERNAME.github.io`. A custom frontend origin can be appended with a comma.
 - Set `ENVIRONMENT` to `production`.
-- Set `PUBLIC_COMMENTS_ENABLED` to `false` until moderation and optional Turnstile are ready.
+- Keep `PUBLIC_COMMENTS_ENABLED` set to `true` to show story-page comments.
 
 Create secrets. Each command prompts without writing the value to source:
 
@@ -159,7 +159,7 @@ Open **Settings → Secrets and variables → Actions → Variables** and create
 | `PUBLIC_SITE_URL`           | `https://USERNAME.github.io` | `https://USERNAME.github.io/REPOSITORY` |
 | `PUBLIC_BASE_PATH`          | `/`                          | `/REPOSITORY`                           |
 | `PUBLIC_API_BASE_URL`       | Worker URL                   | Worker URL                              |
-| `PUBLIC_COMMENTS_ENABLED`   | `false`                      | `false`                                 |
+| `PUBLIC_COMMENTS_ENABLED`   | `true`                       | `true`                                  |
 | `PUBLIC_TURNSTILE_SITE_KEY` | blank                        | blank                                   |
 
 Push to `main`. The Pages workflow installs from the lockfile, checks formatting, lint, types and tests, builds both applications, then deploys only if everything passes.
@@ -179,17 +179,17 @@ For the Worker workflow, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` 
 
 Draft and archived records are never returned by public API endpoints.
 
-## 10. Enable comments
+## 10. Comments
 
-Comments are off by default. Before enabling:
+Comments are enabled for individual story pages. They use the Worker API, so a
+new comment appears immediately without rebuilding GitHub Pages. Comments are
+limited to 250 characters and are visible straight away.
+
+For additional spam protection, optionally:
 
 1. Create a Turnstile widget for the public site in Cloudflare.
 2. Store its secret with `wrangler secret put TURNSTILE_SECRET_KEY`.
 3. Put the public site key in GitHub variable `PUBLIC_TURNSTILE_SITE_KEY`.
-4. Change `PUBLIC_COMMENTS_ENABLED` to `true` in both `wrangler.jsonc` and GitHub variables.
-5. Redeploy the Worker and Pages site.
-
-Every comment starts as pending. Approve it in **Author studio → Comments**.
 
 ## 11. Connect denisediehl.com
 
@@ -205,7 +205,7 @@ The repository is configured to publish the frontend at `https://denisediehl.com
 | `PUBLIC_SITE_URL`           | `https://denisediehl.com`                                                         |
 | `PUBLIC_BASE_PATH`          | `/`                                                                               |
 | `PUBLIC_API_BASE_URL`       | the deployed Worker URL, such as `https://author-library-api.ACCOUNT.workers.dev` |
-| `PUBLIC_COMMENTS_ENABLED`   | `false` unless comments have been enabled deliberately                            |
+| `PUBLIC_COMMENTS_ENABLED`   | `true`                                                                            |
 | `PUBLIC_TURNSTILE_SITE_KEY` | blank unless comments use Turnstile                                               |
 
 5. The Worker configuration now permits requests from `https://denisediehl.com`. Apply the new `0006_use_custom_domain.sql` migration and deploy the Worker before using the new admin URL.
