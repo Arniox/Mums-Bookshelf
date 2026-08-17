@@ -1,6 +1,6 @@
 ---
 interface Props {
-  workId: string;
+  workId?: string;
 }
 const { workId } = Astro.props;
 ---
@@ -14,36 +14,37 @@ const { workId } = Astro.props;
       data-api={__API_BASE_URL__}
       data-turnstile-key={__TURNSTILE_SITE_KEY__}
       aria-labelledby="comments-title"
+      hidden={!workId}
     >
-      <p class="eyebrow">Reader responses</p>
-      <h2 id="comments-title">Comments</h2>
-      <div data-comment-list>
-        <p>Loading comments…</p>
-      </div>
+      <div class="comment-stage">
+        <div class="comment-stage-heading">
+          <p class="eyebrow">Reader responses</p>
+          <h2 id="comments-title">A few words from the reading chair</h2>
+        </div>
+        <div data-comment-list aria-live="polite">
+          <p class="comment-empty">Gathering reader notes…</p>
+        </div>
+        <p class="comment-overflow" data-comment-overflow hidden></p>
       <form data-comment-form>
-        <h3>Leave a comment</h3>
-        <p>
-          Comments are reviewed before they appear. No email address is needed.
-        </p>
+          <h3>Leave a little note</h3>
+          <p>No email needed. Your note will appear here straight away.</p>
         <label>
-          <>
-            <span>
-              Name <small>Optional</small>
-            </span>
-            <input name="displayName" maxlength="80" autocomplete="name" />
-          </>
+          <span>
+            Name <small>Optional</small>
+          </span>
+          <input name="displayName" maxlength="80" autocomplete="name" />
         </label>
         <label>
           <span>Comment</span>
           <textarea
             name="body"
             required
-            maxlength="300"
-            rows="5"
+            maxlength="250"
+            rows="4"
             aria-describedby="comment-character-limit"
           />
           <small id="comment-character-limit" class="character-count">
-            <span data-comment-count>0</span>/300 characters
+            <span data-comment-count>0</span>/250 characters
           </small>
         </label>
         <label class="honeypot" aria-hidden="true">
@@ -52,10 +53,11 @@ const { workId } = Astro.props;
         </label>
         <div data-turnstile />
         <button class="button primary" type="submit">
-          Submit for review
+          Add comment
         </button>
         <p class="form-status" data-comment-status aria-live="polite" />
       </form>
+      </div>
     </section>
   )
 }
@@ -64,8 +66,10 @@ const { workId } = Astro.props;
   const section = document.querySelector<HTMLElement>("[data-comments]");
   if (section) {
     const api = section.dataset.api!;
-    const workId = section.dataset.workId!;
     const list = section.querySelector<HTMLElement>("[data-comment-list]")!;
+    const overflow = section.querySelector<HTMLElement>(
+      "[data-comment-overflow]",
+    )!;
     const status = section.querySelector<HTMLElement>("[data-comment-status]")!;
     const commentBody =
       section.querySelector<HTMLTextAreaElement>('[name="body"]')!;
@@ -73,42 +77,70 @@ const { workId } = Astro.props;
       "[data-comment-count]",
     )!;
     let turnstileToken = "";
+    let activeWorkId = section.dataset.workId || "";
+    let initialised = false;
+
+    interface PublicComment {
+      id: string;
+      displayName?: string;
+      body: string;
+    }
+
     const updateCommentCount = () => {
       commentCount.textContent = String(commentBody.value.length);
     };
     commentBody.addEventListener("input", updateCommentCount);
-    const escape = (value: unknown) =>
-      String(value ?? "").replace(
-        /[&<>"']/g,
-        (character) =>
-          ({
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&#39;",
-          })[character]!,
+
+    const commentBubble = (comment: PublicComment) => {
+      const bubble = document.createElement("article");
+      bubble.className = "comment-bubble";
+      const name = document.createElement("strong");
+      name.textContent = comment.displayName || "Anonymous";
+      const body = document.createElement("p");
+      body.textContent = comment.body;
+      bubble.append(name, body);
+      return bubble;
+    };
+
+    const renderComments = (comments: PublicComment[]) => {
+      const visible = comments.slice(-8);
+      list.replaceChildren(
+        ...(visible.length
+          ? visible.map(commentBubble)
+          : [
+              Object.assign(document.createElement("p"), {
+                className: "comment-empty",
+                textContent: "No notes yet. You could leave the first one.",
+              }),
+            ]),
       );
+      const hiddenCount = comments.length - visible.length;
+      overflow.hidden = hiddenCount === 0;
+      overflow.textContent = hiddenCount
+        ? `${hiddenCount} earlier ${hiddenCount === 1 ? "note" : "notes"} tucked safely away.`
+        : "";
+    };
 
-    fetch(`${api}/api/v1/works/${encodeURIComponent(workId)}/comments`)
-      .then((response) => response.json())
-      .then((payload) => {
-        const comments = payload.data?.items || [];
-        list.innerHTML = comments.length
-          ? comments
-              .map(
-                (comment: any) =>
-                  `<article><strong>${escape(comment.displayName || "Anonymous")}</strong><p>${escape(comment.body)}</p></article>`,
-              )
-              .join("")
-          : "<p>No comments yet. You could be the first.</p>";
-      })
-      .catch(() => {
-        list.innerHTML = "<p>Comments are temporarily unavailable.</p>";
+    const loadComments = async () => {
+      const response = await fetch(
+        `${api}/api/v1/works/${encodeURIComponent(activeWorkId)}/comments`,
+      );
+      const payload = (await response.json()) as {
+        data?: { items?: PublicComment[] };
+      };
+      if (!response.ok) throw new Error("Comments are temporarily unavailable.");
+      renderComments(payload.data?.items || []);
+    };
+
+    const initialise = () => {
+      if (initialised || !activeWorkId) return;
+      initialised = true;
+      section.hidden = false;
+      void loadComments().catch(() => {
+        list.textContent = "Comments are temporarily unavailable.";
       });
-
-    const siteKey = section.dataset.turnstileKey;
-    if (siteKey) {
+      const siteKey = section.dataset.turnstileKey;
+      if (!siteKey) return;
       const script = document.createElement("script");
       script.src =
         "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
@@ -124,7 +156,15 @@ const { workId } = Astro.props;
         });
       };
       document.body.append(script);
-    }
+    };
+
+    initialise();
+    document.addEventListener("mums-bookshelf:work-ready", (event) => {
+      const detail = (event as CustomEvent<{ workId: string }>).detail;
+      activeWorkId = detail.workId;
+      section.dataset.workId = activeWorkId;
+      initialise();
+    });
 
     section
       .querySelector<HTMLFormElement>("[data-comment-form]")
@@ -135,7 +175,7 @@ const { workId } = Astro.props;
         status.textContent = "Sending…";
         try {
           const response = await fetch(
-            `${api}/api/v1/works/${encodeURIComponent(workId)}/comments`,
+            `${api}/api/v1/works/${encodeURIComponent(activeWorkId)}/comments`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -149,7 +189,21 @@ const { workId } = Astro.props;
             );
           form.reset();
           updateCommentCount();
-          status.textContent = "Thank you. Your comment is awaiting review.";
+          const displayName = String(data.displayName || "").trim();
+          renderComments([
+            ...Array.from(list.querySelectorAll<HTMLElement>(".comment-bubble"))
+              .map((bubble, index) => ({
+                id: `shown-${index}`,
+                displayName: bubble.querySelector("strong")?.textContent || "Anonymous",
+                body: bubble.querySelector("p")?.textContent || "",
+              })),
+            {
+              id: crypto.randomUUID(),
+              displayName: displayName || "Anonymous",
+              body: String(data.body || "").trim(),
+            },
+          ]);
+          status.textContent = "Your note is now on the page.";
         } catch (error) {
           status.textContent = (error as Error).message;
         }
