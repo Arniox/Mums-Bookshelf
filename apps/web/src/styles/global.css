@@ -1007,8 +1007,11 @@ textarea {
   font: 1.3rem/1.85 var(--serif);
 }
 
-.story-content > div > p:first-of-type:not([data-drop-cap="false"])::first-letter,
-.rich-story-canvas > p:first-of-type:not([data-drop-cap="false"])::first-letter {
+.story-content
+  > div
+  > p:first-of-type:not([data-drop-cap="false"])::first-letter,
+.rich-story-canvas
+  > p:first-of-type:not([data-drop-cap="false"])::first-letter {
   float: left;
   margin: 0.1rem 0.15rem -0.1rem 0;
   color: var(--plum);
