@@ -5,13 +5,13 @@ import { works } from "../src/data/sample";
 import { matchesWork } from "../src/lib/filterWorks";
 import { localWorkDraftKey, parseLocalWorkDraft } from "../src/lib/localDraft";
 import {
-  dailyFeaturedOrder,
-  dailyOrderSalt,
-  featuredFirstShuffle,
+    dailyFeaturedOrder,
+    dailyOrderSalt,
+    featuredFirstShuffle,
 } from "../src/lib/randomiseWorks";
 import {
-  storyTextToEditorHtml,
-  wordHtmlToStoryHtml,
+    storyTextToEditorHtml,
+    wordHtmlToStoryHtml,
 } from "../src/lib/wordPaste";
 
 describe("public library", () => {
