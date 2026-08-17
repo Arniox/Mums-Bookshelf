@@ -203,7 +203,7 @@ import { getRuntimePublicWorks } from "../lib/runtimeContent";
         `${work.title}, ${work.publicationType.replace("-", " ")}`,
       );
       book.dataset.bookColor = appearance.primaryColor;
-      [
+      const styleVariables: [string, string][] = [
         ["--book-color", appearance.primaryColor],
         ["--book-accent", appearance.accentColor],
         ["--book-height", `${appearance.height}px`],
@@ -212,7 +212,10 @@ import { getRuntimePublicWorks } from "../lib/runtimeContent";
         ["--book-lean", `${appearance.lean}deg`],
         ["--book-radius", `${appearance.borderRadius}px`],
         ["--book-index", String(index)],
-      ].forEach(([property, value]) => book.style.setProperty(property, value));
+      ];
+      styleVariables.forEach(([property, value]) =>
+        book.style.setProperty(property, value),
+      );
 
       const shine = document.createElement("span");
       shine.className = "book-shine";
