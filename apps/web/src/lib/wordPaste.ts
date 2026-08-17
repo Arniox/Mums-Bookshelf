@@ -86,9 +86,9 @@ function normaliseNode(node: Node, document: Document): Node[] {
             ? "s"
             : isWordListItem
               ? "li"
-      : tagName === "div"
-        ? "p"
-        : tagName;
+              : tagName === "div"
+                ? "p"
+                : tagName;
   const bold =
     tagName !== "b" &&
     tagName !== "strong" &&
@@ -98,14 +98,13 @@ function normaliseNode(node: Node, document: Document): Node[] {
     tagName !== "em" &&
     /font-style\s*:\s*italic/u.test(style);
   const underline =
-    tagName !== "u" && /text-decoration(?:-line)?\s*:[^;]*underline/u.test(style);
+    tagName !== "u" &&
+    /text-decoration(?:-line)?\s*:[^;]*underline/u.test(style);
   const strikethrough =
     tagName !== "s" &&
     tagName !== "strike" &&
     tagName !== "del" &&
-    /text-decoration(?:-line)?\s*:[^;]*(?:line-through|strike)/u.test(
-      style,
-    );
+    /text-decoration(?:-line)?\s*:[^;]*(?:line-through|strike)/u.test(style);
 
   if (tag === "span" || tag === "font" || !allowedTags.has(tag)) {
     const fragment = document.createDocumentFragment();
