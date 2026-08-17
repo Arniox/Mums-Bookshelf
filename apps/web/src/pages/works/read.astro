@@ -53,6 +53,8 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
       "BR",
       "EM",
       "STRONG",
+      "U",
+      "S",
       "A",
       "BLOCKQUOTE",
       "UL",
@@ -72,6 +74,12 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
         return;
       }
       [...element.attributes].forEach((attribute) => {
+        if (
+          (attribute.name === "data-indent" ||
+            attribute.name === "data-first-line-indent") &&
+          attribute.value === "true"
+        )
+          return;
         if (
           attribute.name !== "href" ||
           !/^https?:/i.test(attribute.value.trim())

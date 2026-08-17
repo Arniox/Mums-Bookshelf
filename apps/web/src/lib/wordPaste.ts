@@ -3,6 +3,8 @@ const allowedTags = new Set([
   "br",
   "em",
   "strong",
+  "u",
+  "s",
   "a",
   "blockquote",
   "ul",
@@ -30,6 +32,38 @@ function appendChildren(
   );
 }
 
+function applyInlineFormatting(
+  content: Node,
+  document: Document,
+  bold: boolean,
+  italic: boolean,
+  underline: boolean,
+  strikethrough: boolean,
+) {
+  let result = content;
+  if (bold) {
+    const strong = document.createElement("strong");
+    strong.append(result);
+    result = strong;
+  }
+  if (italic) {
+    const em = document.createElement("em");
+    em.append(result);
+    result = em;
+  }
+  if (underline) {
+    const underlined = document.createElement("u");
+    underlined.append(result);
+    result = underlined;
+  }
+  if (strikethrough) {
+    const struck = document.createElement("s");
+    struck.append(result);
+    result = struck;
+  }
+  return result;
+}
+
 function normaliseNode(node: Node, document: Document): Node[] {
   if (node.nodeType === 3)
     return [
@@ -39,31 +73,53 @@ function normaliseNode(node: Node, document: Document): Node[] {
 
   const source = node as HTMLElement;
   const tagName = source.tagName.toLowerCase();
+  const style = (source.getAttribute("style") || "").toLowerCase();
+  const isWordListItem = /\bmso-list\s*:/u.test(style);
   const tag =
     tagName === "h1" || tagName === "h5" || tagName === "h6"
       ? "h2"
+      : tagName === "b"
+        ? "strong"
+        : tagName === "i"
+          ? "em"
+          : tagName === "strike" || tagName === "del"
+            ? "s"
+            : isWordListItem
+              ? "li"
       : tagName === "div"
         ? "p"
         : tagName;
-  const style = (source.getAttribute("style") || "").toLowerCase();
-  const bold = /font-weight\s*:\s*(?:bold|[6-9]00)/u.test(style);
-  const italic = /font-style\s*:\s*italic/u.test(style);
+  const bold =
+    tagName !== "b" &&
+    tagName !== "strong" &&
+    /font-weight\s*:\s*(?:bold|[6-9]00)/u.test(style);
+  const italic =
+    tagName !== "i" &&
+    tagName !== "em" &&
+    /font-style\s*:\s*italic/u.test(style);
+  const underline =
+    tagName !== "u" && /text-decoration(?:-line)?\s*:[^;]*underline/u.test(style);
+  const strikethrough =
+    tagName !== "s" &&
+    tagName !== "strike" &&
+    tagName !== "del" &&
+    /text-decoration(?:-line)?\s*:[^;]*(?:line-through|strike)/u.test(
+      style,
+    );
 
-  if (tag === "span" || !allowedTags.has(tag)) {
+  if (tag === "span" || tag === "font" || !allowedTags.has(tag)) {
     const fragment = document.createDocumentFragment();
     appendChildren(source, fragment, document);
-    let result: Node = fragment;
-    if (bold) {
-      const strong = document.createElement("strong");
-      strong.append(result);
-      result = strong;
-    }
-    if (italic) {
-      const em = document.createElement("em");
-      em.append(result);
-      result = em;
-    }
-    return [result];
+    return [
+      applyInlineFormatting(
+        fragment,
+        document,
+        bold,
+        italic,
+        underline,
+        strikethrough,
+      ),
+    ];
   }
 
   const element = document.createElement(tag);
@@ -74,6 +130,38 @@ function normaliseNode(node: Node, document: Document): Node[] {
     if (title) element.setAttribute("title", title);
   }
   appendChildren(source, element, document);
+  if (tag === "p" || tag === "li") {
+    if (
+      source.dataset.indent === "true" ||
+      /(?:margin|padding)-left\s*:\s*(?!0(?:[a-z%]+)?(?:;|$))/u.test(style)
+    )
+      element.dataset.indent = "true";
+    if (
+      source.dataset.firstLineIndent === "true" ||
+      /text-indent\s*:\s*(?!0(?:[a-z%]+)?(?:;|$))/u.test(style)
+    )
+      element.dataset.firstLineIndent = "true";
+  }
+  if (tag === "p" && bold) {
+    const strong = document.createElement("strong");
+    strong.append(...element.childNodes);
+    element.append(strong);
+  }
+  if (tag === "p" && italic) {
+    const em = document.createElement("em");
+    em.append(...element.childNodes);
+    element.append(em);
+  }
+  if (tag === "p" && underline) {
+    const underlined = document.createElement("u");
+    underlined.append(...element.childNodes);
+    element.append(underlined);
+  }
+  if (tag === "p" && strikethrough) {
+    const struck = document.createElement("s");
+    struck.append(...element.childNodes);
+    element.append(struck);
+  }
   return [element];
 }
 

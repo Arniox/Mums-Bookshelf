@@ -127,6 +127,14 @@ describe("public library", () => {
       '<h2>A heading</h2><p>One <strong>important</strong> thought.</p><ul><li>First item</li><li><em>Second item</em></li></ul><p><a href="https://example.com">Read more</a></p>',
     );
     expect(
+      wordHtmlToStoryHtml(
+        `<p class="MsoNormal" style="text-indent:36pt">A <span style="font-weight:700">bold</span>, <span style="font-style:italic">italic</span>, <span style="text-decoration:underline">underlined</span> and <span style="text-decoration:line-through">struck</span> line.<br>Another line.</p><p style="margin-left:36pt">Indented paragraph.</p>`,
+        document,
+      ),
+    ).toBe(
+      '<p data-first-line-indent="true">A <strong>bold</strong>, <em>italic</em>, <u>underlined</u> and <s>struck</s> line.<br>Another line.</p><p data-indent="true">Indented paragraph.</p>',
+    );
+    expect(
       storyTextToEditorHtml("## A heading\n\nA **bold** line", document),
     ).toBe("<h2>A heading</h2><p>A <strong>bold</strong> line</p>");
     expect(

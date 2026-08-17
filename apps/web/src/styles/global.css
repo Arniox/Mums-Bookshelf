@@ -1020,6 +1020,16 @@ textarea {
   font-size: 2.5rem;
 }
 
+.story-content [data-indent="true"],
+.rich-story-canvas [data-indent="true"] {
+  margin-left: 2.25rem;
+}
+
+.story-content [data-first-line-indent="true"],
+.rich-story-canvas [data-first-line-indent="true"] {
+  text-indent: 2.25rem;
+}
+
 .social-post {
   max-width: 720px;
   margin: 2rem auto 4rem;
