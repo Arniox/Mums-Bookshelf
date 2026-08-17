@@ -1,11 +1,11 @@
 import {
-    calculateReadingTime,
-    detectSocialProvider,
-    slugify,
+  calculateReadingTime,
+  detectSocialProvider,
+  slugify,
 } from "@mums-bookshelf/shared/content";
 import {
-    workInputSchema,
-    workPatchSchema,
+  workInputSchema,
+  workPatchSchema,
 } from "@mums-bookshelf/shared/schemas";
 import type { Context } from "hono";
 import { rowToWork, workColumns } from "./db";
