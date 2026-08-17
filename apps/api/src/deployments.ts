@@ -20,9 +20,49 @@ interface WorkflowRunsResponse {
   workflow_runs?: WorkflowRun[];
 }
 
+interface WorkflowStep {
+  name: string;
+  status: "queued" | "in_progress" | "completed";
+  conclusion: string | null;
+}
+
+interface WorkflowJob {
+  name: string;
+  status: "queued" | "in_progress" | "completed";
+  conclusion: string | null;
+  steps?: WorkflowStep[];
+}
+
+interface WorkflowJobsResponse {
+  jobs?: WorkflowJob[];
+}
+
 const repositoryPart = /^[A-Za-z0-9_.-]+$/;
 const workflowFile = /^[A-Za-z0-9_.-]+\.ya?ml$/;
 const gitReference = /^[A-Za-z0-9_./-]+$/;
+
+function stageForJob(job?: WorkflowJob): string | undefined {
+  if (!job) return undefined;
+  if (job.name === "deploy") return "deploying";
+  const activeStep = job.steps?.find((step) => step.status === "in_progress");
+  if (!activeStep) return job.status === "queued" ? "waiting" : undefined;
+  if (activeStep.name === "npm ci") return "packing";
+  if (activeStep.name === "npm run format:check") return "tidying";
+  if (activeStep.name === "npm run lint") return "checking";
+  if (activeStep.name === "npm run typecheck") return "checking";
+  if (activeStep.name === "npm test") return "testing";
+  if (activeStep.name === "npm run build -w @mums-bookshelf/shared")
+    return "binding";
+  if (activeStep.name === "npm run build -w @mums-bookshelf/api")
+    return "building-api";
+  if (activeStep.name === "Apply D1 migrations") return "filing";
+  if (activeStep.name === "Deploy Cloudflare Worker") return "sending-api";
+  if (activeStep.name === "npm run build -w @mums-bookshelf/web")
+    return "building-pages";
+  if (activeStep.name === "actions/upload-pages-artifact@v5")
+    return "packing-pages";
+  return "checking";
+}
 
 function deploymentConfiguration(context: Context<AppEnvironment>) {
   const token = context.env.GITHUB_PAGES_DEPLOY_TOKEN;
@@ -161,8 +201,32 @@ export async function getPagesDeploymentStatus(
         : run.conclusion === "success"
           ? "ready"
           : "failed";
+  let stage: string | undefined;
+  if (state === "building") {
+    const jobsResponse = await fetch(
+      `https://api.github.com/repos/${owner}/${repository}/actions/runs/${run.id}/jobs?per_page=20`,
+      {
+        headers: {
+          Accept: "application/vnd.github+json",
+          Authorization: `Bearer ${token}`,
+          "User-Agent": "mums-bookshelf-worker",
+          "X-GitHub-Api-Version": "2026-03-10",
+        },
+      },
+    );
+    if (jobsResponse.ok) {
+      const jobs = (await jobsResponse.json()) as WorkflowJobsResponse;
+      stage = stageForJob(
+        jobs.jobs?.find((job) => job.status === "in_progress") ||
+          jobs.jobs?.find((job) => job.status === "queued"),
+      );
+    } else {
+      await jobsResponse.body?.cancel();
+    }
+  }
   return success(context, {
     state,
+    ...(stage ? { stage } : {}),
     runId: run.id,
     runUrl: run.html_url,
     startedAt: run.created_at,

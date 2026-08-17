@@ -481,6 +481,53 @@ describe("API routes", () => {
     });
   });
 
+  it("reports the active Pages refresh step", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes("/jobs?"))
+        return Response.json({
+          jobs: [
+            {
+              name: "validate",
+              status: "in_progress",
+              conclusion: null,
+              steps: [
+                { name: "npm ci", status: "completed", conclusion: "success" },
+                {
+                  name: "npm run build -w @mums-bookshelf/web",
+                  status: "in_progress",
+                  conclusion: null,
+                },
+              ],
+            },
+          ],
+        });
+      return Response.json({
+        workflow_runs: [
+          {
+            id: 457,
+            status: "in_progress",
+            conclusion: null,
+            html_url: "https://github.com/Arniox/Mums-Bookshelf/actions/runs/457",
+            created_at: "2026-08-17T00:00:01Z",
+            updated_at: "2026-08-17T00:01:00Z",
+          },
+        ],
+      });
+    });
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/deployments/pages?since=2026-08-17T00:00:00Z",
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      data: { state: "building", stage: "building-pages" },
+    });
+  });
+
   it("reports when automatic Pages deployment is not configured", async () => {
     delete env.GITHUB_PAGES_DEPLOY_TOKEN;
     const fetchMock = vi.spyOn(globalThis, "fetch");
