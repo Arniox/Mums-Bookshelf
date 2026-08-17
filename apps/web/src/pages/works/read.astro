@@ -19,13 +19,13 @@ const settings = await getPublicSettings();
 
 <script>
   import {
-areSameExternalUrls,
-detectSocialProvider,
-getBookAppearance,
-isAllowedExternalUrl,
-type Work,
-} from "@mums-bookshelf/shared";
-import { getRuntimePublicWork } from "../../lib/runtimeContent";
+    areSameExternalUrls,
+    detectSocialProvider,
+    getBookAppearance,
+    isAllowedExternalUrl,
+    type Work,
+  } from "@mums-bookshelf/shared";
+  import { getRuntimePublicWork } from "../../lib/runtimeContent";
 
   const container = document.querySelector<HTMLElement>("[data-runtime-work]");
   const base = import.meta.env.BASE_URL;
@@ -164,7 +164,8 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
       facts.append(term, definition);
     };
     if (work.publisherName) addFact("Publisher", work.publisherName);
-    if (work.wordCount) addFact("Length", `${work.wordCount.toLocaleString()} words`);
+    if (work.wordCount)
+      addFact("Length", `${work.wordCount.toLocaleString()} words`);
     if (work.readingTimeMinutes && work.contentVisibility === "full")
       addFact("Reading time", `${work.readingTimeMinutes} minutes`);
     if (facts.childElementCount) copy.append(facts);

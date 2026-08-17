@@ -1,5 +1,8 @@
 ---
-import { detectSocialProvider, isAllowedExternalUrl } from "@mums-bookshelf/shared";
+import {
+  detectSocialProvider,
+  isAllowedExternalUrl,
+} from "@mums-bookshelf/shared";
 
 interface Props {
   url: string;
@@ -26,50 +29,62 @@ const provider = valid ? detectSocialProvider(url) : "other";
         <div class="social-embed-slot" data-embed-slot aria-live="polite" />
       )}
       <a href={url} rel="noopener noreferrer">
-        View {authorName}'s post on {provider === "other" ? "social media" : provider} ↗
+        View {authorName}'s post on{" "}
+        {provider === "other" ? "social media" : provider} ↗
       </a>
-      <small>External posts may be private, removed or unavailable in your region.</small>
+      <small>
+        External posts may be private, removed or unavailable in your region.
+      </small>
     </aside>
   )
 }
 
 <script>
   const posts = document.querySelectorAll<HTMLElement>("[data-social-post]");
-  const observer = new IntersectionObserver((entries) => {
-    entries.filter((entry) => entry.isIntersecting).forEach((entry) => {
-      const post = entry.target as HTMLElement;
-      observer.unobserve(post);
-      if (
-        post.dataset.provider !== "facebook" ||
-        post.dataset.embed !== "true" ||
-        !post.dataset.url
-      )
-        return;
-      const slot = post.querySelector<HTMLElement>("[data-embed-slot]");
-      if (!slot) return;
-      const embed = document.createElement("div");
-      embed.className = "fb-post";
-      embed.dataset.href = post.dataset.url;
-      embed.dataset.width = "500";
-      slot.append(embed);
-      if (!document.querySelector('script[data-facebook-sdk]')) {
-        const script = document.createElement("script");
-        script.async = true;
-        script.defer = true;
-        script.crossOrigin = "anonymous";
-        script.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v21.0";
-        script.dataset.facebookSdk = "true";
-        script.addEventListener("error", () => slot.remove());
-        document.body.append(script);
-      } else {
-        (window as Window & { FB?: { XFBML: { parse: (node: Element) => void } } }).FB?.XFBML.parse(slot);
-      }
-    });
-  }, { rootMargin: "250px" });
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries
+        .filter((entry) => entry.isIntersecting)
+        .forEach((entry) => {
+          const post = entry.target as HTMLElement;
+          observer.unobserve(post);
+          if (
+            post.dataset.provider !== "facebook" ||
+            post.dataset.embed !== "true" ||
+            !post.dataset.url
+          )
+            return;
+          const slot = post.querySelector<HTMLElement>("[data-embed-slot]");
+          if (!slot) return;
+          const embed = document.createElement("div");
+          embed.className = "fb-post";
+          embed.dataset.href = post.dataset.url;
+          embed.dataset.width = "500";
+          slot.append(embed);
+          if (!document.querySelector("script[data-facebook-sdk]")) {
+            const script = document.createElement("script");
+            script.async = true;
+            script.defer = true;
+            script.crossOrigin = "anonymous";
+            script.src =
+              "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v21.0";
+            script.dataset.facebookSdk = "true";
+            script.addEventListener("error", () => slot.remove());
+            document.body.append(script);
+          } else {
+            (
+              window as Window & {
+                FB?: { XFBML: { parse: (node: Element) => void } };
+              }
+            ).FB?.XFBML.parse(slot);
+          }
+        });
+    },
+    { rootMargin: "250px" },
+  );
   posts.forEach((post) => observer.observe(post));
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) observer.disconnect();
     else posts.forEach((post) => observer.observe(post));
   });
 </script>
-
