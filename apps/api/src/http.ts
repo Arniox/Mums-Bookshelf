@@ -16,10 +16,7 @@ export function success<T>(context: Context, data: T, status: 200 | 201 = 200) {
   return context.json({ data, requestId: context.get("requestId") }, status);
 }
 
-export async function noStorePublicContent(
-  context: Context,
-  next: Next,
-) {
+export async function noStorePublicContent(context: Context, next: Next) {
   context.header("Cache-Control", "no-store");
   await next();
 }
