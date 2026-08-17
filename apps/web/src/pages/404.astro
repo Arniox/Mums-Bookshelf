@@ -3,7 +3,11 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 const base = import.meta.env.BASE_URL;
 ---
 
-<BaseLayout title="Page not found" description="The requested page could not be found." noindex>
+<BaseLayout
+  title="Page not found"
+  description="The requested page could not be found."
+  noindex
+>
   <section class="not-found">
     <p class="eyebrow">404 · Mis-shelved</p>
     <h1>This story isn’t on the shelf.</h1>
@@ -22,4 +26,3 @@ const base = import.meta.env.BASE_URL;
       `${base}works/read/?work=${encodeURIComponent(match[1])}`,
     );
 </script>
-

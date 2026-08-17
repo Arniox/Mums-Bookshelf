@@ -38,7 +38,10 @@ const featuredWork = works.find((work) => work.featured);
       >
         <div data-featured-note>
           {featuredWork && (
-            <a class="featured-note" href={`${base}works/${featuredWork.slug}/`}>
+            <a
+              class="featured-note"
+              href={`${base}works/${featuredWork.slug}/`}
+            >
               <span>Featured story</span>
               <strong>{featuredWork.title}</strong>
               <small>Start here →</small>
@@ -115,8 +118,8 @@ const featuredWork = works.find((work) => work.featured);
 
 <script>
   import { getBookAppearance, type Work } from "@mums-bookshelf/shared";
-import { featuredFirstShuffle } from "../lib/randomiseWorks";
-import { getRuntimePublicWorks } from "../lib/runtimeContent";
+  import { featuredFirstShuffle } from "../lib/randomiseWorks";
+  import { getRuntimePublicWorks } from "../lib/runtimeContent";
 
   const shelf = document.querySelector<HTMLElement>("[data-bookshelf]");
   const skip = shelf?.querySelector<HTMLButtonElement>("[data-skip-animation]");
@@ -125,7 +128,9 @@ import { getRuntimePublicWorks } from "../lib/runtimeContent";
   const accessibleList = shelf?.querySelector<HTMLUListElement>(
     "[data-accessible-list]",
   );
-  const featuredNote = shelf?.querySelector<HTMLElement>("[data-featured-note]");
+  const featuredNote = shelf?.querySelector<HTMLElement>(
+    "[data-featured-note]",
+  );
   const base = import.meta.env.BASE_URL;
   const reduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
@@ -177,7 +182,8 @@ import { getRuntimePublicWorks } from "../lib/runtimeContent";
     const recentSlugs = [...publishedWorks]
       .sort(
         (left, right) =>
-          Date.parse(right.publishedAt || "") - Date.parse(left.publishedAt || ""),
+          Date.parse(right.publishedAt || "") -
+          Date.parse(left.publishedAt || ""),
       )
       .slice(0, 3)
       .map((work) => work.slug);
@@ -188,7 +194,8 @@ import { getRuntimePublicWorks } from "../lib/runtimeContent";
       const slot = document.createElement("li");
       slot.className = "book-slot";
       slot.dataset.featured = String(work.featured);
-      if (recentSlugs.includes(work.slug)) slot.classList.add("is-recent-release");
+      if (recentSlugs.includes(work.slug))
+        slot.classList.add("is-recent-release");
 
       const book = document.createElement("a");
       book.className = [
@@ -270,7 +277,9 @@ import { getRuntimePublicWorks } from "../lib/runtimeContent";
 
   orderShelf();
   bindBookOpening();
-  void getRuntimePublicWorks().then(renderShelf).catch(() => undefined);
+  void getRuntimePublicWorks()
+    .then(renderShelf)
+    .catch(() => undefined);
 
   if (shelf && !reduceMotion) {
     shelf.classList.add("is-revealing");
@@ -286,5 +295,4 @@ import { getRuntimePublicWorks } from "../lib/runtimeContent";
       if (skip) skip.hidden = true;
     }, 1800);
   }
-
 </script>

@@ -514,16 +514,16 @@ const authorInitials = settings.authorName
 
 <script>
   import { areSameExternalUrls } from "@mums-bookshelf/shared";
-import {
-localWorkDraftKey,
-parseLocalWorkDraft,
-type LocalWorkDraft,
-} from "../../lib/localDraft";
-import {
-normaliseStoryHtml,
-storyTextToEditorHtml,
-wordHtmlToStoryHtml,
-} from "../../lib/wordPaste";
+  import {
+    localWorkDraftKey,
+    parseLocalWorkDraft,
+    type LocalWorkDraft,
+  } from "../../lib/localDraft";
+  import {
+    normaliseStoryHtml,
+    storyTextToEditorHtml,
+    wordHtmlToStoryHtml,
+  } from "../../lib/wordPaste";
 
   type ApiWork = Record<string, any>;
   const app = document.querySelector<HTMLElement>("[data-admin-app]")!;

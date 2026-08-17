@@ -17,7 +17,7 @@ const settings = await getPublicSettings();
 
 <script>
   import { areSameExternalUrls, type Work } from "@mums-bookshelf/shared";
-import { getRuntimePublicWork } from "../../lib/runtimeContent";
+  import { getRuntimePublicWork } from "../../lib/runtimeContent";
 
   const container = document.querySelector<HTMLElement>("[data-runtime-work]");
   const base = import.meta.env.BASE_URL;
@@ -145,7 +145,12 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
     if (work.purchaseUrl && !publicationIsPurchase)
       addLink(actions, "Purchase ↗", work.purchaseUrl, "button secondary");
     if (work.audioUrl)
-      addLink(actions, "Listen to the audio ↗", work.audioUrl, "button secondary");
+      addLink(
+        actions,
+        "Listen to the audio ↗",
+        work.audioUrl,
+        "button secondary",
+      );
     copy.append(actions);
     header.append(cover, copy);
     fragment.append(header);
@@ -174,7 +179,11 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
     }
     container.replaceChildren(fragment);
     document.title = `${work.title} — ${document.title.split(" — ").at(-1) || "Author"}`;
-    history.replaceState(null, "", `${base}works/read/?work=${encodeURIComponent(work.slug)}`);
+    history.replaceState(
+      null,
+      "",
+      `${base}works/read/?work=${encodeURIComponent(work.slug)}`,
+    );
   };
 
   if (!slug) {
