@@ -222,6 +222,9 @@ const structuredData = {
   const share = document.querySelector<HTMLButtonElement>("[data-share]");
   const status = document.querySelector<HTMLElement>("[data-share-status]");
   share?.addEventListener("click", async () => {
+    share.classList.add("is-loading");
+    share.setAttribute("aria-busy", "true");
+    share.disabled = true;
     const data = {
       title: share.dataset.title || "Shared work",
       url: window.location.href,
@@ -235,6 +238,10 @@ const structuredData = {
     } catch (error) {
       if ((error as Error).name !== "AbortError" && status)
         status.textContent = "Unable to share this link.";
+    } finally {
+      share.classList.remove("is-loading");
+      share.setAttribute("aria-busy", "false");
+      share.disabled = false;
     }
   });
 </script>
