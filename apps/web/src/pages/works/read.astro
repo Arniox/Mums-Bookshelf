@@ -16,8 +16,12 @@ const settings = await getPublicSettings();
 </BaseLayout>
 
 <script>
-  import { areSameExternalUrls, type Work } from "@mums-bookshelf/shared";
-  import { getRuntimePublicWork } from "../../lib/runtimeContent";
+  import {
+areSameExternalUrls,
+getBookAppearance,
+type Work,
+} from "@mums-bookshelf/shared";
+import { getRuntimePublicWork } from "../../lib/runtimeContent";
 
   const container = document.querySelector<HTMLElement>("[data-runtime-work]");
   const base = import.meta.env.BASE_URL;
@@ -109,6 +113,25 @@ const settings = await getPublicSettings();
       image.src = work.workImageUrl;
       image.alt = `Image for ${work.title}`;
       cover.append(image);
+    } else {
+      const appearance = getBookAppearance(work.id || work.slug);
+      const fallback = document.createElement("div");
+      fallback.className = "fallback-cover";
+      fallback.style.setProperty("--cover", appearance.primaryColor);
+      fallback.style.setProperty("--cover-accent", appearance.accentColor);
+      fallback.setAttribute("role", "img");
+      fallback.setAttribute("aria-label", `Decorative cover for ${work.title}`);
+      const rule = document.createElement("span");
+      rule.className = "cover-rule";
+      const label = document.createElement("p");
+      label.textContent = work.publicationType.replace("-", " ");
+      const title = document.createElement("h2");
+      title.textContent = work.title;
+      const ornament = document.createElement("span");
+      ornament.className = "cover-ornament";
+      ornament.textContent = "✦";
+      fallback.append(rule, label, title, ornament);
+      cover.append(fallback);
     }
     const copy = document.createElement("div");
     copy.className = "work-detail-copy";
