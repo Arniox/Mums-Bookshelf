@@ -537,16 +537,16 @@ const authorInitials = settings.authorName
 
 <script>
   import { areSameExternalUrls } from "@mums-bookshelf/shared";
-import {
-localWorkDraftKey,
-parseLocalWorkDraft,
-type LocalWorkDraft,
-} from "../../lib/localDraft";
-import {
-normaliseStoryHtml,
-storyTextToEditorHtml,
-wordHtmlToStoryHtml,
-} from "../../lib/wordPaste";
+  import {
+    localWorkDraftKey,
+    parseLocalWorkDraft,
+    type LocalWorkDraft,
+  } from "../../lib/localDraft";
+  import {
+    normaliseStoryHtml,
+    storyTextToEditorHtml,
+    wordHtmlToStoryHtml,
+  } from "../../lib/wordPaste";
 
   type ApiWork = Record<string, any>;
   const app = document.querySelector<HTMLElement>("[data-admin-app]")!;
@@ -604,6 +604,7 @@ wordHtmlToStoryHtml,
   )!;
   let deploymentPollTimer: number | undefined;
   let deploymentSince = "";
+  let highestDeploymentProgress = 0;
 
   const deploymentMessages = {
     starting: {
@@ -682,6 +683,12 @@ wordHtmlToStoryHtml,
       title: "Wrapping the pages for delivery…",
       detail: "The new site is packed up and heading to the bookshelf.",
     },
+    "deploy-waiting": {
+      progress: 96,
+      title: "The delivery van is at the door…",
+      detail:
+        "The checks are finished. GitHub is waiting for its final turn to place the new pages on the shelf.",
+    },
     deploying: {
       progress: 98,
       title: "Placing the new pages on the shelf…",
@@ -702,6 +709,8 @@ wordHtmlToStoryHtml,
 
   const showDeploymentProgress = (stage: keyof typeof deploymentMessages) => {
     const message = deploymentMessages[stage];
+    if (message.progress < highestDeploymentProgress) return;
+    highestDeploymentProgress = message.progress;
     deploymentProgress.hidden = false;
     deploymentProgressTitle.textContent = message.title;
     deploymentProgressDetail.textContent = message.detail;
@@ -742,6 +751,7 @@ wordHtmlToStoryHtml,
 
   const trackDeployment = (requestedAt: string) => {
     deploymentSince = requestedAt;
+    highestDeploymentProgress = 0;
     window.clearTimeout(deploymentPollTimer);
     showDeploymentProgress("starting");
     deploymentPollTimer = window.setTimeout(checkDeploymentProgress, 2_000);

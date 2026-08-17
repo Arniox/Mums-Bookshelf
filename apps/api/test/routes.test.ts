@@ -529,6 +529,53 @@ describe("API routes", () => {
     });
   });
 
+  it("keeps final Pages deployment near completion while it waits", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes("/jobs?"))
+        return Response.json({
+          jobs: [
+            {
+              name: "validate",
+              status: "completed",
+              conclusion: "success",
+              steps: [],
+            },
+            {
+              name: "Deploy to GitHub Pages",
+              status: "queued",
+              conclusion: null,
+              steps: [],
+            },
+          ],
+        });
+      return Response.json({
+        workflow_runs: [
+          {
+            id: 458,
+            status: "in_progress",
+            conclusion: null,
+            html_url:
+              "https://github.com/Arniox/Mums-Bookshelf/actions/runs/458",
+            created_at: "2026-08-17T00:00:01Z",
+            updated_at: "2026-08-17T00:01:00Z",
+          },
+        ],
+      });
+    });
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/deployments/pages?since=2026-08-17T00:00:00Z",
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      data: { state: "building", stage: "deploy-waiting" },
+    });
+  });
+
   it("reports when automatic Pages deployment is not configured", async () => {
     delete env.GITHUB_PAGES_DEPLOY_TOKEN;
     const fetchMock = vi.spyOn(globalThis, "fetch");
