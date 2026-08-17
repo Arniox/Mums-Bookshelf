@@ -140,7 +140,12 @@ const { workId } = Astro.props;
       initialised = true;
       section.hidden = false;
       void loadComments().catch(() => {
-        list.textContent = "Comments are temporarily unavailable.";
+        list.replaceChildren(
+          Object.assign(document.createElement("p"), {
+            className: "comment-empty",
+            textContent: "Comments are temporarily unavailable.",
+          }),
+        );
       });
       const siteKey = section.dataset.turnstileKey;
       if (!siteKey) return;
