@@ -41,7 +41,8 @@ export function dailyFeaturedOrder<T>(
 ): T[] {
   const orderGroup = (values: T[]) =>
     [...values].sort((left, right) => {
-      const difference = hash(`${salt}:${getKey(left)}`) - hash(`${salt}:${getKey(right)}`);
+      const difference =
+        hash(`${salt}:${getKey(left)}`) - hash(`${salt}:${getKey(right)}`);
       return difference || getKey(left).localeCompare(getKey(right));
     });
 

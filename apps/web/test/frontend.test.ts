@@ -5,13 +5,13 @@ import { works } from "../src/data/sample";
 import { matchesWork } from "../src/lib/filterWorks";
 import { localWorkDraftKey, parseLocalWorkDraft } from "../src/lib/localDraft";
 import {
-    dailyFeaturedOrder,
-    dailyOrderSalt,
-    featuredFirstShuffle,
+  dailyFeaturedOrder,
+  dailyOrderSalt,
+  featuredFirstShuffle,
 } from "../src/lib/randomiseWorks";
 import {
-    storyTextToEditorHtml,
-    wordHtmlToStoryHtml,
+  storyTextToEditorHtml,
+  wordHtmlToStoryHtml,
 } from "../src/lib/wordPaste";
 
 describe("public library", () => {
@@ -73,9 +73,7 @@ describe("public library", () => {
     );
 
     expect(salt).toBe("2026-08-17");
-    expect(first.map((item) => item.id)).toEqual(
-      second.map((item) => item.id),
-    );
+    expect(first.map((item) => item.id)).toEqual(second.map((item) => item.id));
     expect(first[0]?.id).toBe("featured");
   });
 
