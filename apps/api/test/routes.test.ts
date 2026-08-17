@@ -508,7 +508,8 @@ describe("API routes", () => {
             id: 457,
             status: "in_progress",
             conclusion: null,
-            html_url: "https://github.com/Arniox/Mums-Bookshelf/actions/runs/457",
+            html_url:
+              "https://github.com/Arniox/Mums-Bookshelf/actions/runs/457",
             created_at: "2026-08-17T00:00:01Z",
             updated_at: "2026-08-17T00:01:00Z",
           },

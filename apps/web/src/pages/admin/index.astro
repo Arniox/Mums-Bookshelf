@@ -537,16 +537,16 @@ const authorInitials = settings.authorName
 
 <script>
   import { areSameExternalUrls } from "@mums-bookshelf/shared";
-import {
-localWorkDraftKey,
-parseLocalWorkDraft,
-type LocalWorkDraft,
-} from "../../lib/localDraft";
-import {
-normaliseStoryHtml,
-storyTextToEditorHtml,
-wordHtmlToStoryHtml,
-} from "../../lib/wordPaste";
+  import {
+    localWorkDraftKey,
+    parseLocalWorkDraft,
+    type LocalWorkDraft,
+  } from "../../lib/localDraft";
+  import {
+    normaliseStoryHtml,
+    storyTextToEditorHtml,
+    wordHtmlToStoryHtml,
+  } from "../../lib/wordPaste";
 
   type ApiWork = Record<string, any>;
   const app = document.querySelector<HTMLElement>("[data-admin-app]")!;
@@ -620,7 +620,8 @@ wordHtmlToStoryHtml,
     waiting: {
       progress: 40,
       title: "The workshop is opening its doors…",
-      detail: "The book is already live while the page-making queue gets moving.",
+      detail:
+        "The book is already live while the page-making queue gets moving.",
     },
     packing: {
       progress: 46,
@@ -635,7 +636,14 @@ wordHtmlToStoryHtml,
     checking: {
       progress: 60,
       title: "Giving everything a careful once-over…",
-      detail: "Testing the shelves and polishing the little details. This can take a moment.",
+      detail:
+        "Testing the shelves and polishing the little details. This can take a moment.",
+    },
+    building: {
+      progress: 64,
+      title: "The page-making machine is humming along…",
+      detail:
+        "GitHub is working through the details. We will show the next step as soon as it tells us.",
     },
     testing: {
       progress: 68,
@@ -650,7 +658,8 @@ wordHtmlToStoryHtml,
     "building-api": {
       progress: 78,
       title: "Waking up the library helper…",
-      detail: "Preparing the little service that keeps the bookshelf up to date.",
+      detail:
+        "Preparing the little service that keeps the bookshelf up to date.",
     },
     filing: {
       progress: 82,
@@ -665,7 +674,8 @@ wordHtmlToStoryHtml,
     "building-pages": {
       progress: 91,
       title: "Printing the fresh share pages…",
-      detail: "Making the page people see when they open or share this book's link.",
+      detail:
+        "Making the page people see when they open or share this book's link.",
     },
     "packing-pages": {
       progress: 95,
