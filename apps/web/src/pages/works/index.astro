@@ -45,7 +45,11 @@ const types = [...new Set(works.map((work) => work.publicationType))];
     </p>
   </section>
 
-  <div class="works-grid" data-works-grid>
+  <div
+    class="works-grid"
+    data-works-grid
+    data-author-name={settings.authorName}
+  >
     {
       works.map((work) => (
         <WorkCard work={work} authorName={settings.authorName} />
@@ -61,18 +65,121 @@ const types = [...new Set(works.map((work) => work.publicationType))];
 </BaseLayout>
 
 <script>
+  import { getBookAppearance, type Work } from "@mums-bookshelf/shared";
   import { featuredFirstShuffle } from "../../lib/randomiseWorks";
+  import { getRuntimePublicWorks } from "../../lib/runtimeContent";
 
   const search = document.querySelector<HTMLInputElement>("[data-work-search]");
   const filter =
     document.querySelector<HTMLSelectElement>("[data-work-filter]");
-  const cards = [...document.querySelectorAll<HTMLElement>("[data-work-card]")];
+  let cards = [...document.querySelectorAll<HTMLElement>("[data-work-card]")];
   const count = document.querySelector<HTMLElement>("[data-result-count]");
   const empty = document.querySelector<HTMLElement>("[data-empty-results]");
   const clear = document.querySelector<HTMLButtonElement>(
     "[data-clear-filters]",
   );
   const grid = document.querySelector<HTMLElement>("[data-works-grid]");
+  const base = import.meta.env.BASE_URL;
+  const authorName = grid?.dataset.authorName || "The author";
+
+  const workUrl = (slug: string) => `${base}works/${slug}/`;
+
+  const renderWorkCard = (work: Work) => {
+    const card = document.createElement("article");
+    card.className = "work-card";
+    card.dataset.workCard = "";
+    card.dataset.title = work.title.toLowerCase();
+    card.dataset.type = work.publicationType;
+    card.dataset.genres = work.genres.join(" ").toLowerCase();
+    card.dataset.featured = String(work.featured);
+
+    const coverLink = document.createElement("a");
+    coverLink.className = "work-card-cover";
+    coverLink.href = workUrl(work.slug);
+    coverLink.tabIndex = -1;
+    coverLink.setAttribute("aria-hidden", "true");
+    if (work.workImageUrl) {
+      const image = document.createElement("img");
+      image.src = work.workImageUrl;
+      image.alt = "";
+      image.loading = "lazy";
+      coverLink.append(image);
+    } else {
+      const appearance = getBookAppearance(work.id || work.slug);
+      const fallback = document.createElement("div");
+      fallback.className = "fallback-cover";
+      fallback.style.setProperty("--cover", appearance.primaryColor);
+      fallback.style.setProperty("--cover-accent", appearance.accentColor);
+      fallback.setAttribute("role", "img");
+      fallback.setAttribute("aria-label", `Decorative cover for ${work.title}`);
+      const rule = document.createElement("span");
+      rule.className = "cover-rule";
+      const label = document.createElement("p");
+      label.textContent = work.publicationType.replace("-", " ");
+      const title = document.createElement("h2");
+      title.textContent = work.title;
+      const ornament = document.createElement("span");
+      ornament.className = "cover-ornament";
+      ornament.textContent = "✦";
+      const author = document.createElement("small");
+      author.textContent = authorName;
+      fallback.append(rule, label, title, ornament, author);
+      coverLink.append(fallback);
+    }
+
+    const body = document.createElement("div");
+    body.className = "work-card-body";
+    const meta = document.createElement("p");
+    meta.className = "work-meta";
+    meta.textContent = work.publicationType.replace("-", " ");
+    if (work.publishedAt) {
+      const date = document.createElement("span");
+      date.textContent = `· ${new Intl.DateTimeFormat("en-NZ", {
+        year: "numeric",
+        month: "long",
+      }).format(new Date(work.publishedAt))}`;
+      meta.append(date);
+    }
+    const heading = document.createElement("h2");
+    const titleLink = document.createElement("a");
+    titleLink.href = workUrl(work.slug);
+    titleLink.textContent = work.title;
+    heading.append(titleLink);
+    const blurb = document.createElement("p");
+    blurb.textContent = work.blurb;
+    const genres = document.createElement("div");
+    genres.className = "tag-row";
+    work.genres.slice(0, 2).forEach((genre) => {
+      const tag = document.createElement("span");
+      tag.textContent = genre;
+      genres.append(tag);
+    });
+    body.append(meta, heading, blurb, genres);
+    card.append(coverLink, body);
+    return card;
+  };
+
+  const refreshTypeFilter = (works: Work[]) => {
+    if (!filter) return;
+    const selected = filter.value;
+    filter.replaceChildren(new Option("All types", ""));
+    [...new Set(works.map((work) => work.publicationType))].forEach((type) =>
+      filter.append(new Option(type.replace("-", " "), type)),
+    );
+    filter.value = selected;
+  };
+
+  const renderWorks = (works: Work[]) => {
+    if (!grid) return;
+    grid.replaceChildren(...works.map(renderWorkCard));
+    cards = [...grid.querySelectorAll<HTMLElement>("[data-work-card]")];
+    featuredFirstShuffle(
+      cards,
+      (card) => card.dataset.featured === "true",
+    ).forEach((card) => grid.append(card));
+    refreshTypeFilter(works);
+    update();
+  };
 
   featuredFirstShuffle(
     cards,
@@ -103,4 +210,6 @@ const types = [...new Set(works.map((work) => work.publicationType))];
     update();
     search?.focus();
   });
+
+  void getRuntimePublicWorks().then(renderWorks).catch(() => undefined);
 </script>
