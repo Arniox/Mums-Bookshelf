@@ -1,7 +1,7 @@
 ---
 name: mums-bookshelf-repository-operations
-description: 'Operate the Mum''s Bookshelf GitHub repository and Cloudflare services. Use when inspecting or changing git history, diffs, branches, commits, pushes, pull requests, reviews, GitHub Actions, repository settings, workflow configuration, Cloudflare Worker settings, or the author-library D1 database.'
-argument-hint: 'Describe the repository, GitHub, GitHub Actions, Worker, or D1 task.'
+description: "Operate the Mum's Bookshelf GitHub repository and Cloudflare services. Use when inspecting or changing git history, diffs, branches, commits, pushes, pull requests, reviews, GitHub Actions, repository settings, workflow configuration, Cloudflare Worker settings, or the author-library D1 database."
+argument-hint: "Describe the repository, GitHub, GitHub Actions, Worker, or D1 task."
 ---
 
 # Mum's Bookshelf Repository Operations
