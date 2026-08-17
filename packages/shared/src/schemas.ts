@@ -15,8 +15,8 @@ export const contentVisibilities = ["external-only", "full"] as const;
 
 const optionalUrl = z
   .union([z.string().url(), z.literal(""), z.null()])
-  .optional()
-  .transform((value) => value || undefined);
+  .transform((value) => value || undefined)
+  .optional();
 
 const workBaseSchema = z.object({
   id: z.string().min(1).max(64),
@@ -92,8 +92,8 @@ export const publicSettingsSchema = z.object({
   biography: z.string().max(20_000),
   profileImageUrl: optionalUrl,
   announcement: z.string().trim().max(500).optional(),
-  socialLinks: z.record(z.string().url()).default({}),
-  themeSettings: z.record(z.string()).default({}),
+  socialLinks: z.record(z.string(), z.string().url()).default({}),
+  themeSettings: z.record(z.string(), z.string()).default({}),
   contactLink: optionalUrl,
 });
 
