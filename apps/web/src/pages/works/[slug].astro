@@ -1,5 +1,9 @@
 ---
-import { areSameExternalUrls, sanitiseMarkdown } from "@mums-bookshelf/shared";
+import {
+  areSameExternalUrls,
+  calculateReadingTimeFromWordCount,
+  sanitiseMarkdown,
+} from "@mums-bookshelf/shared";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Comments from "../../components/Comments.astro";
 import FallbackCover from "../../components/FallbackCover.astro";
@@ -38,6 +42,9 @@ const publicationIsPurchase = areSameExternalUrls(
   work.primaryExternalUrl,
   work.purchaseUrl,
 );
+const readingTimeMinutes = work.wordCount
+  ? calculateReadingTimeFromWordCount(work.wordCount)
+  : undefined;
 const base = import.meta.env.BASE_URL;
 const schemaType =
   work.publicationType === "book"
@@ -87,30 +94,20 @@ const structuredData = {
         <h1 data-work-title>{work.title}</h1>
         <p class="work-blurb" data-work-blurb>{work.blurb}</p>
         <dl class="work-facts">
-          <div data-publisher-fact hidden={!work.publisherName}>
-            <dt>Publisher</dt>
-            <dd data-work-publisher>{work.publisherName}</dd>
-          </div>
-          {
-            work.wordCount && (
-              <>
-                <>
-                  <dt>Length</dt>
-                  <dd>{work.wordCount.toLocaleString()} words</dd>
-                </>
-              </>
-            )
-          }
-          {
-            work.readingTimeMinutes && work.contentVisibility === "full" && (
-              <>
-                <>
-                  <dt>Reading time</dt>
-                  <dd>{work.readingTimeMinutes} minutes</dd>
-                </>
-              </>
-            )
-          }
+          <dt data-work-publisher-label hidden={!work.publisherName}>Publisher</dt>
+          <dd data-work-publisher hidden={!work.publisherName}>
+            {work.publisherName}
+          </dd>
+          <dt data-work-length-label hidden={!work.wordCount}>Length</dt>
+          <dd data-work-length hidden={!work.wordCount}>
+            {work.wordCount?.toLocaleString()} words
+          </dd>
+          <dt data-work-reading-time-label hidden={!readingTimeMinutes}>
+            Estimated reading time
+          </dt>
+          <dd data-work-reading-time hidden={!readingTimeMinutes}>
+            {readingTimeMinutes} minutes
+          </dd>
         </dl>
         <div class="button-row" data-work-actions>
           {
@@ -223,6 +220,7 @@ const structuredData = {
 <script>
   import {
 areSameExternalUrls,
+calculateReadingTimeFromWordCount,
 type Work,
 } from "@mums-bookshelf/shared";
 import { getRuntimePublicWork } from "../../lib/runtimeContent";
@@ -232,8 +230,18 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
   const title = document.querySelector<HTMLElement>("[data-work-title]");
   const blurb = document.querySelector<HTMLElement>("[data-work-blurb]");
   const publisher = document.querySelector<HTMLElement>("[data-work-publisher]");
-  const publisherFact = document.querySelector<HTMLElement>(
-    "[data-publisher-fact]",
+  const publisherLabel = document.querySelector<HTMLElement>(
+    "[data-work-publisher-label]",
+  );
+  const length = document.querySelector<HTMLElement>("[data-work-length]");
+  const lengthLabel = document.querySelector<HTMLElement>(
+    "[data-work-length-label]",
+  );
+  const readingTime = document.querySelector<HTMLElement>(
+    "[data-work-reading-time]",
+  );
+  const readingTimeLabel = document.querySelector<HTMLElement>(
+    "[data-work-reading-time-label]",
   );
   const actions = document.querySelector<HTMLElement>("[data-work-actions]");
 
@@ -275,7 +283,26 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
     if (title) title.textContent = work.title;
     if (blurb) blurb.textContent = work.blurb;
     if (publisher) publisher.textContent = work.publisherName || "";
-    if (publisherFact) publisherFact.hidden = !work.publisherName;
+    if (publisherLabel) publisherLabel.hidden = !work.publisherName;
+    if (publisher) publisher.hidden = !work.publisherName;
+    const hasWordCount = Boolean(work.wordCount);
+    const readingTimeMinutes = hasWordCount
+      ? calculateReadingTimeFromWordCount(work.wordCount!)
+      : undefined;
+    if (lengthLabel) lengthLabel.hidden = !hasWordCount;
+    if (length) {
+      length.hidden = !hasWordCount;
+      length.textContent = hasWordCount
+        ? `${work.wordCount!.toLocaleString()} words`
+        : "";
+    }
+    if (readingTimeLabel) readingTimeLabel.hidden = !readingTimeMinutes;
+    if (readingTime) {
+      readingTime.hidden = !readingTimeMinutes;
+      readingTime.textContent = readingTimeMinutes
+        ? `${readingTimeMinutes} minutes`
+        : "";
+    }
     renderActions(work);
   };
 

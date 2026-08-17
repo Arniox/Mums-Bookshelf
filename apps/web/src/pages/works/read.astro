@@ -19,13 +19,14 @@ const settings = await getPublicSettings();
 
 <script>
   import {
-    areSameExternalUrls,
-    detectSocialProvider,
-    getBookAppearance,
-    isAllowedExternalUrl,
-    type Work,
-  } from "@mums-bookshelf/shared";
-  import { getRuntimePublicWork } from "../../lib/runtimeContent";
+areSameExternalUrls,
+calculateReadingTimeFromWordCount,
+detectSocialProvider,
+getBookAppearance,
+isAllowedExternalUrl,
+type Work,
+} from "@mums-bookshelf/shared";
+import { getRuntimePublicWork } from "../../lib/runtimeContent";
 
   const container = document.querySelector<HTMLElement>("[data-runtime-work]");
   const base = import.meta.env.BASE_URL;
@@ -166,8 +167,11 @@ const settings = await getPublicSettings();
     if (work.publisherName) addFact("Publisher", work.publisherName);
     if (work.wordCount)
       addFact("Length", `${work.wordCount.toLocaleString()} words`);
-    if (work.readingTimeMinutes && work.contentVisibility === "full")
-      addFact("Reading time", `${work.readingTimeMinutes} minutes`);
+    if (work.wordCount)
+      addFact(
+        "Estimated reading time",
+        `${calculateReadingTimeFromWordCount(work.wordCount)} minutes`,
+      );
     if (facts.childElementCount) copy.append(facts);
     const actions = document.createElement("div");
     actions.className = "button-row";
