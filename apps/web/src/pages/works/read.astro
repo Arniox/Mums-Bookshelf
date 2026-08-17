@@ -1,0 +1,193 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublicSettings } from "../../lib/contentSource";
+
+const settings = await getPublicSettings();
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout
+  title="Reading a work"
+  description={`A work by ${settings.authorName}.`}
+  siteSettings={settings}
+>
+  <article class="work-detail" data-runtime-work aria-live="polite">
+    <p>Loading this work…</p>
+  </article>
+</BaseLayout>
+
+<script>
+  import { areSameExternalUrls, type Work } from "@mums-bookshelf/shared";
+import { getRuntimePublicWork } from "../../lib/runtimeContent";
+
+  const container = document.querySelector<HTMLElement>("[data-runtime-work]");
+  const base = import.meta.env.BASE_URL;
+  const slug = new URLSearchParams(window.location.search).get("work");
+  const workUrl = (workSlug: string) => `${base}works/${workSlug}/`;
+
+  const appendText = (
+    parent: HTMLElement,
+    tag: keyof HTMLElementTagNameMap,
+    text: string,
+    className?: string,
+  ) => {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    element.textContent = text;
+    parent.append(element);
+    return element;
+  };
+
+  const safeStoryFragment = (story: string) => {
+    const template = document.createElement("template");
+    template.innerHTML = story;
+    const allowedTags = new Set([
+      "P",
+      "BR",
+      "EM",
+      "STRONG",
+      "A",
+      "BLOCKQUOTE",
+      "UL",
+      "OL",
+      "LI",
+      "H2",
+      "H3",
+      "H4",
+      "HR",
+      "CODE",
+      "PRE",
+    ]);
+    const elements = [...template.content.querySelectorAll<HTMLElement>("*")];
+    elements.forEach((element) => {
+      if (!allowedTags.has(element.tagName)) {
+        element.replaceWith(...element.childNodes);
+        return;
+      }
+      [...element.attributes].forEach((attribute) => {
+        if (
+          attribute.name !== "href" ||
+          !/^https?:/i.test(attribute.value.trim())
+        )
+          element.removeAttribute(attribute.name);
+      });
+      if (element.tagName === "A") {
+        element.setAttribute("rel", "noopener noreferrer");
+        element.setAttribute("target", "_blank");
+      }
+    });
+    return template.content;
+  };
+
+  const addLink = (
+    parent: HTMLElement,
+    text: string,
+    href: string,
+    className: string,
+  ) => {
+    const link = document.createElement("a");
+    link.className = className;
+    link.href = href;
+    link.rel = "noopener noreferrer";
+    link.textContent = text;
+    parent.append(link);
+  };
+
+  const renderWork = (work: Work) => {
+    if (!container) return;
+    const fragment = document.createDocumentFragment();
+    const back = document.createElement("a");
+    back.className = "back-link";
+    back.href = `${base}works/`;
+    back.textContent = "← All works";
+    fragment.append(back);
+
+    const header = document.createElement("header");
+    header.className = "work-detail-header";
+    const cover = document.createElement("div");
+    cover.className = "work-detail-cover";
+    if (work.workImageUrl) {
+      const image = document.createElement("img");
+      image.src = work.workImageUrl;
+      image.alt = `Image for ${work.title}`;
+      cover.append(image);
+    }
+    const copy = document.createElement("div");
+    copy.className = "work-detail-copy";
+    const date = work.publishedAt
+      ? new Intl.DateTimeFormat("en-NZ", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }).format(new Date(work.publishedAt))
+      : "";
+    appendText(
+      copy,
+      "p",
+      `${work.publicationType.replace("-", " ")}${date ? ` · ${date}` : ""}`,
+      "eyebrow",
+    );
+    appendText(copy, "h1", work.title);
+    appendText(copy, "p", work.blurb, "work-blurb");
+    const actions = document.createElement("div");
+    actions.className = "button-row";
+    if (work.contentVisibility === "full" && work.storyContent)
+      addLink(actions, "Begin reading ↓", "#story", "button primary");
+    const publicationIsPurchase = areSameExternalUrls(
+      work.primaryExternalUrl,
+      work.purchaseUrl,
+    );
+    if (work.primaryExternalUrl)
+      addLink(
+        actions,
+        publicationIsPurchase ? "View this work ↗" : "View publication ↗",
+        work.primaryExternalUrl,
+        "button primary",
+      );
+    if (work.purchaseUrl && !publicationIsPurchase)
+      addLink(actions, "Purchase ↗", work.purchaseUrl, "button secondary");
+    if (work.audioUrl)
+      addLink(actions, "Listen to the audio ↗", work.audioUrl, "button secondary");
+    copy.append(actions);
+    header.append(cover, copy);
+    fragment.append(header);
+
+    if (work.contentVisibility === "full" && work.storyContent) {
+      const story = document.createElement("section");
+      story.className = "story-content";
+      story.id = "story";
+      story.setAttribute("aria-label", `${work.title}, full story`);
+      appendText(story, "p", "Read online", "eyebrow");
+      const content = document.createElement("div");
+      content.append(safeStoryFragment(work.storyContent));
+      story.append(content);
+      fragment.append(story);
+    }
+
+    if (work.genres.length) {
+      const footer = document.createElement("footer");
+      footer.className = "work-actions";
+      appendText(footer, "p", "Filed under", "eyebrow");
+      const tags = document.createElement("div");
+      tags.className = "tag-row";
+      work.genres.forEach((genre) => appendText(tags, "span", genre));
+      footer.append(tags);
+      fragment.append(footer);
+    }
+    container.replaceChildren(fragment);
+    document.title = `${work.title} — ${document.title.split(" — ").at(-1) || "Author"}`;
+    history.replaceState(null, "", `${base}works/read/?work=${encodeURIComponent(work.slug)}`);
+  };
+
+  if (!slug) {
+    if (container) container.textContent = "Choose a work from the shelf.";
+  } else {
+    void getRuntimePublicWork(slug)
+      .then(renderWork)
+      .catch(() => {
+        if (container)
+          container.textContent =
+            "This work is not available. It may still be a private draft.";
+      });
+  }
+</script>

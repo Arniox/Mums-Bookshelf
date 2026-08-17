@@ -12,3 +12,14 @@ const base = import.meta.env.BASE_URL;
   </section>
 </BaseLayout>
 
+<script>
+  const base = import.meta.env.BASE_URL;
+  const basePath = base === "/" ? "" : base.replace(/\/$/, "");
+  const workPath = window.location.pathname.slice(basePath.length);
+  const match = workPath.match(/^\/works\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/);
+  if (match?.[1])
+    window.location.replace(
+      `${base}works/read/?work=${encodeURIComponent(match[1])}`,
+    );
+</script>
+
