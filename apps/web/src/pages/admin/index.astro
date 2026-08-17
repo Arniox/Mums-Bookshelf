@@ -307,10 +307,57 @@ const authorInitials = settings.authorName
         ><span
           >Full story <abbr title="required when Full Story is selected">*</abbr
           ><small
-            >Markdown supported. Pasting from Word keeps paragraphs, headings,
-            bold, italics, quotes and lists; required for Full Story.</small
+            >Paste directly from Word, then refine it here with the writing
+            tools. Your original formatting is kept where the website supports
+            it; required for Full Story.</small
           ></span
-        ><textarea name="storyContent" rows="15"></textarea></label
+        ><div class="rich-story-editor" data-rich-story-editor>
+          <div
+            class="rich-story-toolbar"
+            role="toolbar"
+            aria-label="Story formatting"
+          >
+            <button type="button" data-story-command="bold" title="Bold"
+              ><strong>B</strong></button
+            >
+            <button type="button" data-story-command="italic" title="Italic"
+              ><em>I</em></button
+            >
+            <button type="button" data-story-block="h2" title="Section heading"
+              >Heading</button
+            >
+            <button type="button" data-story-block="blockquote" title="Pull quote"
+              >Quote</button
+            >
+            <button
+              type="button"
+              data-story-command="insertUnorderedList"
+              title="Bullet list">• List</button
+            >
+            <button
+              type="button"
+              data-story-command="insertOrderedList"
+              title="Numbered list">1. List</button
+            >
+            <button type="button" data-story-command="createLink" title="Add link"
+              >Link</button
+            >
+            <button
+              type="button"
+              data-story-command="insertHorizontalRule"
+              title="Scene break">Scene break</button
+            >
+          </div>
+          <div
+            class="rich-story-canvas"
+            data-story-editor
+            contenteditable="true"
+            role="textbox"
+            aria-multiline="true"
+            aria-label="Full story editor"
+          ></div>
+        </div>
+        <textarea name="storyContent" rows="15" hidden></textarea></label
       >
 
       <fieldset>
@@ -462,7 +509,11 @@ const authorInitials = settings.authorName
     parseLocalWorkDraft,
     type LocalWorkDraft,
   } from "../../lib/localDraft";
-  import { wordHtmlToMarkdown } from "../../lib/wordPaste";
+  import {
+    normaliseStoryHtml,
+    storyTextToEditorHtml,
+    wordHtmlToStoryHtml,
+  } from "../../lib/wordPaste";
 
   type ApiWork = Record<string, any>;
   const app = document.querySelector<HTMLElement>("[data-admin-app]")!;
@@ -726,6 +777,12 @@ const authorInitials = settings.authorName
   const localDraftStatus = document.querySelector<HTMLElement>(
     "[data-local-draft-status]",
   )!;
+  const storyEditor = document.querySelector<HTMLElement>(
+    "[data-story-editor]",
+  )!;
+  const fullStoryField = workForm.elements.namedItem(
+    "storyContent",
+  ) as HTMLTextAreaElement;
 
   const setValue = (name: string, value: unknown) => {
     const input = workForm.elements.namedItem(name) as
@@ -735,6 +792,11 @@ const authorInitials = settings.authorName
     else if (input instanceof HTMLInputElement && input.type === "checkbox")
       input.checked = Boolean(value);
     else input.value = String(value ?? "");
+    if (name === "storyContent")
+      storyEditor.innerHTML = storyTextToEditorHtml(
+        String(value ?? ""),
+        document,
+      );
   };
 
   const currentDraftKey = () => {
