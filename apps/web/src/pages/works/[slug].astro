@@ -262,19 +262,21 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
       work.purchaseUrl,
     );
     if (work.contentVisibility === "full")
-      links.push(actionLink("Begin reading", "#story", "primary"));
+      links.push(actionLink("Begin reading ↓", "#story", "primary"));
     if (work.primaryExternalUrl)
       links.push(
         actionLink(
-          publicationIsPurchase ? "View this work" : "View publication",
+          publicationIsPurchase ? "View this work ↗" : "View publication ↗",
           work.primaryExternalUrl,
           "primary",
         ),
       );
     if (work.purchaseUrl && !publicationIsPurchase)
-      links.push(actionLink("Purchase", work.purchaseUrl, "secondary"));
+      links.push(actionLink("Purchase ↗", work.purchaseUrl, "secondary"));
     if (work.audioUrl)
-      links.push(actionLink("Listen to the audio", work.audioUrl, "secondary"));
+      links.push(
+        actionLink("♪ Listen to the audio ↗", work.audioUrl, "secondary"),
+      );
     actions.replaceChildren(...links);
   };
 
