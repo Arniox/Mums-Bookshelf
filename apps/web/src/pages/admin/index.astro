@@ -564,13 +564,13 @@ wordHtmlToStoryHtml,
   );
 
   const triggerDeployment = async (status = deploymentStatus) => {
-    status.textContent = "Starting the website update…";
+    status.textContent = "Starting the background SEO refresh…";
     const deployment = await request("/api/v1/admin/deployments/pages", {
       method: "POST",
     });
     status.textContent = deployment.runId
-      ? "Website update started. It should be visible in a few minutes."
-      : "Website update queued. It should be visible in a few minutes.";
+      ? "SEO refresh started. Static pages, RSS and sitemap will update in a few minutes."
+      : "SEO refresh queued. Static pages, RSS and sitemap will update in a few minutes.";
     return deployment;
   };
   const showStudio = () => {
@@ -683,7 +683,7 @@ wordHtmlToStoryHtml,
     publishAllButtons.forEach((button) => {
       button.disabled = draftCount === 0;
       button.textContent = draftCount
-        ? `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"} & update website`
+        ? `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"} now`
         : "No drafts to publish";
     });
     document.querySelector<HTMLElement>("[data-stat-published]")!.textContent =
@@ -710,7 +710,7 @@ wordHtmlToStoryHtml,
       if (!draftCount) return;
       if (
         !confirm(
-          `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"}? Drafts without a publication date will use today. This starts one website update after everything is published.`,
+          `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"}? They will appear on the website immediately. Drafts without a publication date will use today, and a background SEO refresh will follow.`,
         )
       )
         return;
@@ -728,8 +728,12 @@ wordHtmlToStoryHtml,
           deploymentStatus.textContent = "There were no drafts to publish.";
           return;
         }
-        await triggerDeployment(deploymentStatus);
-        deploymentStatus.textContent = `${result.published} ${result.published === 1 ? "work" : "works"} published. One website update has started and should appear in a few minutes.`;
+        try {
+          await triggerDeployment(deploymentStatus);
+          deploymentStatus.textContent = `${result.published} ${result.published === 1 ? "work" : "works"} published and visible now. Static SEO files will refresh in the background.`;
+        } catch (deploymentError) {
+          deploymentStatus.textContent = `${result.published} ${result.published === 1 ? "work" : "works"} published and visible now. ${(deploymentError as Error).message}`;
+        }
       } catch (error) {
         deploymentStatus.textContent = (error as Error).message;
         publishAllButtons.forEach((publishButton) => {
