@@ -16,12 +16,12 @@ describe("shared domain logic", () => {
     expect(slugify("The Café’s Last Light!")).toBe("the-cafes-last-light");
   });
 
-  it("calculates a minimum one-minute reading time", () => {
+  it("calculates reading time using the default reading rate", () => {
     expect(calculateReadingTime("")).toBe(1);
     expect(
-      calculateReadingTime(Array.from({ length: 221 }, () => "word").join(" ")),
+      calculateReadingTime(Array.from({ length: 231 }, () => "word").join(" ")),
     ).toBe(2);
-    expect(calculateReadingTimeFromWordCount(441)).toBe(3);
+    expect(calculateReadingTimeFromWordCount(2_900)).toBe(13);
   });
 
   it("accepts only normal web URLs", () => {
