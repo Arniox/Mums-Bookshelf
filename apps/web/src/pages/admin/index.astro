@@ -563,6 +563,7 @@ parseLocalWorkDraft,
 type LocalWorkDraft,
 } from "../../lib/localDraft";
 import {
+hasStructuredStoryHtml,
 normaliseStoryHtml,
 storyTextToEditorHtml,
 wordHtmlToStoryHtml,
@@ -1317,9 +1318,9 @@ wordHtmlToStoryHtml,
     const text = event.clipboardData?.getData("text/plain") || "";
     event.preventDefault();
     insertStoryHtml(
-      html
+      html && hasStructuredStoryHtml(html)
         ? wordHtmlToStoryHtml(html, document)
-        : storyTextToEditorHtml(text, document),
+        : storyTextToEditorHtml(text || html || "", document),
     );
     syncStoryEditor(true);
     updateDropCapControl();

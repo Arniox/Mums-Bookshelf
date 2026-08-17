@@ -10,6 +10,7 @@ import {
   featuredFirstShuffle,
 } from "../src/lib/randomiseWorks";
 import {
+  hasStructuredStoryHtml,
   storyTextToEditorHtml,
   wordHtmlToStoryHtml,
 } from "../src/lib/wordPaste";
@@ -158,5 +159,16 @@ describe("public library", () => {
         document,
       ),
     ).toBe("<p>I shouldn't be here.</p><p>Daddy's home.</p>");
+    expect(
+      wordHtmlToStoryHtml(
+        "&lt;!-- /* Font Definitions */ --&gt;<p>Clean story text.</p>",
+        document,
+      ),
+    ).toBe("<p>Clean story text.</p>");
+    expect(
+      hasStructuredStoryHtml(
+        "<!-- /* Font Definitions */ -->\nI shouldn't be here.",
+      ),
+    ).toBe(false);
   });
 });

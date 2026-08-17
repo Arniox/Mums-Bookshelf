@@ -22,6 +22,16 @@ function isSafeLink(value: string | null) {
   return Boolean(value && /^(?:https?:|mailto:)/iu.test(value.trim()));
 }
 
+function stripClipboardComments(value: string) {
+  return value
+    .replace(/<!--[\s\S]*?-->/gu, "")
+    .replace(/&lt;!--[\s\S]*?--&gt;/giu, "");
+}
+
+export function hasStructuredStoryHtml(value: string) {
+  return /<(?:p|div|h[1-6]|blockquote|ul|ol|li|br|pre|table)\b/iu.test(value);
+}
+
 function appendChildren(
   source: Node,
   target: DocumentFragment | HTMLElement,
@@ -67,7 +77,9 @@ function applyInlineFormatting(
 function normaliseNode(node: Node, document: Document): Node[] {
   if (node.nodeType === 3)
     return [
-      document.createTextNode(node.textContent?.replace(/\u00a0/g, " ") || ""),
+      document.createTextNode(
+        stripClipboardComments(node.textContent || "").replace(/\u00a0/g, " "),
+      ),
     ];
   if (node.nodeType !== 1) return [];
 
@@ -175,7 +187,7 @@ function normaliseNode(node: Node, document: Document): Node[] {
 
 export function normaliseStoryHtml(html: string, document: Document) {
   const source = document.implementation.createHTMLDocument("Story editor");
-  source.body.innerHTML = html;
+  source.body.innerHTML = stripClipboardComments(html);
   const output = document.createElement("div");
   appendChildren(source.body, output, document);
   let currentList: HTMLElement | undefined;
@@ -213,8 +225,8 @@ function inlineMarkdownToHtml(value: string) {
 }
 
 export function storyTextToEditorHtml(value: string, document: Document) {
-  const cleanedValue = value.replace(/<!--[\s\S]*?-->/gu, "").trim();
-  if (/<[a-z][\s\S]*>/iu.test(cleanedValue))
+  const cleanedValue = stripClipboardComments(value).trim();
+  if (hasStructuredStoryHtml(cleanedValue))
     return normaliseStoryHtml(cleanedValue, document);
 
   const lines = cleanedValue.replace(/\r\n?/g, "\n").split("\n");
