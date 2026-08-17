@@ -1,11 +1,12 @@
 import {
-  calculateReadingTime,
-  detectSocialProvider,
-  slugify,
+    calculateReadingTime,
+    calculateReadingTimeFromWordCount,
+    detectSocialProvider,
+    slugify,
 } from "@mums-bookshelf/shared/content";
 import {
-  workInputSchema,
-  workPatchSchema,
+    workInputSchema,
+    workPatchSchema,
 } from "@mums-bookshelf/shared/schemas";
 import type { Context } from "hono";
 import { rowToWork, workColumns } from "./db";
@@ -84,7 +85,11 @@ function normaliseWork(raw: unknown) {
   const work = parsed.data;
   const readingTimeMinutes =
     work.readingTimeMinutes ??
-    (work.storyContent ? calculateReadingTime(work.storyContent) : undefined);
+    (work.wordCount !== undefined
+      ? calculateReadingTimeFromWordCount(work.wordCount)
+      : work.storyContent
+        ? calculateReadingTime(work.storyContent)
+        : undefined);
   const socialProvider = work.socialPostUrl
     ? detectSocialProvider(work.socialPostUrl)
     : undefined;

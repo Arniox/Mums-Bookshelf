@@ -15,7 +15,14 @@ export function calculateReadingTime(
   wordsPerMinute = 220,
 ): number {
   const words = content.trim() ? content.trim().split(/\s+/u).length : 0;
-  return Math.max(1, Math.ceil(words / wordsPerMinute));
+  return calculateReadingTimeFromWordCount(words, wordsPerMinute);
+}
+
+export function calculateReadingTimeFromWordCount(
+  wordCount: number,
+  wordsPerMinute = 220,
+): number {
+  return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
 }
 
 export function isAllowedExternalUrl(value: string): boolean {
