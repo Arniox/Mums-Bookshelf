@@ -7,11 +7,24 @@ interface WorkflowDispatchResponse {
   html_url?: string;
 }
 
+interface WorkflowRun {
+  id: number;
+  status: "queued" | "in_progress" | "completed";
+  conclusion: string | null;
+  html_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface WorkflowRunsResponse {
+  workflow_runs?: WorkflowRun[];
+}
+
 const repositoryPart = /^[A-Za-z0-9_.-]+$/;
 const workflowFile = /^[A-Za-z0-9_.-]+\.ya?ml$/;
 const gitReference = /^[A-Za-z0-9_./-]+$/;
 
-export async function triggerPagesDeployment(context: Context<AppEnvironment>) {
+function deploymentConfiguration(context: Context<AppEnvironment>) {
   const token = context.env.GITHUB_PAGES_DEPLOY_TOKEN;
   const [owner, repository, extra] = context.env.GITHUB_REPOSITORY.split("/");
   const workflow = context.env.GITHUB_PAGES_WORKFLOW;
@@ -33,6 +46,14 @@ export async function triggerPagesDeployment(context: Context<AppEnvironment>) {
       "Automatic website updates are not configured yet.",
     );
   }
+
+  return { token, owner, repository, workflow, reference };
+}
+
+export async function triggerPagesDeployment(context: Context<AppEnvironment>) {
+  const { token, owner, repository, workflow, reference } =
+    deploymentConfiguration(context);
+  const requestedAt = new Date().toISOString();
 
   const response = await fetch(
     `https://api.github.com/repos/${owner}/${repository}/actions/workflows/${workflow}/dispatches`,
@@ -74,7 +95,79 @@ export async function triggerPagesDeployment(context: Context<AppEnvironment>) {
 
   return success(context, {
     queued: true,
+    requestedAt,
     runId: dispatch.workflow_run_id,
     runUrl: dispatch.html_url,
+  });
+}
+
+export async function getPagesDeploymentStatus(
+  context: Context<AppEnvironment>,
+) {
+  const { token, owner, repository, workflow, reference } =
+    deploymentConfiguration(context);
+  const since = context.req.query("since");
+  const sinceTime = since ? Date.parse(since) : Number.NaN;
+  if (since && Number.isNaN(sinceTime))
+    throw new ApiError(
+      400,
+      "invalid_deployment_timestamp",
+      "The deployment timestamp is invalid.",
+    );
+
+  const parameters = new URLSearchParams({
+    event: "workflow_dispatch",
+    branch: reference,
+    per_page: "10",
+  });
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${repository}/actions/workflows/${workflow}/runs?${parameters}`,
+    {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "User-Agent": "mums-bookshelf-worker",
+        "X-GitHub-Api-Version": "2026-03-10",
+      },
+    },
+  );
+  if (!response.ok) {
+    console.error(
+      JSON.stringify({
+        event: "pages_deployment_status_failed",
+        requestId: context.get("requestId"),
+        githubStatus: response.status,
+      }),
+    );
+    await response.body?.cancel();
+    throw new ApiError(
+      502,
+      "deployment_status_failed",
+      "The website refresh status could not be checked.",
+    );
+  }
+
+  const payload = (await response.json()) as WorkflowRunsResponse;
+  const run = (payload.workflow_runs || []).find(
+    (candidate) =>
+      !since || Date.parse(candidate.created_at) >= sinceTime,
+  );
+  if (!run)
+    return success(context, { state: since ? "starting" : "idle" });
+
+  const state =
+    run.status === "queued"
+      ? "queued"
+      : run.status === "in_progress"
+        ? "building"
+        : run.conclusion === "success"
+          ? "ready"
+          : "failed";
+  return success(context, {
+    state,
+    runId: run.id,
+    runUrl: run.html_url,
+    startedAt: run.created_at,
+    updatedAt: run.updated_at,
   });
 }
