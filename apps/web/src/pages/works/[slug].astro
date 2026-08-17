@@ -84,19 +84,13 @@ const structuredData = {
           {work.publicationType.replace("-", " ")}
           {date && `· ${date}`}
         </p>
-        <h1>{work.title}</h1>
-        <p class="work-blurb">{work.blurb}</p>
+        <h1 data-work-title>{work.title}</h1>
+        <p class="work-blurb" data-work-blurb>{work.blurb}</p>
         <dl class="work-facts">
-          {
-            work.publisherName && (
-              <>
-                <>
-                  <dt>Publisher</dt>
-                  <dd>{work.publisherName}</dd>
-                </>
-              </>
-            )
-          }
+          <div data-publisher-fact hidden={!work.publisherName}>
+            <dt>Publisher</dt>
+            <dd data-work-publisher>{work.publisherName}</dd>
+          </div>
           {
             work.wordCount && (
               <>
@@ -118,7 +112,7 @@ const structuredData = {
             )
           }
         </dl>
-        <div class="button-row">
+        <div class="button-row" data-work-actions>
           {
             work.contentVisibility === "full" && (
               <a class="button primary" href="#story">
@@ -227,8 +221,70 @@ const structuredData = {
 </BaseLayout>
 
 <script>
+  import {
+    areSameExternalUrls,
+    type Work,
+  } from "@mums-bookshelf/shared";
+  import { getRuntimePublicWork } from "../../lib/runtimeContent";
+
   const share = document.querySelector<HTMLButtonElement>("[data-share]");
   const status = document.querySelector<HTMLElement>("[data-share-status]");
+  const title = document.querySelector<HTMLElement>("[data-work-title]");
+  const blurb = document.querySelector<HTMLElement>("[data-work-blurb]");
+  const publisher = document.querySelector<HTMLElement>("[data-work-publisher]");
+  const publisherFact = document.querySelector<HTMLElement>(
+    "[data-publisher-fact]",
+  );
+  const actions = document.querySelector<HTMLElement>("[data-work-actions]");
+
+  const actionLink = (label: string, href: string, className: string) => {
+    const link = document.createElement("a");
+    link.className = `button ${className}`;
+    link.href = href;
+    link.rel = "noopener noreferrer";
+    link.textContent = label;
+    return link;
+  };
+
+  const renderActions = (work: Work) => {
+    if (!actions) return;
+    const links: HTMLAnchorElement[] = [];
+    const publicationIsPurchase = areSameExternalUrls(
+      work.primaryExternalUrl,
+      work.purchaseUrl,
+    );
+    if (work.contentVisibility === "full")
+      links.push(actionLink("Begin reading", "#story", "primary"));
+    if (work.primaryExternalUrl)
+      links.push(
+        actionLink(
+          publicationIsPurchase ? "View this work" : "View publication",
+          work.primaryExternalUrl,
+          "primary",
+        ),
+      );
+    if (work.purchaseUrl && !publicationIsPurchase)
+      links.push(actionLink("Purchase", work.purchaseUrl, "secondary"));
+    if (work.audioUrl)
+      links.push(actionLink("Listen to the audio", work.audioUrl, "secondary"));
+    actions.replaceChildren(...links);
+  };
+
+  const refreshWork = (work: Work) => {
+    document.title = work.title;
+    if (title) title.textContent = work.title;
+    if (blurb) blurb.textContent = work.blurb;
+    if (publisher) publisher.textContent = work.publisherName || "";
+    if (publisherFact) publisherFact.hidden = !work.publisherName;
+    renderActions(work);
+  };
+
+  const slug = window.location.pathname.split("/").filter(Boolean).at(-1);
+  if (slug)
+    void getRuntimePublicWork(slug)
+      .then(refreshWork)
+      .catch(() => undefined);
+
   share?.addEventListener("click", async () => {
     share.classList.add("is-loading");
     share.setAttribute("aria-busy", "true");
