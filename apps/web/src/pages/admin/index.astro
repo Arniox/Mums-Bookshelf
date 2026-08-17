@@ -1148,7 +1148,7 @@ wordHtmlToStoryHtml,
     if (
       action === "publish" &&
       !confirm(
-        "Ready to publish? This will make the work public and start a website update, which normally takes a few minutes.",
+        "Ready to publish? This will make the work public immediately. Static SEO files will refresh in the background.",
       )
     )
       return;
@@ -1172,17 +1172,20 @@ wordHtmlToStoryHtml,
       clearLocalDraft();
       originalStatus = payload.status;
       await loadDashboard();
-      const needsWebsiteUpdate = action === "publish" || wasPublished;
-      if (needsWebsiteUpdate) {
+      const needsSeoRefresh = action === "publish" || wasPublished;
+      if (needsSeoRefresh) {
         try {
           await triggerDeployment(editorStatus);
           editorStatus.textContent =
             action === "publish"
-              ? "Published. The website update has started and should appear in a few minutes."
-              : "Draft saved. The website update has started to remove the public version.";
+              ? "Published and visible now. Static SEO files will refresh in the background."
+              : "Draft saved. The public version has been removed; static SEO files will refresh in the background.";
           window.setTimeout(() => dialog.close(), 1800);
         } catch (deploymentError) {
-          editorStatus.textContent = (deploymentError as Error).message;
+          editorStatus.textContent =
+            action === "publish"
+              ? `Published and visible now. ${(deploymentError as Error).message}`
+              : `Draft saved and removed from the public site. ${(deploymentError as Error).message}`;
         }
       } else {
         editorStatus.textContent =
@@ -1212,7 +1215,7 @@ wordHtmlToStoryHtml,
       await loadDashboard();
       await triggerDeployment(editorStatus);
       editorStatus.textContent =
-        "Archived. The website update has started and should appear in a few minutes.";
+        "Archived and removed from the public site. Static SEO files will refresh in the background.";
       window.setTimeout(() => dialog.close(), 1800);
     } catch (error) {
       editorStatus.textContent = (error as Error).message;
@@ -1367,7 +1370,7 @@ wordHtmlToStoryHtml,
       });
       await triggerDeployment(status);
       status.textContent =
-        "Settings saved. The website update has started and should appear in a few minutes.";
+        "Settings saved. Static SEO files will refresh in the background.";
     } catch (error) {
       status.textContent = (error as Error).message;
     }
