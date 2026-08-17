@@ -358,6 +358,44 @@ describe("API routes", () => {
     ).toBe(true);
   });
 
+  it("lists all non-deleted comments for an authenticated administrator", async () => {
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/comments?status=all",
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    const statement = database.statements.find((item) =>
+      item.sql.includes("FROM comments c JOIN works w"),
+    );
+    expect(statement?.values).toEqual(["all", "all"]);
+    expect(statement?.sql).toContain("c.deleted_at IS NULL");
+  });
+
+  it("allows an authenticated administrator to delete a comment", async () => {
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/comments/comment-1",
+      {
+        method: "DELETE",
+        headers: {
+          Origin: "https://allowed.example",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(
+      database.statements.some((statement) =>
+        statement.sql.includes("UPDATE comments SET deleted_at"),
+      ),
+    ).toBe(true);
+  });
+
   it("rejects reader comments longer than 250 characters", async () => {
     env.PUBLIC_COMMENTS_ENABLED = "true";
     const response = await app.request(
@@ -383,7 +421,7 @@ describe("API routes", () => {
     expect(database.statements).toHaveLength(0);
   });
 
-  it("approves a valid reader comment for immediate display", async () => {
+  it("puts a valid reader comment into moderation", async () => {
     env.PUBLIC_COMMENTS_ENABLED = "true";
     const response = await app.request(
       "/api/v1/works/work-1/comments",
@@ -404,12 +442,12 @@ describe("API routes", () => {
 
     expect(response.status).toBe(201);
     expect(await response.json()).toMatchObject({
-      data: { approved: true },
+      data: { pending: true },
     });
     const statement = database.statements.find((item) =>
       item.sql.includes("INSERT INTO comments"),
     );
-    expect(statement?.sql).toContain("'approved'");
+    expect(statement?.sql).toContain("'pending'");
   });
 
   it("dispatches the Pages workflow for an authenticated administrator", async () => {

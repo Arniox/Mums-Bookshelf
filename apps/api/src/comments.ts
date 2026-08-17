@@ -96,7 +96,7 @@ export async function createComment(context: Context<AppEnvironment>) {
   await context.env.DB.prepare(
     `INSERT INTO comments
       (id, work_id, display_name, body, moderation_status, created_at, ip_hash)
-     VALUES (?, ?, ?, ?, 'approved', ?, ?)`,
+     VALUES (?, ?, ?, ?, 'pending', ?, ?)`,
   )
     .bind(
       crypto.randomUUID(),
@@ -107,7 +107,7 @@ export async function createComment(context: Context<AppEnvironment>) {
       await sha256(`${ip}:${context.env.IP_HASH_SECRET}`),
     )
     .run();
-  return success(context, { approved: true }, 201);
+  return success(context, { pending: true }, 201);
 }
 
 export async function listAdminComments(context: Context<AppEnvironment>) {

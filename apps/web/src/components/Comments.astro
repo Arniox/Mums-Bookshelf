@@ -45,7 +45,7 @@ const { workId } = Astro.props;
         </form>
         <form data-comment-form>
           <h3>Leave a little note</h3>
-          <p>No email needed. Your note will appear here straight away.</p>
+          <p>No email needed. Your note will appear after approval.</p>
           <label>
             <span>
               Name <small>Optional</small>
@@ -237,17 +237,7 @@ const { workId } = Astro.props;
             );
           form.reset();
           updateCommentCount();
-          const displayName = String(data.displayName || "").trim();
-          comments = [
-            ...comments,
-            {
-              id: crypto.randomUUID(),
-              displayName: displayName || "Anonymous",
-              body: String(data.body || "").trim(),
-            },
-          ];
-          renderComments(comments);
-          status.textContent = "Your note is now on the page.";
+          status.textContent = "Your note is waiting for approval.";
           dialog.close();
         } catch (error) {
           status.textContent = (error as Error).message;
