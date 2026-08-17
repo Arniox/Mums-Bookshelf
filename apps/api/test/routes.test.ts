@@ -399,6 +399,39 @@ describe("API routes", () => {
     );
   });
 
+  it("reports when a requested Pages refresh is ready", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      Response.json({
+        workflow_runs: [
+          {
+            id: 456,
+            status: "completed",
+            conclusion: "success",
+            html_url: "https://github.com/Arniox/Mums-Bookshelf/actions/runs/456",
+            created_at: "2026-08-17T00:00:01Z",
+            updated_at: "2026-08-17T00:01:00Z",
+          },
+        ],
+      }),
+    );
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/deployments/pages?since=2026-08-17T00:00:00Z",
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      data: {
+        state: "ready",
+        runId: 456,
+      },
+    });
+  });
+
   it("reports when automatic Pages deployment is not configured", async () => {
     delete env.GITHUB_PAGES_DEPLOY_TOKEN;
     const fetchMock = vi.spyOn(globalThis, "fetch");
