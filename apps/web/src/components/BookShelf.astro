@@ -119,9 +119,8 @@ const featuredWork = works.find((work) => work.featured);
 
 <script>
   import { getBookAppearance, type Work } from "@mums-bookshelf/shared";
-  import { featuredFirstShuffle } from "../lib/randomiseWorks";
-    import { dailyFeaturedOrder } from "../lib/randomiseWorks";
-  import { getRuntimePublicWorks } from "../lib/runtimeContent";
+import { dailyFeaturedOrder } from "../lib/randomiseWorks";
+import { getRuntimePublicWorks } from "../lib/runtimeContent";
 
   const shelf = document.querySelector<HTMLElement>("[data-bookshelf]");
   const skip = shelf?.querySelector<HTMLButtonElement>("[data-skip-animation]");
