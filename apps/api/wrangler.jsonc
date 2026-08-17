@@ -9,7 +9,7 @@
     "head_sampling_rate": 1,
   },
   "vars": {
-    "ALLOWED_ORIGINS": "https://arniox.github.io",
+    "ALLOWED_ORIGINS": "https://denisediehl.com",
     "AUTH_TOKEN_ISSUER": "author-library-api",
     "AUTH_ACCESS_TOKEN_TTL_SECONDS": "900",
     "AUTH_REFRESH_TOKEN_TTL_SECONDS": "2592000",

@@ -1,6 +1,6 @@
 # Mum's Bookshelf
 
-**[Visit Mum's Bookshelf](https://arniox.github.io/Mums-Bookshelf/)**
+**[Visit Mum's Bookshelf](https://denisediehl.com/)**
 
 A small author website with a warm, animated CSS bookshelf and a private editorial studio. The public site is static and deploys to GitHub Pages. Published content, sessions, settings, and moderated comments live in Cloudflare D1 behind a Cloudflare Worker API.
 
@@ -51,9 +51,10 @@ npm run deploy:api
 
 ## Deployment
 
-1. Deploy the D1 migrations and Worker.
-2. Add the Worker URL and Pages configuration as GitHub Actions variables.
-3. Push to `main`; `.github/workflows/deploy-pages.yml` validates and deploys the site.
-4. Run the Worker workflow manually when the API changes.
+1. Configure `denisediehl.com` in GitHub Pages and at the domain registrar.
+2. Deploy the D1 migrations and Worker.
+3. Add the Worker URL and custom-domain configuration as GitHub Actions variables.
+4. Push to `main`; `.github/workflows/deploy-pages.yml` validates and deploys the site.
+5. Run the Worker workflow manually when the API changes.
 
 See [SETUP.md](SETUP.md) for the complete beginner-friendly process and [SECURITY.md](SECURITY.md) before accepting real comments or content.

@@ -191,11 +191,27 @@ Comments are off by default. Before enabling:
 
 Every comment starts as pending. Approve it in **Author studio → Comments**.
 
-## 11. Custom domains
+## 11. Connect denisediehl.com
 
-For the frontend, add the domain in GitHub **Settings → Pages**, then set `PUBLIC_SITE_URL` to it and `PUBLIC_BASE_PATH` to `/`. Add the exact new origin to `ALLOWED_ORIGINS`.
+The repository is configured to publish the frontend at `https://denisediehl.com/`, including the author studio at `https://denisediehl.com/admin/`. Complete these steps before the first production deployment:
 
-For the API, add a Worker custom domain in Cloudflare Workers & Pages, then update `PUBLIC_API_BASE_URL`. Redeploy both applications. The host-only refresh cookie remains on the API domain.
+1. In GitHub, open **Arniox/Mums-Bookshelf → Settings → Pages → Custom domain**, enter `denisediehl.com`, and save it. GitHub will detect the committed `apps/web/public/CNAME` file after the next deployment.
+2. At the company where `denisediehl.com` was purchased, create four `A` records for the root (`@`) pointing to GitHub Pages: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, and `185.199.111.153`. Do not use a forwarding rule for the root domain.
+3. In **Settings → Pages**, enable **Enforce HTTPS** once GitHub offers it. DNS and certificate provisioning can take several hours.
+4. In GitHub, open **Settings → Secrets and variables → Actions → Variables** and set:
+
+| Variable                    | Value                                                                             |
+| --------------------------- | --------------------------------------------------------------------------------- |
+| `PUBLIC_SITE_URL`           | `https://denisediehl.com`                                                         |
+| `PUBLIC_BASE_PATH`          | `/`                                                                               |
+| `PUBLIC_API_BASE_URL`       | the deployed Worker URL, such as `https://author-library-api.ACCOUNT.workers.dev` |
+| `PUBLIC_COMMENTS_ENABLED`   | `false` unless comments have been enabled deliberately                            |
+| `PUBLIC_TURNSTILE_SITE_KEY` | blank unless comments use Turnstile                                               |
+
+5. The Worker configuration now permits requests from `https://denisediehl.com`. Apply the new `0006_use_custom_domain.sql` migration and deploy the Worker before using the new admin URL.
+6. Push the prepared change to `main` to deploy Pages. Verify `https://denisediehl.com/`, `https://denisediehl.com/admin/`, `https://denisediehl.com/rss.xml`, and `https://denisediehl.com/sitemap-index.xml` after the Actions workflow completes.
+
+The domain registrar controls DNS; GitHub controls the Pages custom-domain association and HTTPS certificate. Do not add `www.denisediehl.com` to the Worker `ALLOWED_ORIGINS` unless GitHub Pages is also configured to serve or redirect that hostname.
 
 ## 12. Backup and export
 
