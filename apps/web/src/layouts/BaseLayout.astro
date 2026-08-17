@@ -38,7 +38,10 @@ const canonical = new URL(canonicalPath, Astro.site);
 const fullTitle = pageTitle.includes(authorName)
   ? pageTitle
   : `${pageTitle} — ${authorName}`;
-const base = import.meta.env.BASE_URL;
+const configuredBase = import.meta.env.BASE_URL;
+const base = configuredBase.endsWith("/")
+  ? configuredBase
+  : `${configuredBase}/`;
 const socialImage = image || `${base}denise-diehl-social-card-v2.png`;
 const socialImageUrl = new URL(socialImage, Astro.site).href;
 ---
