@@ -6,8 +6,8 @@ import { matchesWork } from "../src/lib/filterWorks";
 import { localWorkDraftKey, parseLocalWorkDraft } from "../src/lib/localDraft";
 import { featuredFirstShuffle } from "../src/lib/randomiseWorks";
 import {
-    storyTextToEditorHtml,
-    wordHtmlToStoryHtml,
+  storyTextToEditorHtml,
+  wordHtmlToStoryHtml,
 } from "../src/lib/wordPaste";
 
 describe("public library", () => {
