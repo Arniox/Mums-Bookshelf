@@ -43,7 +43,9 @@ const gitReference = /^[A-Za-z0-9_./-]+$/;
 
 function stageForJob(job?: WorkflowJob): string | undefined {
   if (!job) return undefined;
-  if (job.name === "deploy") return "deploying";
+  const jobName = job.name.toLowerCase();
+  if (jobName.includes("deploy"))
+    return job.status === "queued" ? "deploy-waiting" : "deploying";
   const activeStep = job.steps?.find((step) => step.status === "in_progress");
   if (!activeStep) return job.status === "queued" ? "waiting" : undefined;
   if (activeStep.name === "npm ci") return "packing";

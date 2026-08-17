@@ -1348,7 +1348,20 @@ textarea {
 }
 .deployment-progress-track[data-state="starting"] span,
 .deployment-progress-track[data-state="queued"] span,
-.deployment-progress-track[data-state="building"] span {
+.deployment-progress-track[data-state="waiting"] span,
+.deployment-progress-track[data-state="packing"] span,
+.deployment-progress-track[data-state="tidying"] span,
+.deployment-progress-track[data-state="checking"] span,
+.deployment-progress-track[data-state="building"] span,
+.deployment-progress-track[data-state="testing"] span,
+.deployment-progress-track[data-state="binding"] span,
+.deployment-progress-track[data-state="building-api"] span,
+.deployment-progress-track[data-state="filing"] span,
+.deployment-progress-track[data-state="sending-api"] span,
+.deployment-progress-track[data-state="building-pages"] span,
+.deployment-progress-track[data-state="packing-pages"] span,
+.deployment-progress-track[data-state="deploy-waiting"] span,
+.deployment-progress-track[data-state="deploying"] span {
   background: repeating-linear-gradient(
     90deg,
     var(--gold) 0 18px,
