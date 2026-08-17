@@ -1262,7 +1262,7 @@ wordHtmlToStoryHtml,
     const lastNode = template.content.lastChild;
     range.deleteContents();
     range.insertNode(template.content);
-    if (lastNode) {
+    if (lastNode && selection) {
       range.setStartAfter(lastNode);
       range.collapse(true);
       selection.removeAllRanges();
