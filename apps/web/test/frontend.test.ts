@@ -4,7 +4,11 @@ import { describe, expect, it } from "vitest";
 import { works } from "../src/data/sample";
 import { matchesWork } from "../src/lib/filterWorks";
 import { localWorkDraftKey, parseLocalWorkDraft } from "../src/lib/localDraft";
-import { featuredFirstShuffle } from "../src/lib/randomiseWorks";
+import {
+  dailyFeaturedOrder,
+  dailyOrderSalt,
+  featuredFirstShuffle,
+} from "../src/lib/randomiseWorks";
 import {
   storyTextToEditorHtml,
   wordHtmlToStoryHtml,
@@ -45,6 +49,34 @@ describe("public library", () => {
       "ordinary-2",
       "ordinary-1",
     ]);
+  });
+
+  it("keeps a daily work order stable while preserving featured works first", () => {
+    const items = [
+      { id: "ordinary-1", featured: false },
+      { id: "featured", featured: true },
+      { id: "ordinary-2", featured: false },
+      { id: "ordinary-3", featured: false },
+    ];
+    const salt = dailyOrderSalt(new Date(2026, 7, 17));
+    const first = dailyFeaturedOrder(
+      items,
+      (item) => item.featured,
+      (item) => item.id,
+      salt,
+    );
+    const second = dailyFeaturedOrder(
+      items,
+      (item) => item.featured,
+      (item) => item.id,
+      salt,
+    );
+
+    expect(salt).toBe("2026-08-17");
+    expect(first.map((item) => item.id)).toEqual(
+      second.map((item) => item.id),
+    );
+    expect(first[0]?.id).toBe("featured");
   });
 
   it("filters by publication type", () => {
