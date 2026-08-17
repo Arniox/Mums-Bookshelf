@@ -1007,7 +1007,8 @@ textarea {
   font: 1.3rem/1.85 var(--serif);
 }
 
-.story-content > div > p:first-child::first-letter {
+.story-content > div > p:first-of-type:not([data-drop-cap="false"])::first-letter,
+.rich-story-canvas > p:first-of-type:not([data-drop-cap="false"])::first-letter {
   float: left;
   margin: 0.1rem 0.15rem -0.1rem 0;
   color: var(--plum);
@@ -1616,6 +1617,9 @@ fieldset {
 .rich-story-canvas h2 {
   margin: 3.5rem 0 1rem;
   font-size: 2.5rem;
+}
+.story-drop-cap-control {
+  margin-top: 0.7rem;
 }
 .rich-story-canvas:focus {
   box-shadow: inset 0 0 0 2px rgba(91, 48, 70, 0.2);
