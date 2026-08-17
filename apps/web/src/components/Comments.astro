@@ -79,6 +79,7 @@ const { workId } = Astro.props;
     let turnstileToken = "";
     let activeWorkId = section.dataset.workId || "";
     let initialised = false;
+    let comments: PublicComment[] = [];
 
     interface PublicComment {
       id: string;
@@ -129,7 +130,8 @@ const { workId } = Astro.props;
         data?: { items?: PublicComment[] };
       };
       if (!response.ok) throw new Error("Comments are temporarily unavailable.");
-      renderComments(payload.data?.items || []);
+      comments = payload.data?.items || [];
+      renderComments(comments);
     };
 
     const initialise = () => {
@@ -190,19 +192,15 @@ const { workId } = Astro.props;
           form.reset();
           updateCommentCount();
           const displayName = String(data.displayName || "").trim();
-          renderComments([
-            ...Array.from(list.querySelectorAll<HTMLElement>(".comment-bubble"))
-              .map((bubble, index) => ({
-                id: `shown-${index}`,
-                displayName: bubble.querySelector("strong")?.textContent || "Anonymous",
-                body: bubble.querySelector("p")?.textContent || "",
-              })),
+          comments = [
+            ...comments,
             {
               id: crypto.randomUUID(),
               displayName: displayName || "Anonymous",
               body: String(data.body || "").trim(),
             },
-          ]);
+          ];
+          renderComments(comments);
           status.textContent = "Your note is now on the page.";
         } catch (error) {
           status.textContent = (error as Error).message;
