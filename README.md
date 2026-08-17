@@ -20,7 +20,7 @@ Author ──> /admin/ ──────┘            │
 GitHub Actions build ──> public Worker API ──> generates clean /works/slug/ pages
 ```
 
-- `apps/web`: Astro static site, deterministic CSS bookshelf, accessible list, public pages, author studio, RSS, sitemap and SEO.
+- `apps/web`: Astro static site, deterministic CSS bookshelf with individual spine marks and new-release shelf glow, accessible list, public pages, author studio, RSS, sitemap and SEO.
 - `apps/api`: Hono Worker, D1 queries, authentication, moderation, export and versioned API.
 - `packages/shared`: Zod models, content helpers, Markdown sanitisation and deterministic book appearance.
 

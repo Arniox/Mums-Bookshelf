@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import BookShelf from "../components/BookShelf.astro";
-import WorkCard from "../components/WorkCard.astro";
 import { getPublicSettings, getPublicWorks } from "../lib/contentSource";
 
 const [settings, works] = await Promise.all([
@@ -56,27 +55,40 @@ const personSchema = {
       }
     </section>
 
-    <BookShelf works={works} />
-  </div>
+    {
+      recent.length > 0 && (
+        <aside class="recent-slip" aria-labelledby="recent-title">
+          <div class="recent-slip-heading">
+            <span class="recent-slip-mark" aria-hidden="true">◈</span>
+            <div>
+              <p class="eyebrow">Fresh from the desk</p>
+              <h2 id="recent-title">Recently published</h2>
+            </div>
+          </div>
+          <ol>
+            {recent.map((work) => (
+              <li>
+                <a href={`${base}works/${work.slug}/`}>{work.title}</a>
+                {work.publishedAt && (
+                  <time datetime={work.publishedAt}>
+                    {new Intl.DateTimeFormat("en", {
+                      month: "short",
+                      year: "numeric",
+                    }).format(new Date(work.publishedAt))}
+                  </time>
+                )}
+              </li>
+            ))}
+          </ol>
+          <a class="text-link" href={`${base}works/`}>
+            Browse the whole shelf <span aria-hidden="true">→</span>
+          </a>
+        </aside>
+      )
+    }
 
-  <section class="recent-section">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Fresh from the desk</p>
-        <h2>Recently published</h2>
-      </div>
-      <a class="text-link" href={`${base}works/`}
-        >View all works <span aria-hidden="true">→</span></a
-      >
-    </div>
-    <div class="recent-grid">
-      {
-        recent.map((work) => (
-          <WorkCard work={work} authorName={settings.authorName} />
-        ))
-      }
-    </div>
-  </section>
+    <BookShelf works={works} recentWorkSlugs={recent.map((work) => work.slug)} />
+  </div>
 
   <section class="closing-note">
     <span aria-hidden="true">“</span>

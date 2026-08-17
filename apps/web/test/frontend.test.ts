@@ -63,6 +63,12 @@ describe("public library", () => {
     );
   });
 
+  it("assigns every shelf book a stable typographic mark", () => {
+    const appearance = getBookAppearance(works[0]!.id);
+    expect(appearance.mark).toMatch(/^[◆◇◈⌁❖✧⋮⌘◒⋄]$/u);
+    expect(getBookAppearance(works[0]!.id).mark).toBe(appearance.mark);
+  });
+
   it("validates local editor drafts before restoring them", () => {
     expect(localWorkDraftKey("work-1")).toBe(
       "mums-bookshelf:work-draft:work-1",

@@ -9,6 +9,7 @@ export interface BookAppearance {
   spineStyle: "bands" | "rule" | "frame" | "ornament" | "plain";
   materialStyle: "cloth" | "leather" | "paper" | "linen";
   titlePosition: "top" | "middle" | "low";
+  mark: string;
 }
 
 const palettes = [
@@ -25,6 +26,8 @@ const palettes = [
   ["#b06b72", "#fff0d8"],
   ["#2f5848", "#d9b65f"],
 ] as const;
+
+const bookMarks = ["◆", "◇", "◈", "⌁", "❖", "✧", "⋮", "⌘", "◒", "⋄"] as const;
 
 export function hashSeed(seed: string): number {
   let hash = 2166136261;
@@ -71,5 +74,6 @@ export function getBookAppearance(seedValue: string): BookAppearance {
       sample(seed, 7),
     ),
     titlePosition: choice(["top", "middle", "low"] as const, sample(seed, 8)),
+    mark: choice(bookMarks, sample(seed, 9)),
   };
 }
