@@ -203,6 +203,7 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
       fragment.append(footer);
     }
     container.replaceChildren(fragment);
+    document.documentElement.dataset.activeWorkId = work.id;
     document.dispatchEvent(
       new CustomEvent("mums-bookshelf:work-ready", {
         detail: { workId: work.id },
