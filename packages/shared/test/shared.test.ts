@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
-  areSameExternalUrls,
-  calculateReadingTime,
-  commentInputSchema,
-  getBookAppearance,
-  isAllowedExternalUrl,
-  sanitiseMarkdown,
-  slugify,
-  workSchema,
+    areSameExternalUrls,
+    calculateReadingTime,
+    calculateReadingTimeFromWordCount,
+    commentInputSchema,
+    getBookAppearance,
+    isAllowedExternalUrl,
+    sanitiseMarkdown,
+    slugify,
+    workSchema,
 } from "../src/index";
 
 describe("shared domain logic", () => {
@@ -20,6 +21,7 @@ describe("shared domain logic", () => {
     expect(
       calculateReadingTime(Array.from({ length: 221 }, () => "word").join(" ")),
     ).toBe(2);
+    expect(calculateReadingTimeFromWordCount(441)).toBe(3);
   });
 
   it("accepts only normal web URLs", () => {
