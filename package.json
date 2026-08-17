@@ -39,6 +39,8 @@
     "clean": "npm run clean --workspaces --if-present"
   },
   "devDependencies": {
+    "@emnapi/core": "^1.11.1",
+    "@emnapi/runtime": "^1.11.1",
     "@eslint/js": "^10.0.1",
     "concurrently": "^9.1.2",
     "eslint": "^10.8.1",
