@@ -238,6 +238,7 @@ describe("API routes", () => {
   it("filters public work queries to published status", async () => {
     const response = await app.request("/api/v1/works", {}, env);
     expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
     expect(
       database.statements.some((statement) =>
         statement.sql.includes("status = 'published'"),
