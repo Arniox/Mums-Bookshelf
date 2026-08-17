@@ -375,14 +375,39 @@ const { workId } = Astro.props;
     border: 1px solid rgba(91, 48, 67, 0.32);
     background: rgba(255, 253, 247, 0.97);
   }
+  .comment-dialog .dialog-close-row {
+    z-index: 1;
+    top: 3rem;
+    right: 3rem;
+  }
+  .comment-dialog .icon-button {
+    color: var(--ink);
+    background: #fffdf8;
+    box-shadow: 0 3px 10px rgba(60, 40, 28, 0.1);
+  }
   .comment-dialog h3 {
     margin: 0;
+    padding-right: 3rem;
     font-size: 1.8rem;
   }
   .comment-dialog form > p {
     margin: 0;
     color: var(--muted);
     font-size: 0.82rem;
+  }
+  .comment-dialog label:not(.honeypot) {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .comment-dialog textarea:focus-visible,
+  .comment-dialog input:focus-visible {
+    outline: 2px solid var(--plum);
+    outline-offset: 2px;
+  }
+  .comment-dialog [data-turnstile] {
+    min-height: 65px;
+    display: flex;
+    align-items: center;
   }
   .comment-dialog .button {
     justify-self: center;
@@ -405,6 +430,14 @@ const { workId } = Astro.props;
     .comment-bubble p {
       font-size: 0.9rem;
       -webkit-line-clamp: 3;
+    }
+    .comment-dialog {
+      width: min(100% - 1rem, 32rem);
+      padding: 1rem;
+    }
+    .comment-dialog .dialog-close-row {
+      top: 2rem;
+      right: 2rem;
     }
   }
 </style>
