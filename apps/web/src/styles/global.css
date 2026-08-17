@@ -1285,6 +1285,64 @@ textarea {
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
 }
+.deployment-progress {
+  max-width: 560px;
+  margin: 1.1rem 0 0 auto;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--gold);
+  background: rgba(255, 255, 255, 0.34);
+}
+.deployment-progress-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+.deployment-progress-heading .eyebrow {
+  margin: 0;
+}
+.deployment-progress-heading strong {
+  font: 1.2rem var(--serif);
+  text-align: right;
+}
+.deployment-progress-track {
+  height: 8px;
+  margin: 0.8rem 0 0.55rem;
+  overflow: hidden;
+  background: rgba(91, 48, 67, 0.12);
+}
+.deployment-progress-track span {
+  width: 0;
+  height: 100%;
+  display: block;
+  background: var(--moss);
+  transition: width 400ms ease;
+}
+.deployment-progress-track[data-state="starting"] span,
+.deployment-progress-track[data-state="queued"] span,
+.deployment-progress-track[data-state="building"] span {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--gold) 0 18px,
+    #e8c982 18px 36px
+  );
+  background-size: 52px 100%;
+  animation: deployment-progress 1.2s linear infinite;
+}
+.deployment-progress-track[data-state="failed"] span {
+  background: #8a2638;
+}
+.deployment-progress > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+@keyframes deployment-progress {
+  to {
+    background-position: 52px 0;
+  }
+}
 .stat-grid article {
   padding: 1.5rem;
   border: 1px solid var(--line);
