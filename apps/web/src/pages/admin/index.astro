@@ -83,9 +83,14 @@ const authorInitials = settings.authorName
             <p class="eyebrow">At a glance</p>
             <h2>Welcome back</h2>
           </div>
-          <button class="button primary" type="button" data-new-work
-            >+ Add new work</button
-          >
+          <div class="button-row">
+            <button class="button secondary" type="button" data-publish-all
+              >Publish all drafts &amp; update website</button
+            >
+            <button class="button primary" type="button" data-new-work
+              >+ Add new work</button
+            >
+          </div>
         </div>
         <div class="stat-grid">
           <article>
@@ -112,7 +117,7 @@ const authorInitials = settings.authorName
           <div><p class="eyebrow">The collection</p><h2>Works</h2></div>
           <div class="button-row">
             <button class="button secondary" type="button" data-publish-all
-              >Publish all drafts</button
+              >Publish all drafts &amp; update website</button
             >
             <button class="button primary" type="button" data-new-work
               >+ Add new work</button
@@ -326,8 +331,10 @@ const authorInitials = settings.authorName
             <button type="button" data-story-block="h2" title="Section heading"
               >Heading</button
             >
-            <button type="button" data-story-block="blockquote" title="Pull quote"
-              >Quote</button
+            <button
+              type="button"
+              data-story-block="blockquote"
+              title="Pull quote">Quote</button
             >
             <button
               type="button"
@@ -339,8 +346,10 @@ const authorInitials = settings.authorName
               data-story-command="insertOrderedList"
               title="Numbered list">1. List</button
             >
-            <button type="button" data-story-command="createLink" title="Add link"
-              >Link</button
+            <button
+              type="button"
+              data-story-command="createLink"
+              title="Add link">Link</button
             >
             <button
               type="button"
@@ -355,7 +364,8 @@ const authorInitials = settings.authorName
             role="textbox"
             aria-multiline="true"
             aria-label="Full story editor"
-          ></div>
+          >
+          </div>
         </div>
         <textarea name="storyContent" rows="15" hidden></textarea></label
       >
@@ -549,8 +559,9 @@ const authorInitials = settings.authorName
   const deploymentStatus = document.querySelector<HTMLElement>(
     "[data-deployment-status]",
   )!;
-  const publishAllButton =
-    document.querySelector<HTMLButtonElement>("[data-publish-all]")!;
+  const publishAllButtons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-publish-all]"),
+  );
 
   const triggerDeployment = async (status = deploymentStatus) => {
     status.textContent = "Starting the website update…";
@@ -669,10 +680,12 @@ const authorInitials = settings.authorName
     ]);
     works = workData.items;
     const draftCount = works.filter((work) => work.status === "draft").length;
-    publishAllButton.disabled = draftCount === 0;
-    publishAllButton.textContent = draftCount
-      ? `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"}`
-      : "No drafts to publish";
+    publishAllButtons.forEach((button) => {
+      button.disabled = draftCount === 0;
+      button.textContent = draftCount
+        ? `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"} & update website`
+        : "No drafts to publish";
+    });
     document.querySelector<HTMLElement>("[data-stat-published]")!.textContent =
       String(works.filter((work) => work.status === "published").length);
     document.querySelector<HTMLElement>("[data-stat-drafts]")!.textContent =
@@ -691,34 +704,40 @@ const authorInitials = settings.authorName
     await loadSettings();
   };
 
-  publishAllButton.addEventListener("click", async () => {
-    const draftCount = works.filter((work) => work.status === "draft").length;
-    if (!draftCount) return;
-    if (
-      !confirm(
-        `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"}? Drafts without a publication date will use today. This starts one website update after everything is published.`,
+  publishAllButtons.forEach((button) =>
+    button.addEventListener("click", async () => {
+      const draftCount = works.filter((work) => work.status === "draft").length;
+      if (!draftCount) return;
+      if (
+        !confirm(
+          `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"}? Drafts without a publication date will use today. This starts one website update after everything is published.`,
+        )
       )
-    )
-      return;
-
-    publishAllButton.disabled = true;
-    deploymentStatus.textContent = "Publishing all drafts…";
-    try {
-      const result = await request("/api/v1/admin/works/publish-all", {
-        method: "POST",
-      });
-      await loadDashboard();
-      if (!result.published) {
-        deploymentStatus.textContent = "There were no drafts to publish.";
         return;
+
+      publishAllButtons.forEach((publishButton) => {
+        publishButton.disabled = true;
+      });
+      deploymentStatus.textContent = "Publishing all drafts…";
+      try {
+        const result = await request("/api/v1/admin/works/publish-all", {
+          method: "POST",
+        });
+        await loadDashboard();
+        if (!result.published) {
+          deploymentStatus.textContent = "There were no drafts to publish.";
+          return;
+        }
+        await triggerDeployment(deploymentStatus);
+        deploymentStatus.textContent = `${result.published} ${result.published === 1 ? "work" : "works"} published. One website update has started and should appear in a few minutes.`;
+      } catch (error) {
+        deploymentStatus.textContent = (error as Error).message;
+        publishAllButtons.forEach((publishButton) => {
+          publishButton.disabled = false;
+        });
       }
-      await triggerDeployment(deploymentStatus);
-      deploymentStatus.textContent = `${result.published} ${result.published === 1 ? "work" : "works"} published. One website update has started and should appear in a few minutes.`;
-    } catch (error) {
-      deploymentStatus.textContent = (error as Error).message;
-      publishAllButton.disabled = false;
-    }
-  });
+    }),
+  );
 
   const renderComments = (comments: ApiWork[]) => {
     const list = document.querySelector<HTMLElement>("[data-comments-list]")!;
@@ -961,7 +980,10 @@ const authorInitials = settings.authorName
 
   const syncStoryEditor = (normalise = false) => {
     if (normalise)
-      storyEditor.innerHTML = normaliseStoryHtml(storyEditor.innerHTML, document);
+      storyEditor.innerHTML = normaliseStoryHtml(
+        storyEditor.innerHTML,
+        document,
+      );
     fullStoryField.value = storyEditor.innerHTML.trim();
     fullStoryField.dispatchEvent(new Event("input", { bubbles: true }));
   };
@@ -1032,10 +1054,7 @@ const authorInitials = settings.authorName
       "purchaseUrl",
     ) as HTMLInputElement;
     fullStory.required = false;
-    storyEditor.setAttribute(
-      "aria-required",
-      String(visibility === "full"),
-    );
+    storyEditor.setAttribute("aria-required", String(visibility === "full"));
     fullStory.closest<HTMLElement>("[data-full-story-field]")!.hidden =
       visibility !== "full";
     const linkOnly = visibility === "external-only";
@@ -1073,8 +1092,7 @@ const authorInitials = settings.authorName
     event.preventDefault();
     syncStoryEditor(true);
     const visibility = String(
-      (workForm.elements.namedItem("contentVisibility") as RadioNodeList)
-        .value,
+      (workForm.elements.namedItem("contentVisibility") as RadioNodeList).value,
     );
     if (visibility === "full" && !fullStoryField.value.trim()) {
       editorStatus.textContent = "Add the full story before saving this work.";
