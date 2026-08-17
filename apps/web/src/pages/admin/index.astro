@@ -549,6 +549,15 @@ wordHtmlToStoryHtml,
 } from "../../lib/wordPaste";
 
   type ApiWork = Record<string, any>;
+  interface ApiComment {
+    id: string;
+    display_name?: string;
+    body: string;
+    work_title: string;
+    moderation_status: "pending" | "approved" | "rejected";
+    created_at: string;
+  }
+
   const app = document.querySelector<HTMLElement>("[data-admin-app]")!;
   const apiBase = app.dataset.api!;
   let accessToken = "";
@@ -891,7 +900,7 @@ wordHtmlToStoryHtml,
   const loadDashboard = async () => {
     const [workData, commentData] = await Promise.all([
       request("/api/v1/admin/works"),
-      request("/api/v1/admin/comments?status=pending"),
+      request("/api/v1/admin/comments?status=all"),
     ]);
     works = workData.items;
     const draftCount = works.filter((work) => work.status === "draft").length;
@@ -908,7 +917,11 @@ wordHtmlToStoryHtml,
     document.querySelector<HTMLElement>("[data-stat-featured]")!.textContent =
       String(works.filter((work) => work.featured).length);
     document.querySelector<HTMLElement>("[data-stat-comments]")!.textContent =
-      String(commentData.items.length);
+      String(
+        commentData.items.filter(
+          (comment: ApiComment) => comment.moderation_status === "pending",
+        ).length,
+      );
     document.querySelector<HTMLElement>("[data-recent-works]")!.innerHTML =
       works.map(workRow).join("");
     document.querySelector<HTMLElement>("[data-all-works]")!.innerHTML = works
@@ -963,22 +976,24 @@ wordHtmlToStoryHtml,
     }),
   );
 
-  const renderComments = (comments: ApiWork[]) => {
+  const renderComments = (comments: ApiComment[]) => {
     const list = document.querySelector<HTMLElement>("[data-comments-list]")!;
     list.innerHTML = comments.length
       ? comments
           .map(
             (comment) => `<article class="comment-row">
           <p>“${escape(comment.body)}”</p>
-          <span>${escape(comment.display_name || "Anonymous")} on <strong>${escape(comment.work_title)}</strong></span>
+          <span>${escape(comment.display_name || "Anonymous")} on <strong>${escape(comment.work_title)}</strong> · ${new Date(comment.created_at).toLocaleDateString()}</span>
+          <span class="comment-status">${escape(comment.moderation_status)}</span>
           <div class="button-row">
-            <button class="button secondary" data-comment-action="approved" data-comment-id="${escape(comment.id)}">Approve</button>
-            <button class="text-button" data-comment-action="rejected" data-comment-id="${escape(comment.id)}">Reject</button>
+            ${comment.moderation_status !== "approved" ? `<button class="button secondary" data-comment-action="approved" data-comment-id="${escape(comment.id)}">Approve</button>` : ""}
+            ${comment.moderation_status !== "rejected" ? `<button class="text-button" data-comment-action="rejected" data-comment-id="${escape(comment.id)}">Reject</button>` : ""}
+            <button class="text-button" data-comment-action="delete" data-comment-id="${escape(comment.id)}">Delete</button>
           </div>
         </article>`,
           )
           .join("")
-      : "<p class='empty-admin'>No comments are waiting for review.</p>";
+      : "<p class='empty-admin'>No reader comments yet.</p>";
     list
       .querySelectorAll<HTMLButtonElement>("[data-comment-action]")
       .forEach((button) => {
@@ -986,16 +1001,18 @@ wordHtmlToStoryHtml,
           setButtonBusy(button, true);
           button.disabled = true;
           try {
-            await request(
-              `/api/v1/admin/comments/${button.dataset.commentId}`,
-              {
+            const path = `/api/v1/admin/comments/${button.dataset.commentId}`;
+            if (button.dataset.commentAction === "delete") {
+              await request(path, { method: "DELETE" });
+            } else {
+              await request(path, {
                 method: "PATCH",
                 body: JSON.stringify({
                   moderationStatus: button.dataset.commentAction,
                 }),
-              },
-            );
-            button.closest("article")?.remove();
+              });
+            }
+            await loadDashboard();
           } finally {
             setButtonBusy(button, false);
             button.disabled = false;

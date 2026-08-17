@@ -1433,6 +1433,18 @@ textarea {
   color: var(--muted);
   font-size: 0.75rem;
 }
+.comment-row .comment-status {
+  display: block;
+  width: fit-content;
+  margin-top: 0.55rem;
+  padding: 0.18rem 0.5rem;
+  border: 1px solid var(--line);
+  color: var(--plum);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 .comment-row .button-row {
   margin-top: 0.8rem;
 }
