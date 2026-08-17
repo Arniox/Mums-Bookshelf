@@ -137,6 +137,8 @@ function normaliseNode(node: Node, document: Document): Node[] {
       : "ul";
   }
   if (tag === "p" || tag === "li") {
+    if (tag === "p" && source.dataset.dropCap === "false")
+      element.dataset.dropCap = "false";
     if (
       source.dataset.indent === "true" ||
       /(?:margin|padding)-left\s*:\s*(?!0(?:[a-z%]+)?(?:;|$))/u.test(style)
@@ -224,12 +226,12 @@ export function storyTextToEditorHtml(value: string, document: Document) {
       index += 1;
       continue;
     }
-    const heading = line.match(/^(#{2,4})\s+(.+)$/u);
+    const heading = line.match(/^(#{1,6})\s+(.+)$/u);
     if (heading) {
       output.push(
         `<h${heading[1]!.length}>${inlineMarkdownToHtml(heading[2]!)}</h${heading[1]!.length}>`,
       );
-    } else if (/^---+$/u.test(line)) {
+    } else if (/^(?:---+|#{3,})$/u.test(line)) {
       output.push("<hr>");
     } else if (line.startsWith("> ")) {
       output.push(
