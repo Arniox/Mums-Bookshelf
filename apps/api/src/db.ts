@@ -1,4 +1,4 @@
-import type { PublicSettings, Work } from "@mums-bookshelf/shared";
+import type { PublicSettings, Work } from "@mums-bookshelf/shared/schemas";
 
 type WorkRow = Record<string, unknown>;
 

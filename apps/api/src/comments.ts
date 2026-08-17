@@ -1,7 +1,7 @@
 import {
   commentInputSchema,
   commentModerationSchema,
-} from "@mums-bookshelf/shared";
+} from "@mums-bookshelf/shared/schemas";
 import type { Context } from "hono";
 import { enforceRateLimit } from "./auth";
 import { sha256 } from "./crypto";

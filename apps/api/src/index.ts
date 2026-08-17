@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
 import { ZodError } from "zod";
-import { loginSchema } from "@mums-bookshelf/shared";
+import { loginSchema } from "@mums-bookshelf/shared/schemas";
 import { login, logout, refresh, requireAuth } from "./auth";
 import {
   createComment,

@@ -1,4 +1,4 @@
-import { publicSettingsSchema } from "@mums-bookshelf/shared";
+import { publicSettingsSchema } from "@mums-bookshelf/shared/schemas";
 import type { Context } from "hono";
 import { rowToSettings } from "./db";
 import { ApiError, parseJsonBody, success } from "./http";

@@ -2,9 +2,11 @@ import {
   calculateReadingTime,
   detectSocialProvider,
   slugify,
+} from "@mums-bookshelf/shared/content";
+import {
   workInputSchema,
   workPatchSchema,
-} from "@mums-bookshelf/shared";
+} from "@mums-bookshelf/shared/schemas";
 import type { Context } from "hono";
 import { rowToWork, workColumns } from "./db";
 import { ApiError, parseJsonBody, success } from "./http";
