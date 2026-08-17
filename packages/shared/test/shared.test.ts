@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
-  calculateReadingTime,
-  areSameExternalUrls,
-  getBookAppearance,
-  isAllowedExternalUrl,
-  sanitiseMarkdown,
-  slugify,
-  commentInputSchema,
-  workSchema,
+    areSameExternalUrls,
+    calculateReadingTime,
+    commentInputSchema,
+    getBookAppearance,
+    isAllowedExternalUrl,
+    sanitiseMarkdown,
+    slugify,
+    workSchema,
 } from "../src/index";
 
 describe("shared domain logic", () => {
