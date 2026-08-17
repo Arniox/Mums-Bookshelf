@@ -23,6 +23,7 @@ const date = work.publishedAt
   data-type={work.publicationType}
   data-genres={work.genres.join(" ").toLowerCase()}
   data-featured={String(work.featured)}
+  data-order-key={work.id}
 >
   <a
     class="work-card-cover"

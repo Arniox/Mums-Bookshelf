@@ -1,4 +1,3 @@
-  data-order-key={work.id}
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import WorkCard from "../../components/WorkCard.astro";
@@ -67,7 +66,7 @@ const types = [...new Set(works.map((work) => work.publicationType))];
 
 <script>
   import { getBookAppearance, type Work } from "@mums-bookshelf/shared";
-import { featuredFirstShuffle } from "../../lib/randomiseWorks";
+  import { dailyFeaturedOrder } from "../../lib/randomiseWorks";
 import { getRuntimePublicWorks } from "../../lib/runtimeContent";
 
   const search = document.querySelector<HTMLInputElement>("[data-work-search]");
@@ -93,6 +92,7 @@ import { getRuntimePublicWorks } from "../../lib/runtimeContent";
     card.dataset.type = work.publicationType;
     card.dataset.genres = work.genres.join(" ").toLowerCase();
     card.dataset.featured = String(work.featured);
+    card.dataset.orderKey = work.id;
 
     const coverLink = document.createElement("a");
     coverLink.className = "work-card-cover";
@@ -174,17 +174,19 @@ import { getRuntimePublicWorks } from "../../lib/runtimeContent";
     if (!grid) return;
     grid.replaceChildren(...works.map(renderWorkCard));
     cards = [...grid.querySelectorAll<HTMLElement>("[data-work-card]")];
-    featuredFirstShuffle(
+    dailyFeaturedOrder(
       cards,
       (card) => card.dataset.featured === "true",
+      (card) => card.dataset.orderKey || "",
     ).forEach((card) => grid.append(card));
     refreshTypeFilter(works);
     update();
   };
 
-  featuredFirstShuffle(
+  dailyFeaturedOrder(
     cards,
     (card) => card.dataset.featured === "true",
+    (card) => card.dataset.orderKey || "",
   ).forEach((card) => grid?.append(card));
 
   const update = () => {

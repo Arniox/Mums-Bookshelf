@@ -141,7 +141,6 @@ const featuredWork = works.find((work) => work.featured);
   const workUrl = (slug: string) => `${base}works/${slug}/`;
   const orderShelf = () => {
     if (!shelfList || !accessibleList) return;
-    featuredFirstShuffle(
     dailyFeaturedOrder(
       [...shelfList.querySelectorAll<HTMLElement>(".book-slot")],
       (item) => item.dataset.featured === "true",
