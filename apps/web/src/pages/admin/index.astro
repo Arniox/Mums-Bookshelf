@@ -766,6 +766,7 @@ wordHtmlToStoryHtml,
       if (deployment.state === "idle") return;
       const stage = deployment.stage || deployment.state;
       showDeploymentProgress(stage);
+      if (deployment.state === "ready") deploymentStatus.textContent = "";
       if (
         deployment.state === "starting" ||
         deployment.state === "queued" ||
