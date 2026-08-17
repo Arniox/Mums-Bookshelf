@@ -112,7 +112,41 @@ const { workId } = Astro.props;
       id: string;
       displayName?: string;
       body: string;
+      pending?: boolean;
     }
+
+    interface PendingComment extends PublicComment {
+      version: 1;
+      workId: string;
+      createdAt: string;
+      pending: true;
+    }
+
+    const pendingCommentKey = (workId: string) =>
+      `mums-bookshelf:pending-comment:${workId}`;
+
+    const getPendingComment = (): PendingComment | null => {
+      if (!activeWorkId) return null;
+      try {
+        const stored = localStorage.getItem(pendingCommentKey(activeWorkId));
+        if (!stored) return null;
+        const pendingComment = JSON.parse(stored) as Partial<PendingComment>;
+        if (
+          pendingComment.version !== 1 ||
+          pendingComment.workId !== activeWorkId ||
+          typeof pendingComment.body !== "string" ||
+          typeof pendingComment.createdAt !== "string"
+        )
+          return null;
+        return pendingComment as PendingComment;
+      } catch {
+        return null;
+      }
+    };
+
+    const savePendingComment = (comment: PendingComment) => {
+      localStorage.setItem(pendingCommentKey(comment.workId), JSON.stringify(comment));
+    };
 
     const updateCommentCount = () => {
       commentCount.textContent = String(commentBody.value.length);
@@ -126,12 +160,18 @@ const { workId } = Astro.props;
 
     const commentBubble = (comment: PublicComment) => {
       const bubble = document.createElement("article");
-      bubble.className = "comment-bubble";
+      bubble.className = `comment-bubble${comment.pending ? " is-pending" : ""}`;
       const name = document.createElement("strong");
       name.textContent = comment.displayName || "Anonymous";
       const body = document.createElement("p");
       body.textContent = comment.body;
       bubble.append(name, body);
+      if (comment.pending) {
+        const pending = document.createElement("span");
+        pending.className = "comment-pending";
+        pending.textContent = "Pending";
+        bubble.append(pending);
+      }
       return bubble;
     };
 
@@ -164,7 +204,22 @@ const { workId } = Astro.props;
       if (!response.ok)
         throw new Error("Comments are temporarily unavailable.");
       comments = payload.data?.items || [];
-      renderComments(comments);
+      const pendingComment = getPendingComment();
+      const hasApprovedPendingComment = pendingComment
+        ? comments.some(
+            (comment) =>
+              comment.body === pendingComment.body &&
+              (comment.displayName || "Anonymous") ===
+                (pendingComment.displayName || "Anonymous"),
+          )
+        : false;
+      if (pendingComment && hasApprovedPendingComment)
+        localStorage.removeItem(pendingCommentKey(activeWorkId));
+      renderComments(
+        pendingComment && !hasApprovedPendingComment
+          ? [...comments, pendingComment]
+          : comments,
+      );
     };
 
     const initialise = () => {
@@ -237,6 +292,17 @@ const { workId } = Astro.props;
             );
           form.reset();
           updateCommentCount();
+          const pendingComment: PendingComment = {
+            version: 1,
+            id: crypto.randomUUID(),
+            workId: activeWorkId,
+            displayName: String(data.displayName || "").trim() || "Anonymous",
+            body: String(data.body || "").trim(),
+            createdAt: new Date().toISOString(),
+            pending: true,
+          };
+          savePendingComment(pendingComment);
+          renderComments([...comments, pendingComment]);
           status.textContent = "Your note is waiting for approval.";
           dialog.close();
         } catch (error) {
@@ -323,6 +389,20 @@ const { workId } = Astro.props;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 4;
   }
+  .comment-bubble.is-pending {
+    opacity: 0.58;
+  }
+  .comment-pending {
+    position: relative;
+    z-index: 1;
+    margin-top: 0.55rem;
+    display: block;
+    color: var(--muted);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
   .comment-bubble:nth-child(1) {
     --bubble-tilt: -1deg;
   }
@@ -405,9 +485,12 @@ const { workId } = Astro.props;
     outline-offset: 2px;
   }
   .comment-dialog [data-turnstile] {
-    min-height: 65px;
     display: flex;
     align-items: center;
+    justify-content: center;
+  }
+  .comment-dialog [data-turnstile]:has(iframe) {
+    min-height: 65px;
   }
   .comment-dialog .button {
     justify-self: center;
