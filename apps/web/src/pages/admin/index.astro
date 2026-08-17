@@ -130,7 +130,7 @@ const authorInitials = settings.authorName
           </article>
         </div>
         <section class="admin-card">
-          <h3>Recently edited</h3>
+          <h3>All books</h3>
           <div data-recent-works class="admin-list"></div>
         </section>
       </div>
@@ -811,7 +811,7 @@ const authorInitials = settings.authorName
     document.querySelector<HTMLElement>("[data-stat-comments]")!.textContent =
       String(commentData.items.length);
     document.querySelector<HTMLElement>("[data-recent-works]")!.innerHTML =
-      works.slice(0, 5).map(workRow).join("");
+      works.map(workRow).join("");
     document.querySelector<HTMLElement>("[data-all-works]")!.innerHTML = works
       .map(workRow)
       .join("");

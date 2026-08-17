@@ -57,7 +57,7 @@ export async function getPublicWork(context: Context<AppEnvironment>) {
 
 export async function listAdminWorks(context: Context<AppEnvironment>) {
   const result = await context.env.DB.prepare(
-    "SELECT * FROM works ORDER BY updated_at DESC",
+    "SELECT * FROM works ORDER BY published_at DESC, updated_at DESC",
   ).all();
   return success(context, {
     items: result.results.map((row) => rowToWork(row, true)),
