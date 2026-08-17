@@ -27,10 +27,10 @@
   "dependencies": {
     "isomorphic-dompurify": "^3.19.0",
     "marked": "^18.0.9",
-    "zod": "^3.25.56"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^22.15.29",
+    "@types/node": "^24.0.0",
     "@vitest/coverage-v8": "^4.1.10",
     "jsdom": "^29.1.1",
     "rimraf": "^6.0.1",
