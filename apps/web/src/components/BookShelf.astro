@@ -33,16 +33,19 @@ const featuredWork = works.find((work) => work.featured);
     works.length ? (
       <div
         class="bookcase"
+        data-bookcase
         aria-label={`${works.length} published works on the bookshelf`}
       >
-        {featuredWork && (
-          <a class="featured-note" href={`${base}works/${featuredWork.slug}/`}>
-            <span>Featured story</span>
-            <strong>{featuredWork.title}</strong>
-            <small>Start here →</small>
-          </a>
-        )}
-        <ol class="shelves">
+        <div data-featured-note>
+          {featuredWork && (
+            <a class="featured-note" href={`${base}works/${featuredWork.slug}/`}>
+              <span>Featured story</span>
+              <strong>{featuredWork.title}</strong>
+              <small>Start here →</small>
+            </a>
+          )}
+        </div>
+        <ol class="shelves" data-shelf-list>
           {works.map((work, index) => {
             const appearance = getBookAppearance(work.id || work.slug);
             const style = [
@@ -97,7 +100,7 @@ const featuredWork = works.find((work) => work.featured);
   }
   <details class="accessible-library">
     <summary>View as an accessible list</summary>
-    <ul>
+    <ul data-accessible-list>
       {
         works.map((work) => (
           <li data-featured={String(work.featured)}>
@@ -111,27 +114,161 @@ const featuredWork = works.find((work) => work.featured);
 </section>
 
 <script>
-  import { featuredFirstShuffle } from "../lib/randomiseWorks";
+  import { getBookAppearance, type Work } from "@mums-bookshelf/shared";
+import { featuredFirstShuffle } from "../lib/randomiseWorks";
+import { getRuntimePublicWorks } from "../lib/runtimeContent";
 
   const shelf = document.querySelector<HTMLElement>("[data-bookshelf]");
   const skip = shelf?.querySelector<HTMLButtonElement>("[data-skip-animation]");
+  const bookcase = shelf?.querySelector<HTMLElement>("[data-bookcase]");
+  const shelfList = shelf?.querySelector<HTMLOListElement>("[data-shelf-list]");
+  const accessibleList = shelf?.querySelector<HTMLUListElement>(
+    "[data-accessible-list]",
+  );
+  const featuredNote = shelf?.querySelector<HTMLElement>("[data-featured-note]");
+  const base = import.meta.env.BASE_URL;
   const reduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
-  shelf?.querySelectorAll<HTMLOListElement>(".shelves").forEach((list) => {
+
+  const workUrl = (slug: string) => `${base}works/${slug}/`;
+  const orderShelf = () => {
+    if (!shelfList || !accessibleList) return;
     featuredFirstShuffle(
-      [...list.querySelectorAll<HTMLElement>(".book-slot")],
+      [...shelfList.querySelectorAll<HTMLElement>(".book-slot")],
       (item) => item.dataset.featured === "true",
-    ).forEach((item) => list.append(item));
-  });
-  shelf
-    ?.querySelectorAll<HTMLUListElement>(".accessible-library ul")
-    .forEach((list) => {
-      featuredFirstShuffle(
-        [...list.querySelectorAll<HTMLElement>("li")],
-        (item) => item.dataset.featured === "true",
-      ).forEach((item) => list.append(item));
+    ).forEach((item) => shelfList.append(item));
+    featuredFirstShuffle(
+      [...accessibleList.querySelectorAll<HTMLElement>("li")],
+      (item) => item.dataset.featured === "true",
+    ).forEach((item) => accessibleList.append(item));
+  };
+
+  const openBook = (book: HTMLAnchorElement, event: MouseEvent) => {
+    if (
+      reduceMotion ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    event.preventDefault();
+    book.classList.add("is-opening");
+    const flyingBook = document.createElement("span");
+    flyingBook.className = "flying-book";
+    flyingBook.style.setProperty(
+      "--flying-book-color",
+      book.dataset.bookColor || "#5b3043",
+    );
+    flyingBook.setAttribute("aria-hidden", "true");
+    document.body.append(flyingBook);
+    window.setTimeout(() => window.location.assign(book.href), 620);
+  };
+
+  const bindBookOpening = () => {
+    shelf?.querySelectorAll<HTMLAnchorElement>(".book").forEach((book) => {
+      book.addEventListener("click", (event) => openBook(book, event));
     });
+  };
+
+  const renderShelf = (publishedWorks: Work[]) => {
+    if (!shelfList || !accessibleList || !bookcase || !featuredNote) return;
+    const recentSlugs = [...publishedWorks]
+      .sort(
+        (left, right) =>
+          Date.parse(right.publishedAt || "") - Date.parse(left.publishedAt || ""),
+      )
+      .slice(0, 3)
+      .map((work) => work.slug);
+    const fragment = document.createDocumentFragment();
+    const accessibleFragment = document.createDocumentFragment();
+    publishedWorks.forEach((work, index) => {
+      const appearance = getBookAppearance(work.id || work.slug);
+      const slot = document.createElement("li");
+      slot.className = "book-slot";
+      slot.dataset.featured = String(work.featured);
+      if (recentSlugs.includes(work.slug)) slot.classList.add("is-recent-release");
+
+      const book = document.createElement("a");
+      book.className = [
+        "book",
+        `spine-${appearance.spineStyle}`,
+        `material-${appearance.materialStyle}`,
+        `title-${appearance.titlePosition}`,
+      ].join(" ");
+      book.href = workUrl(work.slug);
+      book.setAttribute(
+        "aria-label",
+        `${work.title}, ${work.publicationType.replace("-", " ")}`,
+      );
+      book.dataset.bookColor = appearance.primaryColor;
+      [
+        ["--book-color", appearance.primaryColor],
+        ["--book-accent", appearance.accentColor],
+        ["--book-height", `${appearance.height}px`],
+        ["--book-width", `${appearance.width}px`],
+        ["--book-depth", `${appearance.depth}px`],
+        ["--book-lean", `${appearance.lean}deg`],
+        ["--book-radius", `${appearance.borderRadius}px`],
+        ["--book-index", String(index)],
+      ].forEach(([property, value]) => book.style.setProperty(property, value));
+
+      const shine = document.createElement("span");
+      shine.className = "book-shine";
+      shine.setAttribute("aria-hidden", "true");
+      const title = document.createElement("span");
+      title.className = "book-title";
+      title.textContent = work.title;
+      const mark = document.createElement("span");
+      mark.className = "book-mark";
+      mark.setAttribute("aria-hidden", "true");
+      mark.textContent = appearance.mark;
+      book.append(shine, title, mark);
+      slot.append(book);
+      fragment.append(slot);
+
+      const item = document.createElement("li");
+      item.dataset.featured = String(work.featured);
+      const link = document.createElement("a");
+      link.href = workUrl(work.slug);
+      link.textContent = work.title;
+      const type = document.createElement("span");
+      type.textContent = work.publicationType.replace("-", " ");
+      item.append(link, type);
+      accessibleFragment.append(item);
+    });
+    shelfList.replaceChildren(fragment);
+    accessibleList.replaceChildren(accessibleFragment);
+    bookcase.setAttribute(
+      "aria-label",
+      `${publishedWorks.length} published works on the bookshelf`,
+    );
+    featuredNote.replaceChildren();
+    const featured = publishedWorks.find((work) => work.featured);
+    if (featured) {
+      const link = document.createElement("a");
+      link.className = "featured-note";
+      link.href = workUrl(featured.slug);
+      ["Featured story", featured.title, "Start here →"].forEach(
+        (text, index) => {
+          const element = document.createElement(
+            index === 1 ? "strong" : index === 2 ? "small" : "span",
+          );
+          element.textContent = text;
+          link.append(element);
+        },
+      );
+      featuredNote.append(link);
+    }
+    orderShelf();
+    bindBookOpening();
+  };
+
+  orderShelf();
+  bindBookOpening();
+  void getRuntimePublicWorks().then(renderShelf).catch(() => undefined);
+
   if (shelf && !reduceMotion) {
     shelf.classList.add("is-revealing");
     if (skip) {
@@ -147,27 +284,4 @@ const featuredWork = works.find((work) => work.featured);
     }, 1800);
   }
 
-  document.querySelectorAll<HTMLAnchorElement>(".book").forEach((book) => {
-    book.addEventListener("click", (event) => {
-      if (
-        reduceMotion ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        event.altKey
-      )
-        return;
-      event.preventDefault();
-      book.classList.add("is-opening");
-      const flyingBook = document.createElement("span");
-      flyingBook.className = "flying-book";
-      flyingBook.style.setProperty(
-        "--flying-book-color",
-        book.dataset.bookColor || "#5b3043",
-      );
-      flyingBook.setAttribute("aria-hidden", "true");
-      document.body.append(flyingBook);
-      window.setTimeout(() => window.location.assign(book.href), 620);
-    });
-  });
 </script>
