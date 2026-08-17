@@ -537,16 +537,16 @@ const authorInitials = settings.authorName
 
 <script>
   import { areSameExternalUrls } from "@mums-bookshelf/shared";
-  import {
-    localWorkDraftKey,
-    parseLocalWorkDraft,
-    type LocalWorkDraft,
-  } from "../../lib/localDraft";
-  import {
-    normaliseStoryHtml,
-    storyTextToEditorHtml,
-    wordHtmlToStoryHtml,
-  } from "../../lib/wordPaste";
+import {
+localWorkDraftKey,
+parseLocalWorkDraft,
+type LocalWorkDraft,
+} from "../../lib/localDraft";
+import {
+normaliseStoryHtml,
+storyTextToEditorHtml,
+wordHtmlToStoryHtml,
+} from "../../lib/wordPaste";
 
   type ApiWork = Record<string, any>;
   const app = document.querySelector<HTMLElement>("[data-admin-app]")!;
@@ -617,11 +617,65 @@ const authorInitials = settings.authorName
       detail:
         "The book is already on the shelf while we get its own little page ready.",
     },
-    building: {
-      progress: 70,
-      title: "Polishing the page…",
-      detail:
-        "Nearly there. We are preparing the page people see when they share the link.",
+    waiting: {
+      progress: 40,
+      title: "The workshop is opening its doors…",
+      detail: "The book is already live while the page-making queue gets moving.",
+    },
+    packing: {
+      progress: 46,
+      title: "Packing the pencils and paper…",
+      detail: "Getting the website tools ready. This is usually a quick one.",
+    },
+    tidying: {
+      progress: 52,
+      title: "Checking the commas are behaving…",
+      detail: "Making sure the website files are neat before we send them out.",
+    },
+    checking: {
+      progress: 60,
+      title: "Giving everything a careful once-over…",
+      detail: "Testing the shelves and polishing the little details. This can take a moment.",
+    },
+    testing: {
+      progress: 68,
+      title: "Making sure nothing has fallen off the shelf…",
+      detail: "The website is being tested before it goes out into the world.",
+    },
+    binding: {
+      progress: 73,
+      title: "Binding the library together…",
+      detail: "Putting the shared bits in their proper places.",
+    },
+    "building-api": {
+      progress: 78,
+      title: "Waking up the library helper…",
+      detail: "Preparing the little service that keeps the bookshelf up to date.",
+    },
+    filing: {
+      progress: 82,
+      title: "Filing the newest notes in the library…",
+      detail: "Checking the book records are ready for the updated site.",
+    },
+    "sending-api": {
+      progress: 86,
+      title: "Sending the librarian to work…",
+      detail: "Updating the behind-the-scenes helper. Nearly there.",
+    },
+    "building-pages": {
+      progress: 91,
+      title: "Printing the fresh share pages…",
+      detail: "Making the page people see when they open or share this book's link.",
+    },
+    "packing-pages": {
+      progress: 95,
+      title: "Wrapping the pages for delivery…",
+      detail: "The new site is packed up and heading to the bookshelf.",
+    },
+    deploying: {
+      progress: 98,
+      title: "Placing the new pages on the shelf…",
+      detail: "The final delivery is happening now. Just a few more moments.",
     },
     ready: {
       progress: 100,
@@ -636,8 +690,8 @@ const authorInitials = settings.authorName
     },
   };
 
-  const showDeploymentProgress = (state: keyof typeof deploymentMessages) => {
-    const message = deploymentMessages[state];
+  const showDeploymentProgress = (stage: keyof typeof deploymentMessages) => {
+    const message = deploymentMessages[stage];
     deploymentProgress.hidden = false;
     deploymentProgressTitle.textContent = message.title;
     deploymentProgressDetail.textContent = message.detail;
@@ -645,7 +699,7 @@ const authorInitials = settings.authorName
       "aria-valuenow",
       String(message.progress),
     );
-    deploymentProgressBar.dataset.state = state;
+    deploymentProgressBar.dataset.state = stage;
     deploymentProgressBar.firstElementChild?.setAttribute(
       "style",
       `width: ${message.progress}%`,
@@ -661,7 +715,8 @@ const authorInitials = settings.authorName
         `/api/v1/admin/deployments/pages${query}`,
       );
       if (deployment.state === "idle") return;
-      showDeploymentProgress(deployment.state);
+      const stage = deployment.stage || deployment.state;
+      showDeploymentProgress(stage);
       if (
         deployment.state === "starting" ||
         deployment.state === "queued" ||
