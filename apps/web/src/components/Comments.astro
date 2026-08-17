@@ -24,14 +24,22 @@ const { workId } = Astro.props;
         <div data-comment-list aria-live="polite">
           <p class="comment-empty">Gathering reader notes…</p>
         </div>
-        <p class="comment-overflow" data-comment-overflow hidden></p>
+        <p class="comment-overflow" data-comment-overflow hidden />
         <button class="button secondary" type="button" data-open-comment-dialog>
           Add a comment
         </button>
       </div>
-      <dialog class="comment-dialog" data-comment-dialog aria-labelledby="comment-dialog-title">
+      <dialog
+        class="comment-dialog"
+        data-comment-dialog
+        aria-labelledby="comment-dialog-title"
+      >
         <form method="dialog" class="dialog-close-row">
-          <button class="icon-button" value="cancel" aria-label="Close comment form">
+          <button
+            class="icon-button"
+            value="cancel"
+            aria-label="Close comment form"
+          >
             ×
           </button>
         </form>
@@ -62,7 +70,9 @@ const { workId } = Astro.props;
             <input name="website" tabindex="-1" autocomplete="off" />
           </label>
           <div data-turnstile />
-          <button class="button primary" type="submit">Add comment</button>
+          <button class="button primary" type="submit">
+            Add comment
+          </button>
           <p class="form-status" data-comment-status aria-live="polite" />
         </form>
       </dialog>
@@ -92,7 +102,9 @@ const { workId } = Astro.props;
     )!;
     let turnstileToken = "";
     let activeWorkId =
-      section.dataset.workId || document.documentElement.dataset.activeWorkId || "";
+      section.dataset.workId ||
+      document.documentElement.dataset.activeWorkId ||
+      "";
     let initialised = false;
     let comments: PublicComment[] = [];
 
@@ -149,7 +161,8 @@ const { workId } = Astro.props;
       const payload = (await response.json()) as {
         data?: { items?: PublicComment[] };
       };
-      if (!response.ok) throw new Error("Comments are temporarily unavailable.");
+      if (!response.ok)
+        throw new Error("Comments are temporarily unavailable.");
       comments = payload.data?.items || [];
       renderComments(comments);
     };
@@ -306,12 +319,24 @@ const { workId } = Astro.props;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 4;
   }
-  .comment-bubble:nth-child(1) { --bubble-tilt: -1deg; }
-  .comment-bubble:nth-child(2) { --bubble-tilt: 1deg; }
-  .comment-bubble:nth-child(3) { --bubble-tilt: 0.6deg; }
-  .comment-bubble:nth-child(4) { --bubble-tilt: -0.6deg; }
-  .comment-bubble:nth-child(5) { --bubble-tilt: 1.2deg; }
-  .comment-bubble:nth-child(6) { --bubble-tilt: -1.2deg; }
+  .comment-bubble:nth-child(1) {
+    --bubble-tilt: -1deg;
+  }
+  .comment-bubble:nth-child(2) {
+    --bubble-tilt: 1deg;
+  }
+  .comment-bubble:nth-child(3) {
+    --bubble-tilt: 0.6deg;
+  }
+  .comment-bubble:nth-child(4) {
+    --bubble-tilt: -0.6deg;
+  }
+  .comment-bubble:nth-child(5) {
+    --bubble-tilt: 1.2deg;
+  }
+  .comment-bubble:nth-child(6) {
+    --bubble-tilt: -1.2deg;
+  }
   .comment-empty {
     grid-column: 1 / -1;
     margin: 0.5rem 0;
@@ -370,7 +395,9 @@ const { workId } = Astro.props;
     left: -9999px;
   }
   @media (max-width: 700px) {
-    [data-comment-list] { grid-template-columns: 1fr; }
+    [data-comment-list] {
+      grid-template-columns: 1fr;
+    }
     .comment-bubble p {
       font-size: 0.9rem;
       -webkit-line-clamp: 3;
