@@ -177,7 +177,13 @@ const structuredData = {
       )
     }
 
-    {work.socialPostUrl && <SocialPost url={work.socialPostUrl} />}
+    {work.socialPostUrl && (
+      <SocialPost
+        url={work.socialPostUrl}
+        authorName={settings.authorName}
+        embedEnabled={work.socialEmbedEnabled}
+      />
+    )}
 
     <footer class="work-actions">
       <div>

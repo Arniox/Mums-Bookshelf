@@ -20,7 +20,9 @@ const settings = await getPublicSettings();
 <script>
   import {
 areSameExternalUrls,
+    detectSocialProvider,
 getBookAppearance,
+    isAllowedExternalUrl,
 type Work,
 } from "@mums-bookshelf/shared";
 import { getRuntimePublicWork } from "../../lib/runtimeContent";
@@ -152,6 +154,20 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
     );
     appendText(copy, "h1", work.title);
     appendText(copy, "p", work.blurb, "work-blurb");
+    const facts = document.createElement("dl");
+    facts.className = "work-facts";
+    const addFact = (label: string, value: string) => {
+      const term = document.createElement("dt");
+      term.textContent = label;
+      const definition = document.createElement("dd");
+      definition.textContent = value;
+      facts.append(term, definition);
+    };
+    if (work.publisherName) addFact("Publisher", work.publisherName);
+    if (work.wordCount) addFact("Length", `${work.wordCount.toLocaleString()} words`);
+    if (work.readingTimeMinutes && work.contentVisibility === "full")
+      addFact("Reading time", `${work.readingTimeMinutes} minutes`);
+    if (facts.childElementCount) copy.append(facts);
     const actions = document.createElement("div");
     actions.className = "button-row";
     if (work.contentVisibility === "full" && work.storyContent)
@@ -190,6 +206,22 @@ import { getRuntimePublicWork } from "../../lib/runtimeContent";
       content.append(safeStoryFragment(work.storyContent));
       story.append(content);
       fragment.append(story);
+    }
+
+    if (work.socialPostUrl && isAllowedExternalUrl(work.socialPostUrl)) {
+      const post = document.createElement("aside");
+      post.className = "social-post";
+      appendText(post, "p", "More about this work");
+      const link = document.createElement("a");
+      const provider = detectSocialProvider(work.socialPostUrl);
+      link.href = work.socialPostUrl;
+      link.rel = "noopener noreferrer";
+      link.textContent = `View the post on ${provider === "other" ? "social media" : provider} ↗`;
+      const note = document.createElement("small");
+      note.textContent =
+        "External posts may be private, removed or unavailable in your region.";
+      post.append(link, note);
+      fragment.append(post);
     }
 
     if (work.genres.length) {
