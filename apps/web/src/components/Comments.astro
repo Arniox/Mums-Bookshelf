@@ -77,7 +77,8 @@ const { workId } = Astro.props;
       "[data-comment-count]",
     )!;
     let turnstileToken = "";
-    let activeWorkId = section.dataset.workId || "";
+    let activeWorkId =
+      section.dataset.workId || document.documentElement.dataset.activeWorkId || "";
     let initialised = false;
     let comments: PublicComment[] = [];
 
@@ -104,7 +105,7 @@ const { workId } = Astro.props;
     };
 
     const renderComments = (comments: PublicComment[]) => {
-      const visible = comments.slice(-8);
+      const visible = comments.slice(-6);
       list.replaceChildren(
         ...(visible.length
           ? visible.map(commentBubble)
@@ -209,34 +210,156 @@ const { workId } = Astro.props;
   }
 </script>
 
-<style>
+<style is:global>
   .comments-section {
-    max-width: 720px;
-    margin: 5rem auto;
+    margin: 5rem 0 0;
     border-top: 1px solid var(--line);
-    padding-top: 3rem;
+    padding-top: 2.5rem;
   }
-  .comments-section h2 {
-    margin: 0 0 2rem;
-    font-size: 3rem;
+  .comment-stage {
+    position: relative;
+    min-height: 39rem;
+    overflow: hidden;
+    border: 1px solid rgba(91, 48, 67, 0.22);
+    background:
+      linear-gradient(rgba(91, 48, 67, 0.045) 1px, transparent 1px) 0 0 / 100%
+        2rem,
+      #f8f0e4;
+    box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.25);
   }
-  [data-comment-list] article {
-    border-bottom: 1px solid var(--line);
-    padding: 1.2rem 0;
+  .comment-stage-heading {
+    position: absolute;
+    z-index: 3;
+    top: 1.5rem;
+    left: 50%;
+    width: min(31rem, calc(100% - 2rem));
+    transform: translateX(-50%);
+    text-align: center;
   }
-  [data-comment-list] article p {
-    margin: 0.4rem 0;
-    font-family: var(--serif);
-    font-size: 1.1rem;
+  .comment-stage-heading .eyebrow {
+    margin-bottom: 0.3rem;
+  }
+  .comment-stage-heading h2 {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3rem);
+  }
+  [data-comment-list] {
+    position: absolute;
+    inset: 0;
+  }
+  .comment-bubble {
+    position: absolute;
+    width: min(15rem, 34vw);
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(76, 50, 35, 0.2);
+    border-radius: 2px 12px 12px 12px;
+    color: #413129;
+    background: #fffaf2;
+    box-shadow: 5px 7px 14px rgba(62, 38, 25, 0.13);
+    transform: rotate(var(--bubble-tilt));
+  }
+  .comment-bubble::after {
+    content: "";
+    position: absolute;
+    bottom: -9px;
+    left: 14px;
+    width: 16px;
+    height: 16px;
+    border-right: 1px solid rgba(76, 50, 35, 0.2);
+    border-bottom: 1px solid rgba(76, 50, 35, 0.2);
+    background: inherit;
+    transform: rotate(45deg);
+  }
+  .comment-bubble strong,
+  .comment-bubble p {
+    position: relative;
+    z-index: 1;
+  }
+  .comment-bubble strong {
+    display: block;
+    color: var(--plum);
+    font-size: 0.72rem;
+  }
+  .comment-bubble p {
+    display: -webkit-box;
+    margin: 0.25rem 0 0;
+    overflow: hidden;
+    font: 1rem/1.32 var(--serif);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+  }
+  .comment-bubble:nth-child(1) {
+    top: 7.5rem;
+    left: 4%;
+    --bubble-tilt: -2deg;
+  }
+  .comment-bubble:nth-child(2) {
+    top: 7rem;
+    right: 5%;
+    --bubble-tilt: 2deg;
+  }
+  .comment-bubble:nth-child(3) {
+    bottom: 3rem;
+    left: 8%;
+    --bubble-tilt: 1.5deg;
+  }
+  .comment-bubble:nth-child(4) {
+    right: 8%;
+    bottom: 3.5rem;
+    --bubble-tilt: -1.5deg;
+  }
+  .comment-bubble:nth-child(5) {
+    top: 16.5rem;
+    left: 1%;
+    --bubble-tilt: 2deg;
+  }
+  .comment-bubble:nth-child(6) {
+    top: 16rem;
+    right: 1%;
+    --bubble-tilt: -2deg;
+  }
+  .comment-bubble:nth-child(7),
+  .comment-bubble:nth-child(8) {
+    display: none;
+  }
+  .comment-empty {
+    position: absolute;
+    top: 7.2rem;
+    left: 50%;
+    width: min(21rem, calc(100% - 2rem));
+    margin: 0;
+    transform: translateX(-50%);
+    color: var(--muted);
+    font: italic 1.05rem var(--serif);
+    text-align: center;
+  }
+  .comment-overflow {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    z-index: 3;
+    margin: 0;
+    transform: translateX(-50%);
+    color: var(--muted);
+    font-size: 0.72rem;
   }
   .comments-section form {
-    margin-top: 3rem;
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    left: 50%;
+    width: min(25rem, calc(100% - 2rem));
+    padding: 1.25rem;
     display: grid;
     gap: 1rem;
+    border: 1px solid rgba(91, 48, 67, 0.32);
+    background: rgba(255, 253, 247, 0.97);
+    box-shadow: 0 14px 28px rgba(62, 38, 25, 0.2);
+    transform: translate(-50%, -34%);
   }
   .comments-section h3 {
     margin: 0;
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
   .comments-section form > p {
     margin: 0;
@@ -244,7 +367,7 @@ const { workId } = Astro.props;
     font-size: 0.82rem;
   }
   .comments-section .button {
-    justify-self: start;
+    justify-self: center;
   }
   .character-count {
     display: block;
@@ -256,5 +379,41 @@ const { workId } = Astro.props;
   .honeypot {
     position: absolute;
     left: -9999px;
+  }
+  @media (max-width: 700px) {
+    .comment-stage {
+      min-height: 45rem;
+    }
+    .comment-bubble {
+      width: min(11rem, 40vw);
+      padding: 0.65rem 0.75rem;
+    }
+    .comment-bubble p {
+      font-size: 0.9rem;
+      -webkit-line-clamp: 3;
+    }
+    .comment-bubble:nth-child(1) {
+      top: 7rem;
+      left: 2%;
+    }
+    .comment-bubble:nth-child(2) {
+      top: 7rem;
+      right: 2%;
+    }
+    .comment-bubble:nth-child(3) {
+      bottom: 2rem;
+      left: 2%;
+    }
+    .comment-bubble:nth-child(4) {
+      right: 2%;
+      bottom: 2rem;
+    }
+    .comment-bubble:nth-child(5),
+    .comment-bubble:nth-child(6) {
+      display: none;
+    }
+    .comments-section form {
+      transform: translate(-50%, -38%);
+    }
   }
 </style>
