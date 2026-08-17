@@ -1258,10 +1258,10 @@ wordHtmlToStoryHtml,
       storyEditor.focus();
       return;
     }
-    const action =
-      (event as SubmitEvent).submitter instanceof HTMLElement
-        ? (event as SubmitEvent).submitter?.dataset.editorAction
-        : "draft";
+    const submitter = (event as SubmitEvent).submitter;
+    const submitButton =
+      submitter instanceof HTMLButtonElement ? submitter : null;
+    const action = submitButton?.dataset.editorAction || "draft";
     const formData = new FormData(workForm);
     const id = String(formData.get("id") || "");
     const optional = (name: string) =>
@@ -1317,6 +1317,10 @@ wordHtmlToStoryHtml,
       return;
     const wasPublished = originalStatus === "published";
     editorStatus.textContent = "Saving…";
+    if (submitButton) {
+      setButtonBusy(submitButton, true);
+      submitButton.disabled = true;
+    }
     try {
       await request(id ? `/api/v1/admin/works/${id}` : "/api/v1/admin/works", {
         method: id ? "PUT" : "POST",
@@ -1349,6 +1353,11 @@ wordHtmlToStoryHtml,
       }
     } catch (error) {
       editorStatus.textContent = (error as Error).message;
+    } finally {
+      if (submitButton) {
+        setButtonBusy(submitButton, false);
+        submitButton.disabled = false;
+      }
     }
   });
 
@@ -1362,6 +1371,8 @@ wordHtmlToStoryHtml,
     )
       return;
     editorStatus.textContent = "Archiving…";
+    setButtonBusy(archiveButton, true);
+    archiveButton.disabled = true;
     try {
       await request(`/api/v1/admin/works/${id}`, { method: "DELETE" });
       dirty = false;
@@ -1374,6 +1385,9 @@ wordHtmlToStoryHtml,
       window.setTimeout(() => dialog.close(), 1800);
     } catch (error) {
       editorStatus.textContent = (error as Error).message;
+    } finally {
+      setButtonBusy(archiveButton, false);
+      archiveButton.disabled = false;
     }
   });
 
@@ -1503,6 +1517,9 @@ wordHtmlToStoryHtml,
 
   settingsForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const submitter = (event as SubmitEvent).submitter;
+    const submitButton =
+      submitter instanceof HTMLButtonElement ? submitter : null;
     const form = new FormData(event.currentTarget as HTMLFormElement);
     const payload = {
       authorName: form.get("authorName"),
@@ -1518,6 +1535,10 @@ wordHtmlToStoryHtml,
       "[data-settings-status]",
     )!;
     status.textContent = "Saving…";
+    if (submitButton) {
+      setButtonBusy(submitButton, true);
+      submitButton.disabled = true;
+    }
     try {
       await request("/api/v1/admin/settings", {
         method: "PUT",
@@ -1528,30 +1549,51 @@ wordHtmlToStoryHtml,
         "Settings saved. Static SEO files will refresh in the background.";
     } catch (error) {
       status.textContent = (error as Error).message;
+    } finally {
+      if (submitButton) {
+        setButtonBusy(submitButton, false);
+        submitButton.disabled = false;
+      }
     }
   });
 
   document
     .querySelector("[data-rebuild]")
-    ?.addEventListener("click", async () => {
+    ?.addEventListener("click", async (event) => {
+      const button = event.currentTarget as HTMLButtonElement;
+      setButtonBusy(button, true);
+      button.disabled = true;
       try {
         await triggerDeployment();
       } catch (error) {
         deploymentStatus.textContent = (error as Error).message;
+      } finally {
+        setButtonBusy(button, false);
+        button.disabled = false;
       }
     });
 
   document
     .querySelector("[data-export]")
-    ?.addEventListener("click", async () => {
-      const data = await request("/api/v1/admin/export");
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(
-        new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
-      );
-      link.download = `author-library-${new Date().toISOString().slice(0, 10)}.json`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+    ?.addEventListener("click", async (event) => {
+      const button = event.currentTarget as HTMLButtonElement;
+      setButtonBusy(button, true);
+      button.disabled = true;
+      try {
+        const data = await request("/api/v1/admin/export");
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(
+          new Blob([JSON.stringify(data, null, 2)], {
+            type: "application/json",
+          }),
+        );
+        link.download = `author-library-${new Date().toISOString().slice(0, 10)}.json`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      } finally {
+        setButtonBusy(button, false);
+        button.disabled = false;
+      }
     });
 
   window.addEventListener("beforeunload", (event) => {
