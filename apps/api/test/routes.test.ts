@@ -407,7 +407,8 @@ describe("API routes", () => {
             id: 456,
             status: "completed",
             conclusion: "success",
-            html_url: "https://github.com/Arniox/Mums-Bookshelf/actions/runs/456",
+            html_url:
+              "https://github.com/Arniox/Mums-Bookshelf/actions/runs/456",
             created_at: "2026-08-17T00:00:01Z",
             updated_at: "2026-08-17T00:01:00Z",
           },

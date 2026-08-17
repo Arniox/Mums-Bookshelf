@@ -537,16 +537,16 @@ const authorInitials = settings.authorName
 
 <script>
   import { areSameExternalUrls } from "@mums-bookshelf/shared";
-import {
-localWorkDraftKey,
-parseLocalWorkDraft,
-type LocalWorkDraft,
-} from "../../lib/localDraft";
-import {
-normaliseStoryHtml,
-storyTextToEditorHtml,
-wordHtmlToStoryHtml,
-} from "../../lib/wordPaste";
+  import {
+    localWorkDraftKey,
+    parseLocalWorkDraft,
+    type LocalWorkDraft,
+  } from "../../lib/localDraft";
+  import {
+    normaliseStoryHtml,
+    storyTextToEditorHtml,
+    wordHtmlToStoryHtml,
+  } from "../../lib/wordPaste";
 
   type ApiWork = Record<string, any>;
   const app = document.querySelector<HTMLElement>("[data-admin-app]")!;
@@ -609,12 +609,14 @@ wordHtmlToStoryHtml,
     queued: {
       progress: 35,
       title: "The page is waiting its turn…",
-      detail: "The book is already on the shelf while we get its own little page ready.",
+      detail:
+        "The book is already on the shelf while we get its own little page ready.",
     },
     building: {
       progress: 70,
       title: "Polishing the page…",
-      detail: "Nearly there. We are preparing the page people see when they share the link.",
+      detail:
+        "Nearly there. We are preparing the page people see when they share the link.",
     },
     ready: {
       progress: 100,
@@ -624,18 +626,20 @@ wordHtmlToStoryHtml,
     failed: {
       progress: 100,
       title: "This refresh needs a little help.",
-      detail: "The book is still visible on the website. Try Refresh SEO files again later.",
+      detail:
+        "The book is still visible on the website. Try Refresh SEO files again later.",
     },
   };
 
-  const showDeploymentProgress = (
-    state: keyof typeof deploymentMessages,
-  ) => {
+  const showDeploymentProgress = (state: keyof typeof deploymentMessages) => {
     const message = deploymentMessages[state];
     deploymentProgress.hidden = false;
     deploymentProgressTitle.textContent = message.title;
     deploymentProgressDetail.textContent = message.detail;
-    deploymentProgressBar.setAttribute("aria-valuenow", String(message.progress));
+    deploymentProgressBar.setAttribute(
+      "aria-valuenow",
+      String(message.progress),
+    );
     deploymentProgressBar.dataset.state = state;
     deploymentProgressBar.firstElementChild?.setAttribute(
       "style",

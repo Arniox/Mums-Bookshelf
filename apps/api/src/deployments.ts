@@ -149,11 +149,9 @@ export async function getPagesDeploymentStatus(
 
   const payload = (await response.json()) as WorkflowRunsResponse;
   const run = (payload.workflow_runs || []).find(
-    (candidate) =>
-      !since || Date.parse(candidate.created_at) >= sinceTime,
+    (candidate) => !since || Date.parse(candidate.created_at) >= sinceTime,
   );
-  if (!run)
-    return success(context, { state: since ? "starting" : "idle" });
+  if (!run) return success(context, { state: since ? "starting" : "idle" });
 
   const state =
     run.status === "queued"
