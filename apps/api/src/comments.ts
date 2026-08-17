@@ -96,7 +96,7 @@ export async function createComment(context: Context<AppEnvironment>) {
   await context.env.DB.prepare(
     `INSERT INTO comments
       (id, work_id, display_name, body, moderation_status, created_at, ip_hash)
-     VALUES (?, ?, ?, ?, 'pending', ?, ?)`,
+     VALUES (?, ?, ?, ?, 'approved', ?, ?)`,
   )
     .bind(
       crypto.randomUUID(),
