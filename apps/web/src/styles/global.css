@@ -1443,6 +1443,18 @@ textarea {
 .admin-list-row div {
   display: grid;
 }
+.featured-work-badge {
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid rgba(197, 155, 82, 0.6);
+  color: var(--walnut) !important;
+  background: rgba(197, 155, 82, 0.14);
+  font-size: 0.62rem !important;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
 .admin-list-row span,
 .admin-list-row time {
   color: var(--muted);

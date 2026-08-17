@@ -901,7 +901,7 @@ wordHtmlToStoryHtml,
   const workRow = (work: ApiWork) => `
     <article class="admin-list-row">
       <div>
-        <strong>${escape(work.title)}</strong>
+        <strong>${escape(work.title)}${work.featured ? ' <span class="featured-work-badge">Featured</span>' : ""}</strong>
         <span>${escape(work.status)} · ${escape(work.publicationType).replace("-", " ")}</span>
       </div>
       <time>${new Date(work.updatedAt).toLocaleDateString()}</time>
