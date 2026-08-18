@@ -50,6 +50,7 @@ const featuredWork = works.find((work) => work.featured);
         </div>
         <div class="webgl-bookshelf" data-webgl-bookshelf aria-hidden="true">
           <canvas data-bookshelf-canvas />
+          <div class="webgl-book-links" data-webgl-book-links />
           <p class="webgl-bookshelf-hint">
             Select a book to pull it from the shelf.
           </p>
@@ -147,6 +148,9 @@ const featuredWork = works.find((work) => work.featured);
   );
   const canvas = shelf?.querySelector<HTMLCanvasElement>(
     "[data-bookshelf-canvas]",
+  );
+  const bookLinks = shelf?.querySelector<HTMLElement>(
+    "[data-webgl-book-links]",
   );
   const hint = shelf?.querySelector<HTMLElement>(".webgl-bookshelf-hint");
   const base = import.meta.env.BASE_URL;
@@ -284,7 +288,8 @@ const featuredWork = works.find((work) => work.featured);
 
   const renderWebglShelf = () => {
     disposeWebglShelf?.();
-    if (!canvas || !webglShelf || !shelfList || reduceMotion) return false;
+    if (!canvas || !webglShelf || !shelfList || !bookLinks || reduceMotion)
+      return false;
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
@@ -394,6 +399,8 @@ const featuredWork = works.find((work) => work.featured);
     });
 
     const books: ShelfBook[] = [];
+    const interactiveLinks = new Map<ShelfBook, HTMLAnchorElement>();
+    bookLinks.replaceChildren();
     shelfRows.forEach((shelfRow, row) => {
       const rowBookWidth = shelfRow.reduce(
         (total, book, index) => total + book.width + (index ? 0.08 : 0),
@@ -499,19 +506,29 @@ const featuredWork = works.find((work) => work.featured);
           hover: 0,
         };
         root.userData.shelfBook = book;
-        const hitTarget = new THREE.Mesh(
-          new THREE.BoxGeometry(width * 1.22, height * 1.06, depth + 0.42),
-          new THREE.MeshBasicMaterial({
-            transparent: true,
-            opacity: 0,
-            depthWrite: false,
-            colorWrite: false,
-            side: THREE.DoubleSide,
-          }),
+        const linkTarget = document.createElement("a");
+        linkTarget.className = "webgl-book-link";
+        linkTarget.href = book.url;
+        linkTarget.setAttribute(
+          "aria-label",
+          link.dataset.bookTitle || "Open book",
         );
-        hitTarget.position.z = 0.2;
-        hitTarget.userData.shelfBook = book;
-        root.add(hitTarget);
+        linkTarget.addEventListener("pointerenter", () => {
+          hovered = book;
+          canvas.style.cursor = "grab";
+        });
+        linkTarget.addEventListener("pointerleave", () => {
+          if (hovered === book) hovered = undefined;
+          canvas.style.cursor = "default";
+        });
+        linkTarget.addEventListener("click", (event) => {
+          if (selected === book) return;
+          event.preventDefault();
+          select(book);
+        });
+        linkTarget.addEventListener("focus", () => select(book));
+        interactiveLinks.set(book, linkTarget);
+        bookLinks.append(linkTarget);
         scene.add(root);
         books.push(book);
         cursor += width + 0.08;
@@ -528,66 +545,9 @@ const featuredWork = works.find((work) => work.featured);
       scene.add(board);
     });
 
-    const pointer = new THREE.Vector2();
     let selected: ShelfBook | undefined;
     let hovered: ShelfBook | undefined;
-    let pointerDown: { x: number; y: number } | undefined;
-    let isDragging = false;
     let frame = 0;
-    const bookAt = (event: PointerEvent) => {
-      const bounds = canvas.getBoundingClientRect();
-      pointer.set(
-        ((event.clientX - bounds.left) / bounds.width) * 2 - 1,
-        -((event.clientY - bounds.top) / bounds.height) * 2 + 1,
-      );
-      scene.updateMatrixWorld(true);
-      camera.updateMatrixWorld();
-      const corner = new THREE.Vector3();
-      const matches = books
-        .map((book) => {
-          const box = new THREE.Box3().setFromObject(book.root);
-          const min = new THREE.Vector2(Infinity, Infinity);
-          const max = new THREE.Vector2(-Infinity, -Infinity);
-          [box.min.x, box.max.x].forEach((x) => {
-            [box.min.y, box.max.y].forEach((y) => {
-              [box.min.z, box.max.z].forEach((z) => {
-                corner.set(x, y, z).project(camera);
-                min.min(corner);
-                max.max(corner);
-              });
-            });
-          });
-          return {
-            book,
-            min,
-            max,
-            distance: camera.position.distanceTo(book.root.position),
-          };
-        })
-        .filter(
-          ({ min, max }) =>
-            pointer.x >= min.x &&
-            pointer.x <= max.x &&
-            pointer.y >= min.y &&
-            pointer.y <= max.y,
-        );
-      const directMatch = matches.sort(
-        (left, right) => left.distance - right.distance,
-      )[0]?.book;
-      if (directMatch) return directMatch;
-
-      const nearest = books
-        .map((book) => {
-          const center = book.root.getWorldPosition(new THREE.Vector3());
-          center.project(camera);
-          return {
-            book,
-            distance: pointer.distanceTo(center),
-          };
-        })
-        .sort((left, right) => left.distance - right.distance)[0];
-      return nearest?.book;
-    };
     const select = (book: ShelfBook) => {
       selected = book;
       books.forEach((candidate) => {
@@ -596,45 +556,6 @@ const featuredWork = works.find((work) => work.featured);
       if (hint)
         hint.textContent =
           "Drag the open book to turn it. Select it again to begin reading.";
-    };
-    const onPointerDown = (event: PointerEvent) => {
-      pointerDown = { x: event.clientX, y: event.clientY };
-      isDragging = false;
-      canvas.setPointerCapture(event.pointerId);
-    };
-    const onPointerMove = (event: PointerEvent) => {
-      const book = bookAt(event);
-      hovered = book;
-      canvas.style.cursor = book ? "grab" : "default";
-      if (!pointerDown || !selected) return;
-      const dx = event.clientX - pointerDown.x;
-      const dy = event.clientY - pointerDown.y;
-      if (Math.abs(dx) + Math.abs(dy) > 5) {
-        isDragging = true;
-        selected.turn = THREE.MathUtils.clamp(
-          selected.turn + dx * 0.008,
-          -1.05,
-          1.05,
-        );
-        selected.root.rotation.x = THREE.MathUtils.clamp(
-          selected.root.rotation.x + dy * 0.004,
-          -0.65,
-          0.35,
-        );
-        pointerDown = { x: event.clientX, y: event.clientY };
-      }
-    };
-    const onPointerLeave = () => {
-      hovered = undefined;
-      canvas.style.cursor = "default";
-    };
-    const onPointerUp = (event: PointerEvent) => {
-      const book = bookAt(event);
-      if (!isDragging && book) {
-        if (book === selected) window.location.assign(book.url);
-        else select(book);
-      }
-      pointerDown = undefined;
     };
     const resize = () => {
       updateShelfViewportHeight();
@@ -684,24 +605,42 @@ const featuredWork = works.find((work) => work.featured);
           0.1,
         );
       });
+      scene.updateMatrixWorld(true);
+      camera.updateMatrixWorld();
+      interactiveLinks.forEach((linkTarget, book) => {
+        const box = new THREE.Box3().setFromObject(book.root);
+        const min = new THREE.Vector2(Infinity, Infinity);
+        const max = new THREE.Vector2(-Infinity, -Infinity);
+        const corner = new THREE.Vector3();
+        [box.min.x, box.max.x].forEach((x) => {
+          [box.min.y, box.max.y].forEach((y) => {
+            [box.min.z, box.max.z].forEach((z) => {
+              corner.set(x, y, z).project(camera);
+              min.min(corner);
+              max.max(corner);
+            });
+          });
+        });
+        const left = ((min.x + 1) / 2) * 100;
+        const top = ((1 - max.y) / 2) * 100;
+        const width = ((max.x - min.x) / 2) * 100;
+        const height = ((max.y - min.y) / 2) * 100;
+        linkTarget.style.left = `${left}%`;
+        linkTarget.style.top = `${top}%`;
+        linkTarget.style.width = `${width}%`;
+        linkTarget.style.height = `${height}%`;
+      });
       renderer.render(scene, camera);
     };
     const observer = new ResizeObserver(resize);
     observer.observe(webglShelf);
-    canvas.addEventListener("pointerdown", onPointerDown);
-    canvas.addEventListener("pointermove", onPointerMove);
-    canvas.addEventListener("pointerup", onPointerUp);
-    canvas.addEventListener("pointerleave", onPointerLeave);
     resize();
     animate();
     shelf?.classList.add("has-webgl-bookshelf");
     disposeWebglShelf = () => {
       window.cancelAnimationFrame(frame);
       observer.disconnect();
-      canvas.removeEventListener("pointerdown", onPointerDown);
-      canvas.removeEventListener("pointermove", onPointerMove);
-      canvas.removeEventListener("pointerup", onPointerUp);
-      canvas.removeEventListener("pointerleave", onPointerLeave);
+      bookLinks.replaceChildren();
       scene.traverse((object) => {
         const mesh = object as THREE.Mesh;
         mesh.geometry?.dispose();
