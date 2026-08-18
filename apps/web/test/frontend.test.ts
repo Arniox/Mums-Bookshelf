@@ -119,7 +119,7 @@ describe("public library", () => {
       return link;
     });
     const builder = new ShelfLayoutBuilder({
-      shelfWidth: 11,
+      shelfWidth: 8,
       shelfPadding: 0.65,
       shelfSpacing: 3.55,
       boardThickness: 0.28,

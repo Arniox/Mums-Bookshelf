@@ -30,6 +30,9 @@ export class BookshelfScene {
   private readonly container: HTMLElement;
   private readonly cabinetHeight: number;
   private readonly focusY: number;
+  private keyLight!: THREE.SpotLight;
+  private keyLightSide = 1;
+  private readonly keyLightTarget = new THREE.Object3D();
   private readonly resizeObserver: ResizeObserver;
   private readonly shelfWidth: number;
 
@@ -58,8 +61,16 @@ export class BookshelfScene {
     this.resize();
   }
 
-  setAnimationLoop(animate: () => void) {
+  setAnimationLoop(animate: (time: number) => void) {
     this.renderer.setAnimationLoop(animate);
+  }
+
+  updateLighting(time: number) {
+    const swing = Math.sin(time * 0.00045);
+    const baseX = this.keyLightSide * this.shelfWidth * 0.28;
+    this.keyLight.position.x = baseX + swing * this.shelfWidth * 0.1;
+    this.keyLight.position.y = this.cabinetHeight + 3 + swing * 0.22;
+    this.keyLightTarget.position.x = swing * this.shelfWidth * 0.04;
   }
 
   render() {
@@ -109,7 +120,8 @@ export class BookshelfScene {
   };
 
   private addLighting() {
-    const warmLight = new THREE.SpotLight(
+    this.keyLightSide = Math.random() < 0.5 ? -1 : 1;
+    this.keyLight = new THREE.SpotLight(
       "#ffe2ad",
       320,
       0,
@@ -117,13 +129,18 @@ export class BookshelfScene {
       0.55,
       1.2,
     );
-    warmLight.position.set(-this.shelfWidth * 0.28, this.cabinetHeight + 3, 7);
-    warmLight.target.position.set(0, this.cabinetHeight / 2, 0);
-    warmLight.castShadow = true;
-    warmLight.shadow.mapSize.set(1024, 1024);
+    this.keyLight.position.set(
+      this.keyLightSide * this.shelfWidth * 0.28,
+      this.cabinetHeight + 3,
+      7,
+    );
+    this.keyLightTarget.position.set(0, this.cabinetHeight / 2, 0);
+    this.keyLight.target = this.keyLightTarget;
+    this.keyLight.castShadow = true;
+    this.keyLight.shadow.mapSize.set(1024, 1024);
     this.scene.add(
-      warmLight,
-      warmLight.target,
+      this.keyLight,
+      this.keyLightTarget,
       new THREE.HemisphereLight("#f7dbad", "#25130c", 2.4),
     );
   }

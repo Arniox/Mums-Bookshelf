@@ -17,7 +17,7 @@ type BookshelfBuilderOptions = {
   links: readonly HTMLAnchorElement[];
 };
 
-const shelfWidth = 11;
+const shelfWidth = 8;
 const shelfPadding = 0.65;
 const shelfSpacing = 3.55;
 const boardThickness = 0.28;
@@ -32,6 +32,9 @@ export class BookshelfBuilder {
   private picker: CanvasBookPicker | undefined;
   private scene: BookshelfScene | undefined;
   private selected: ShelfBook | undefined;
+  private rowCount = 0;
+  private viewportObserver: ResizeObserver | undefined;
+  private viewportWidth = Number.NaN;
 
   constructor(options: BookshelfBuilderOptions) {
     this.canvas = options.canvas;
@@ -47,6 +50,7 @@ export class BookshelfBuilder {
       shelfSpacing,
       boardThickness,
     }).fromLinks(this.links);
+    this.rowCount = layout.rows.length;
     this.updateViewportHeight(layout.rows.length);
     const focusY =
       (layout.shelfHeights[0]! + layout.shelfHeights.at(-1)!) / 2 + 1.55;
@@ -77,7 +81,8 @@ export class BookshelfBuilder {
         0,
       );
       let cursor = -rowWidth / 2;
-      row.forEach((book) => {
+      row.forEach((book, bookIndex) => {
+        const depthOffset = bookIndex % 2 === 0 ? 0.005 : -0.005;
         const home = new THREE.Vector3(
           cursor + book.width / 2,
           layout.shelfHeights[rowIndex]! +
@@ -89,7 +94,7 @@ export class BookshelfBuilder {
                 0.5,
             ) +
             0.025,
-          0.2,
+          0.2 + depthOffset,
         );
         const shelfBook = books.build(book, home);
         this.books.push(shelfBook);
@@ -107,12 +112,16 @@ export class BookshelfBuilder {
       },
       onPick: this.pickBook,
     });
+    this.viewportObserver = new ResizeObserver(this.handleViewportResize);
+    this.viewportObserver.observe(this.container);
     this.scene.setAnimationLoop(this.animate);
   }
 
   dispose() {
     this.picker?.dispose();
     this.picker = undefined;
+    this.viewportObserver?.disconnect();
+    this.viewportObserver = undefined;
     this.scene?.dispose();
     this.scene = undefined;
     this.books.length = 0;
@@ -120,14 +129,19 @@ export class BookshelfBuilder {
     this.selected = undefined;
   }
 
-  private readonly animate = () => {
+  private readonly animate = (time: number) => {
     const camera = this.scene?.camera;
     if (camera) {
       this.books.forEach((book) =>
         book.update(book === this.hovered, camera.position),
       );
     }
+    this.scene?.updateLighting(time);
     this.scene?.render();
+  };
+
+  private readonly handleViewportResize = () => {
+    this.updateViewportHeight(this.rowCount);
   };
 
   private readonly pickBook = (book: ShelfBook) => {
@@ -145,12 +159,15 @@ export class BookshelfBuilder {
   };
 
   private updateViewportHeight(rowCount: number) {
+    const viewportWidth = this.container.getBoundingClientRect().width;
+    if (Math.abs(viewportWidth - this.viewportWidth) < 1) return;
+    this.viewportWidth = viewportWidth;
     this.container.style.setProperty(
       "--webgl-shelf-height",
       `${getShelfViewportHeight(
         rowCount,
         window.matchMedia("(max-width: 640px)").matches,
-        this.container.getBoundingClientRect().width,
+        viewportWidth,
         shelfWidth,
         shelfSpacing,
       )}px`,
