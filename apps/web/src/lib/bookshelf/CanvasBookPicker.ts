@@ -18,6 +18,7 @@ export class CanvasBookPicker {
   private readonly onPick: (book: ShelfBook) => void;
   private readonly pointer = new THREE.Vector2();
   private readonly raycaster = new THREE.Raycaster();
+  private hoveredBook: ShelfBook | undefined;
 
   constructor(options: PickerOptions) {
     this.canvas = options.canvas;
@@ -44,17 +45,19 @@ export class CanvasBookPicker {
 
   private readonly handlePointerMove = (event: PointerEvent) => {
     const book = this.pick(event);
+    this.hoveredBook = book;
     this.canvas.style.cursor = book ? "pointer" : "default";
     this.onHover(book);
   };
 
   private readonly handlePointerLeave = () => {
+    this.hoveredBook = undefined;
     this.canvas.style.cursor = "default";
     this.onHover(undefined);
   };
 
   private readonly handleClick = (event: MouseEvent) => {
-    const book = this.pick(event);
+    const book = this.pick(event) ?? this.hoveredBook;
     if (book) this.onPick(book);
   };
 

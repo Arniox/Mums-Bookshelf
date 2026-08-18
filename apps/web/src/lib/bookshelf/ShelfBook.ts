@@ -21,6 +21,7 @@ export class ShelfBook {
   private open = 0;
   private hover = 0;
   private pull = 0;
+  private pullStarted = false;
 
   constructor(options: ShelfBookOptions) {
     this.root = options.root;
@@ -37,7 +38,8 @@ export class ShelfBook {
 
   setSelected(selected: boolean) {
     this.open = Number(selected);
-    if (!selected) this.pull = 0;
+    this.pull = 0;
+    this.pullStarted = false;
   }
 
   update(isHovered: boolean) {
@@ -50,9 +52,10 @@ export class ShelfBook {
       const hasReturnedToShelf =
         Math.abs(this.root.position.y - this.home.y) < 0.012 &&
         Math.abs(this.root.position.z - this.home.z) < 0.012;
-      this.pull = hasReturnedToShelf
-        ? THREE.MathUtils.lerp(this.pull, 1, 0.1)
-        : 0;
+      if (hasReturnedToShelf) this.pullStarted = true;
+      if (this.pullStarted) {
+        this.pull = THREE.MathUtils.lerp(this.pull, 1, 0.1);
+      }
       this.targetPosition.copy(this.home);
       this.targetPosition.z += 3.25 * this.pull;
     } else {
