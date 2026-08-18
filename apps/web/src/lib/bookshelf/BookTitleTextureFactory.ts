@@ -18,7 +18,10 @@ export class BookTitleTextureFactory {
 
   create(options: TitleTextureOptions): THREE.CanvasTexture {
     const textureScale = 2;
-    const titleAspect = Math.max(options.width / options.height, 0.16);
+    const titleAspect = Math.max(
+      (options.width * 0.94) / (options.height * 0.76),
+      0.16,
+    );
     const logicalHeight = 1024;
     const logicalWidth = Math.round(
       THREE.MathUtils.clamp(logicalHeight * titleAspect, 196, 768),
