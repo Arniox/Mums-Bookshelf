@@ -17,7 +17,7 @@ type BookshelfBuilderOptions = {
   links: readonly HTMLAnchorElement[];
 };
 
-const shelfWidth = 15;
+const shelfWidth = 11;
 const shelfPadding = 0.65;
 const shelfSpacing = 3.55;
 const boardThickness = 0.28;
@@ -151,6 +151,8 @@ export class BookshelfBuilder {
         rowCount,
         window.matchMedia("(max-width: 640px)").matches,
         this.container.getBoundingClientRect().width,
+        shelfWidth,
+        shelfSpacing,
       )}px`,
     );
   }

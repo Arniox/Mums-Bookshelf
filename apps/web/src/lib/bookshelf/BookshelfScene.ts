@@ -111,17 +111,19 @@ export class BookshelfScene {
   private addLighting() {
     const warmLight = new THREE.SpotLight(
       "#ffe2ad",
-      260,
-      30,
-      Math.PI / 5,
-      0.7,
-      1.5,
+      320,
+      0,
+      Math.PI / 3,
+      0.55,
+      1.2,
     );
-    warmLight.position.set(-5, 9, 8);
+    warmLight.position.set(-this.shelfWidth * 0.28, this.cabinetHeight + 3, 7);
+    warmLight.target.position.set(0, this.cabinetHeight / 2, 0);
     warmLight.castShadow = true;
     warmLight.shadow.mapSize.set(1024, 1024);
     this.scene.add(
       warmLight,
+      warmLight.target,
       new THREE.HemisphereLight("#f7dbad", "#25130c", 2.4),
     );
   }

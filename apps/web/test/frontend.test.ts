@@ -119,7 +119,7 @@ describe("public library", () => {
       return link;
     });
     const builder = new ShelfLayoutBuilder({
-      shelfWidth: 15,
+      shelfWidth: 11,
       shelfPadding: 0.65,
       shelfSpacing: 3.55,
       boardThickness: 0.28,
@@ -137,14 +137,44 @@ describe("public library", () => {
       expect(width).toBeLessThanOrEqual(capacity);
     });
     expect(layout.shelfHeights).toHaveLength(layout.rows.length);
-    expect(getShelfViewportHeight(layout.rows.length, false, 800)).toBe(
-      530 + (layout.rows.length - 1) * (800 * (3.55 / 15)),
+    expect(
+      getShelfViewportHeight(
+        layout.rows.length,
+        false,
+        800,
+        builder.shelfWidth,
+        builder.shelfSpacing,
+      ),
+    ).toBe(
+      530 +
+        (layout.rows.length - 1) *
+          (800 * (builder.shelfSpacing / builder.shelfWidth)),
     );
     expect(
-      getShelfViewportHeight(layout.rows.length, false, 800),
+      getShelfViewportHeight(
+        layout.rows.length,
+        false,
+        800,
+        builder.shelfWidth,
+        builder.shelfSpacing,
+      ),
     ).toBeGreaterThan(530);
-    expect(getShelfViewportHeight(layout.rows.length, false, 400)).toBeLessThan(
-      getShelfViewportHeight(layout.rows.length, false, 800),
+    expect(
+      getShelfViewportHeight(
+        layout.rows.length,
+        false,
+        400,
+        builder.shelfWidth,
+        builder.shelfSpacing,
+      ),
+    ).toBeLessThan(
+      getShelfViewportHeight(
+        layout.rows.length,
+        false,
+        800,
+        builder.shelfWidth,
+        builder.shelfSpacing,
+      ),
     );
   });
 

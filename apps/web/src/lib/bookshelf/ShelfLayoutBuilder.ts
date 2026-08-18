@@ -23,9 +23,11 @@ export function getShelfViewportHeight(
   rowCount: number,
   compact: boolean,
   viewportWidth: number,
+  shelfWidth: number,
+  shelfSpacing: number,
 ): number {
   const baseHeight = compact ? 390 : 530;
-  const rowHeight = viewportWidth * (3.55 / 15);
+  const rowHeight = viewportWidth * (shelfSpacing / shelfWidth);
   return baseHeight + Math.max(rowCount - 1, 0) * rowHeight;
 }
 
