@@ -44,6 +44,7 @@ export class CanvasBookPicker {
       passive: true,
     });
     this.canvas.addEventListener("pointerup", this.handlePointerUp);
+    this.canvas.addEventListener("pointercancel", this.handlePointerCancel);
   }
 
   dispose() {
@@ -52,6 +53,10 @@ export class CanvasBookPicker {
     this.canvas.removeEventListener("click", this.handleClick);
     this.canvas.removeEventListener("pointerdown", this.handlePointerDown);
     this.canvas.removeEventListener("pointerup", this.handlePointerUp);
+    this.canvas.removeEventListener(
+      "pointercancel",
+      this.handlePointerCancel,
+    );
     this.canvas.style.cursor = "default";
   }
 
@@ -94,10 +99,16 @@ export class CanvasBookPicker {
 
   private readonly handlePointerUp = (event: PointerEvent) => {
     if (event.pointerType !== "touch") return;
-    this.suppressNextClick = true;
     if (this.touchMoved) return;
+    this.suppressNextClick = true;
     const book = this.pick(event);
     if (book) this.onPick(book);
+  };
+
+  private readonly handlePointerCancel = (event: PointerEvent) => {
+    if (event.pointerType !== "touch") return;
+    this.touchMoved = true;
+    this.suppressNextClick = false;
   };
 
   private pick(event: MouseEvent): ShelfBook | undefined {
