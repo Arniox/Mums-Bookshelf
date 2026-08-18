@@ -31,7 +31,6 @@ export class BookshelfScene {
   private readonly cabinetHeight: number;
   private readonly focusY: number;
   private keyLight!: THREE.SpotLight;
-  private keyLightSide = 1;
   private readonly keyLightTarget = new THREE.Object3D();
   private readonly resizeObserver: ResizeObserver;
   private readonly shelfWidth: number;
@@ -112,19 +111,18 @@ export class BookshelfScene {
   };
 
   private addLighting() {
-    this.keyLightSide = Math.random() < 0.5 ? -1 : 1;
     this.keyLight = new THREE.SpotLight(
       "#ffe2ad",
-      180,
+      110,
       0,
       Math.PI / 3,
       0.55,
       1.2,
     );
     this.keyLight.position.set(
-      this.keyLightSide * this.shelfWidth * 0.48,
-      this.cabinetHeight / 2 + 1,
-      14,
+      -this.shelfWidth * 1.8,
+      this.cabinetHeight / 2,
+      10,
     );
     this.keyLightTarget.position.set(0, this.cabinetHeight / 2, 0);
     this.keyLight.target = this.keyLightTarget;

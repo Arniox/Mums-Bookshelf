@@ -438,8 +438,7 @@ button.is-loading::before {
 
 .webgl-bookshelf {
   position: relative;
-  height: min(var(--webgl-shelf-height, 510px), calc(100dvh - 10rem));
-  min-height: min(var(--webgl-shelf-height, 510px), 390px);
+  height: var(--webgl-shelf-height, 510px);
   overflow: hidden;
   border: 1px solid rgba(239, 195, 130, 0.16);
   background:
@@ -2013,7 +2012,7 @@ fieldset {
 }
 
 .library-room .webgl-bookshelf {
-  height: min(var(--webgl-shelf-height, 530px), calc(100dvh - 12rem));
+  height: var(--webgl-shelf-height, 530px);
   border-radius: 2px;
 }
 
@@ -2314,7 +2313,7 @@ fieldset {
     padding: 6.8rem 0.4rem 0.65rem;
   }
   .library-room .webgl-bookshelf {
-    height: min(var(--webgl-shelf-height, 390px), calc(100dvh - 8rem));
+    height: var(--webgl-shelf-height, 390px);
   }
   .webgl-bookshelf-hint {
     right: 0.85rem;
