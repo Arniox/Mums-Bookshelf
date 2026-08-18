@@ -84,6 +84,8 @@ export class ShelfLayoutBuilder {
       rowWidth += (rowWidth ? 0.08 : 0) + book.width;
     });
 
+    // Rows are rendered bottom-to-top, so put the final partial row at the bottom.
+    rows.reverse();
     const shelfHeights = rows.map(
       (_, index) => 0.25 + index * this.shelfSpacing,
     );
