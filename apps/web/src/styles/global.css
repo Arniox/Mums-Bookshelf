@@ -1114,6 +1114,7 @@ textarea {
   color: transparent;
   font-size: 0;
   line-height: 1;
+  text-indent: 0;
 }
 
 .story-content p[data-scene-break="true"]::before,
