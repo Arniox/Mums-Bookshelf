@@ -105,10 +105,12 @@ export class ShelfBook {
       this.targetPosition.distanceToSquared(this.root.position) > 0.000001 ||
       Math.abs(targetYaw - this.root.rotation.y) > 0.001 ||
       Math.abs(targetLean - this.root.rotation.z) > 0.001 ||
-      Math.abs((-Math.PI / 2) * (1 - this.pageOpen) - this.leftLeaf.rotation.y) >
-        0.001 ||
-      Math.abs((Math.PI / 2) * (1 - this.pageOpen) - this.rightLeaf.rotation.y) >
-        0.001
+      Math.abs(
+        (-Math.PI / 2) * (1 - this.pageOpen) - this.leftLeaf.rotation.y,
+      ) > 0.001 ||
+      Math.abs(
+        (Math.PI / 2) * (1 - this.pageOpen) - this.rightLeaf.rotation.y,
+      ) > 0.001
     );
   }
 }
