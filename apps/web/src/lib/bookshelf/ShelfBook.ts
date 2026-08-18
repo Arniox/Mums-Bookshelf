@@ -57,7 +57,7 @@ export class ShelfBook {
         this.pull = THREE.MathUtils.lerp(this.pull, 1, 0.1);
       }
       this.targetPosition.copy(this.home);
-      this.targetPosition.z += 3.25 * this.pull;
+      this.targetPosition.z += 1.65 * this.pull;
     } else {
       this.targetPosition.copy(this.home);
       this.targetPosition.y += this.hover * 0.24;
