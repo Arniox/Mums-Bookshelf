@@ -252,11 +252,10 @@ export function normaliseStoryHtml(
   let currentList: HTMLElement | undefined;
   Array.from(output.children).forEach((element) => {
     const listItem = element as HTMLElement;
-    if (
-      listItem.tagName === "P" &&
-      /^(?:---+|#{2,})$/u.test(listItem.textContent?.trim() || "")
-    ) {
-      listItem.replaceWith(document.createElement("hr"));
+    if (listItem.tagName === "P") {
+      if (/^#{2,}$/u.test(listItem.textContent?.trim() || ""))
+        listItem.dataset.sceneBreak = "true";
+      else delete listItem.dataset.sceneBreak;
       currentList = undefined;
       return;
     }
@@ -316,7 +315,7 @@ export function storyTextToEditorHtml(value: string, document: Document) {
       output.push(
         `<h${heading[1]!.length}>${inlineMarkdownToHtml(heading[2]!)}</h${heading[1]!.length}>`,
       );
-    } else if (/^(?:---+|#{2,})$/u.test(line)) {
+    } else if (/^---+$/u.test(line)) {
       output.push("<hr>");
     } else if (line.startsWith("> ")) {
       output.push(
