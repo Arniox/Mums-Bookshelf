@@ -1,3 +1,4 @@
+import { sanitiseHomepageHeading } from "@mums-bookshelf/shared";
 import { publicSettingsSchema } from "@mums-bookshelf/shared/schemas";
 import type { Context } from "hono";
 import { rowToSettings } from "./db";
@@ -28,14 +29,23 @@ export async function updateSettings(context: Context<AppEnvironment>) {
       parsed.error.issues[0]?.message || "Settings are invalid.",
     );
   }
-  const settings = parsed.data;
+  const heading = sanitiseHomepageHeading(parsed.data.homepageHeadingHtml);
+  if (!heading)
+    throw new ApiError(
+      422,
+      "validation_failed",
+      "Homepage heading must contain text.",
+    );
+  const settings = { ...parsed.data, homepageHeadingHtml: heading };
   await context.env.DB.prepare(
     `INSERT INTO site_settings (
-       id, author_name, introduction, biography, profile_image_url, announcement,
+       id, author_name, homepage_eyebrow, homepage_heading_html, introduction, biography, profile_image_url, announcement,
        social_links_json, theme_settings_json, contact_link, updated_at
-     ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        author_name = excluded.author_name, introduction = excluded.introduction,
+       homepage_eyebrow = excluded.homepage_eyebrow,
+       homepage_heading_html = excluded.homepage_heading_html,
        biography = excluded.biography, profile_image_url = excluded.profile_image_url,
        announcement = excluded.announcement, social_links_json = excluded.social_links_json,
        theme_settings_json = excluded.theme_settings_json, contact_link = excluded.contact_link,
@@ -43,6 +53,8 @@ export async function updateSettings(context: Context<AppEnvironment>) {
   )
     .bind(
       settings.authorName,
+      settings.homepageEyebrow,
+      settings.homepageHeadingHtml,
       settings.introduction,
       settings.biography,
       settings.profileImageUrl ?? null,
