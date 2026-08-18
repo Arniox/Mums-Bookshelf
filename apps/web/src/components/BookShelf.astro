@@ -571,14 +571,6 @@ const featuredWork = works.find((work) => work.featured);
             pointer.y >= min.y &&
             pointer.y <= max.y,
         );
-      canvas.dataset.hitDebug = JSON.stringify({
-        pointer: [pointer.x, pointer.y],
-        bounds: books.slice(0, 3).map((book) => {
-          const box = new THREE.Box3().setFromObject(book.root);
-          return [box.min.toArray(), box.max.toArray()];
-        }),
-        matches: matches.length,
-      });
       return matches.sort((left, right) => left.distance - right.distance)[0]
         ?.book;
     };
