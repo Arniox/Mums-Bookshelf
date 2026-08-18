@@ -102,9 +102,11 @@ const authorInitials = settings.authorName
         "[data-about-social-links]",
       );
       if (links) {
-        const entries = [
+        const entries: Array<[string, string]> = [
           ...Object.entries(settings.socialLinks),
-          ...(settings.contactLink ? [["Contact", settings.contactLink]] : []),
+          ...(settings.contactLink
+            ? ([["Contact", settings.contactLink]] as Array<[string, string]>)
+            : []),
         ];
         links.replaceChildren(
           ...entries.map(([label, url]) => {
