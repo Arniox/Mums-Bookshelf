@@ -224,22 +224,22 @@ const authorInitials = settings.authorName
                   <button
                     type="button"
                     data-homepage-heading-command="bold"
-                    title="Bold"><strong>B</strong></button
+                    title="Make selected title words bold">Bold</button
                   >
                   <button
                     type="button"
                     data-homepage-heading-command="italic"
-                    title="Italic"><em>I</em></button
+                    title="Make selected title words italic">Italic</button
                   >
                   <button
                     type="button"
                     data-homepage-heading-command="underline"
-                    title="Underline"><u>U</u></button
+                    title="Underline selected title words">Underline</button
                   >
                   <button
                     type="button"
                     data-homepage-heading-command="strikeThrough"
-                    title="Strikethrough"><s>S</s></button
+                    title="Cross out selected title words">Cross out</button
                   >
                 </div>
                 <div
@@ -397,55 +397,65 @@ const authorInitials = settings.authorName
             role="toolbar"
             aria-label="Story formatting"
           >
-            <button type="button" data-story-command="bold" title="Bold"
-              ><strong>B</strong></button
+            <button
+              type="button"
+              data-story-command="bold"
+              title="Make selected words bold">Bold</button
             >
-            <button type="button" data-story-command="italic" title="Italic"
-              ><em>I</em></button
+            <button
+              type="button"
+              data-story-command="italic"
+              title="Make selected words italic">Italic</button
             >
             <button
               type="button"
               data-story-command="underline"
-              title="Underline"><u>U</u></button
+              title="Underline selected words">Underline</button
             >
             <button
               type="button"
               data-story-command="strikeThrough"
-              title="Strikethrough"><s>S</s></button
+              title="Cross out selected words">Cross out</button
             >
-            <button type="button" data-story-block="h2" title="Section heading"
-              >Heading</button
+            <button
+              type="button"
+              data-story-block="h2"
+              title="Turn this into a chapter heading">Chapter heading</button
             >
             <button
               type="button"
               data-story-block="blockquote"
-              title="Pull quote">Quote</button
+              title="Set this apart as quoted words">Quoted words</button
             >
             <button
               type="button"
               data-story-command="insertUnorderedList"
-              title="Bullet list">• List</button
+              title="Start a bullet list">Bullet list</button
             >
             <button
               type="button"
               data-story-command="insertOrderedList"
-              title="Numbered list">1. List</button
+              title="Start a numbered list">Numbered list</button
             >
-            <button type="button" data-story-command="indent" title="Indent"
-              >Indent</button
+            <button
+              type="button"
+              data-story-command="indent"
+              title="Move this paragraph in">Indent</button
             >
-            <button type="button" data-story-command="outdent" title="Outdent"
-              >Outdent</button
+            <button
+              type="button"
+              data-story-command="outdent"
+              title="Move this paragraph out">Outdent</button
             >
             <button
               type="button"
               data-story-command="createLink"
-              title="Add link">Link</button
+              title="Add a link to selected words">Add link</button
             >
             <button
               type="button"
               data-story-command="insertHorizontalRule"
-              title="Scene break">Scene break</button
+              title="Add an editable story pause">Scene break</button
             >
           </div>
           <div
@@ -461,7 +471,8 @@ const authorInitials = settings.authorName
         <div class="checkbox story-drop-cap-control">
           <input type="checkbox" data-story-drop-cap checked />
           <span
-            >Use the large opening letter <small>Matches the reader view</small
+            >Give the opening letter its flourish <small
+              >Matches the reader view</small
             ></span
           >
         </div>
@@ -1354,12 +1365,23 @@ const authorInitials = settings.authorName
     localSaveTimer = window.setTimeout(() => saveLocalDraft(true), 750);
   });
 
+  const updateStoryPauseMarkers = () => {
+    storyEditor
+      .querySelectorAll<HTMLParagraphElement>("p")
+      .forEach((paragraph) => {
+        if (/^#{2,}$/u.test(paragraph.textContent?.trim() || ""))
+          paragraph.dataset.sceneBreak = "true";
+        else delete paragraph.dataset.sceneBreak;
+      });
+  };
+
   const syncStoryEditor = (normalise = false) => {
     if (normalise)
       storyEditor.innerHTML = normaliseStoryHtml(
         storyEditor.innerHTML,
         document,
       );
+    updateStoryPauseMarkers();
     fullStoryField.value = storyEditor.innerHTML.trim();
     fullStoryField.dispatchEvent(new Event("input", { bubbles: true }));
   };
@@ -1435,7 +1457,8 @@ const authorInitials = settings.authorName
           command === "createLink"
             ? prompt("Paste the link address (https://…)")
             : undefined;
-        if (command !== "createLink" || value)
+        if (command === "insertHorizontalRule") insertStoryHtml("<p>###</p>");
+        else if (command !== "createLink" || value)
           executeRichTextCommand(command, value || undefined);
         notifyRichTextChange(storyEditor);
       });
