@@ -88,6 +88,8 @@ export const workPatchSchema = workInputBaseSchema.partial();
 
 export const publicSettingsSchema = z.object({
   authorName: z.string().trim().min(1).max(160),
+  homepageEyebrow: z.string().trim().min(1).max(200),
+  homepageHeadingHtml: z.string().trim().min(1).max(2_000),
   introduction: z.string().trim().max(2_000),
   biography: z.string().max(20_000),
   profileImageUrl: optionalUrl,

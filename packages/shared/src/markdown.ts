@@ -33,3 +33,11 @@ export function sanitiseMarkdown(markdown: string): string {
     ALLOW_UNKNOWN_PROTOCOLS: false,
   });
 }
+
+export function sanitiseHomepageHeading(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ["br", "b", "i", "em", "strong", "u", "s", "a"],
+    ALLOWED_ATTR: ["href", "title"],
+    ALLOW_UNKNOWN_PROTOCOLS: false,
+  }).trim();
+}
