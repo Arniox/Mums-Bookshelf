@@ -121,7 +121,7 @@ export class ShelfBookBuilder {
       ),
       coverMaterial,
     );
-    cover.position.set(centerX, 0, -paperThickness / 2 - coverThickness / 2);
+    cover.position.set(centerX, 0, paperThickness / 2 + coverThickness / 2);
     cover.castShadow = true;
     const pageBlock = new THREE.Mesh(
       new THREE.BoxGeometry(
@@ -140,7 +140,7 @@ export class ShelfBookBuilder {
         roughness: 0.92,
       }),
     );
-    pageSurface.position.set(centerX, 0, paperThickness / 2 + 0.002);
+    pageSurface.position.set(centerX, 0, -paperThickness / 2 - 0.002);
     leaf.add(cover, pageBlock, pageSurface);
   }
 
