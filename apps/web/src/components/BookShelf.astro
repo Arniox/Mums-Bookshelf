@@ -499,6 +499,19 @@ const featuredWork = works.find((work) => work.featured);
           hover: 0,
         };
         root.userData.shelfBook = book;
+        const hitTarget = new THREE.Mesh(
+          new THREE.BoxGeometry(width * 1.22, height * 1.06, depth + 0.42),
+          new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0,
+            depthWrite: false,
+            colorWrite: false,
+            side: THREE.DoubleSide,
+          }),
+        );
+        hitTarget.position.z = 0.2;
+        hitTarget.userData.shelfBook = book;
+        root.add(hitTarget);
         scene.add(root);
         books.push(book);
         cursor += width + 0.08;
@@ -515,32 +528,45 @@ const featuredWork = works.find((work) => work.featured);
       scene.add(board);
     });
 
-    const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     let selected: ShelfBook | undefined;
     let hovered: ShelfBook | undefined;
     let pointerDown: { x: number; y: number } | undefined;
     let isDragging = false;
     let frame = 0;
-    const findBook = (object: THREE.Object3D | null) => {
-      let current = object;
-      while (current) {
-        if (current.userData.shelfBook)
-          return current.userData.shelfBook as ShelfBook;
-        current = current.parent;
-      }
-    };
     const bookAt = (event: PointerEvent) => {
       const bounds = canvas.getBoundingClientRect();
       pointer.set(
         ((event.clientX - bounds.left) / bounds.width) * 2 - 1,
         -((event.clientY - bounds.top) / bounds.height) * 2 + 1,
       );
-      raycaster.setFromCamera(pointer, camera);
-      return raycaster
-        .intersectObjects(scene.children, true)
-        .map((intersection) => findBook(intersection.object))
-        .find((book): book is ShelfBook => Boolean(book));
+      scene.updateMatrixWorld(true);
+      camera.updateMatrixWorld();
+      const corner = new THREE.Vector3();
+      return books
+        .map((book) => {
+          const box = new THREE.Box3().setFromObject(book.root);
+          const min = new THREE.Vector2(Infinity, Infinity);
+          const max = new THREE.Vector2(-Infinity, -Infinity);
+          [box.min.x, box.max.x].forEach((x) => {
+            [box.min.y, box.max.y].forEach((y) => {
+              [box.min.z, box.max.z].forEach((z) => {
+                corner.set(x, y, z).project(camera);
+                min.min(corner);
+                max.max(corner);
+              });
+            });
+          });
+          return { book, min, max, distance: camera.position.distanceTo(book.root.position) };
+        })
+        .filter(
+          ({ min, max }) =>
+            pointer.x >= min.x &&
+            pointer.x <= max.x &&
+            pointer.y >= min.y &&
+            pointer.y <= max.y,
+        )
+        .sort((left, right) => left.distance - right.distance)[0]?.book;
     };
     const select = (book: ShelfBook) => {
       selected = book;
