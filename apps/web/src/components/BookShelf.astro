@@ -202,11 +202,7 @@ const featuredWork = works.find((work) => work.featured);
     });
   };
 
-  const makeTitleTexture = (
-    title: string,
-    accent: string,
-    style: string,
-  ) => {
+  const makeTitleTexture = (title: string, accent: string, style: string) => {
     const textureCanvas = document.createElement("canvas");
     textureCanvas.width = 1536;
     textureCanvas.height = 2304;
@@ -233,7 +229,7 @@ const featuredWork = works.find((work) => work.featured);
     context.save();
     context.translate(256, 390);
     context.rotate(-Math.PI / 2);
-    context.font = "700 118px 'Arial Narrow', Arial, sans-serif";
+    context.font = "700 128px 'Arial Narrow', Arial, sans-serif";
     const titleWidth = context.measureText(title).width;
     const titleScale = Math.min(1, 500 / titleWidth);
     context.scale(titleScale, 1);
