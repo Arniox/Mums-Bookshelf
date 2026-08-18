@@ -1051,15 +1051,8 @@ textarea {
   font: 1.3rem/1.85 var(--serif);
 }
 
-.story-content
-  > div
-  > p:first-of-type:not([data-drop-cap="false"]):not(
-    [data-scene-break="true"]
-  )::first-letter,
-.rich-story-canvas
-  > p:first-of-type:not([data-drop-cap="false"]):not(
-    [data-scene-break="true"]
-  )::first-letter {
+.story-content [data-drop-cap="true"],
+.rich-story-canvas [data-drop-cap="true"] {
   float: left;
   margin: 0.1rem 0.15rem -0.1rem 0;
   color: var(--plum);
@@ -1726,14 +1719,25 @@ fieldset {
 .rich-story-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: 0.5rem;
   padding: 0.5rem;
   border-bottom: 1px solid var(--line);
   background: rgba(91, 48, 70, 0.06);
 }
+.rich-story-tool-group {
+  display: flex;
+  gap: 0.25rem;
+  padding-right: 0.5rem;
+  border-right: 1px solid var(--line);
+}
+.rich-story-tool-group:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
 .rich-story-toolbar button {
+  min-width: 34px;
   min-height: 34px;
-  padding: 0.3rem 0.55rem;
+  padding: 0.3rem 0.45rem;
   border: 1px solid var(--line);
   border-radius: 3px;
   color: var(--ink);
@@ -1756,19 +1760,9 @@ fieldset {
 .rich-story-canvas p {
   margin: 0 0 1.85rem;
 }
-.rich-story-canvas > p:first-child::first-letter {
-  float: left;
-  margin: 0.1rem 0.15rem -0.1rem 0;
-  color: var(--plum);
-  font-size: 4.4rem;
-  line-height: 0.8;
-}
 .rich-story-canvas h2 {
   margin: 3.5rem 0 1rem;
   font-size: 2.5rem;
-}
-.story-drop-cap-control {
-  margin-top: 0.7rem;
 }
 .rich-story-canvas:focus {
   box-shadow: inset 0 0 0 2px rgba(91, 48, 70, 0.2);

@@ -1,6 +1,7 @@
 const allowedTags = new Set([
   "p",
   "br",
+  "span",
   "em",
   "strong",
   "u",
@@ -169,7 +170,11 @@ function normaliseNode(node: Node, document: Document): Node[] {
     tagName !== "del" &&
     /text-decoration(?:-line)?\s*:[^;]*(?:line-through|strike)/u.test(style);
 
-  if (tag === "span" || tag === "font" || !allowedTags.has(tag)) {
+  if (
+    tag === "font" ||
+    !allowedTags.has(tag) ||
+    (tag === "span" && source.dataset.dropCap !== "true")
+  ) {
     const fragment = document.createDocumentFragment();
     appendChildren(source, fragment, document);
     return [
@@ -185,6 +190,8 @@ function normaliseNode(node: Node, document: Document): Node[] {
   }
 
   const element = document.createElement(tag);
+  if (tag === "span" && source.dataset.dropCap === "true")
+    element.dataset.dropCap = "true";
   if (tag === "a") {
     const href = source.getAttribute("href");
     if (isSafeLink(href)) element.setAttribute("href", href!.trim());

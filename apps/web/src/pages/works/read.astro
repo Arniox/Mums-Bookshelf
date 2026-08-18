@@ -59,6 +59,7 @@ const settings = await getPublicSettings();
     const allowedTags = new Set([
       "P",
       "BR",
+      "SPAN",
       "EM",
       "STRONG",
       "U",
@@ -83,7 +84,7 @@ const settings = await getPublicSettings();
       }
       [...element.attributes].forEach((attribute) => {
         if (
-          (attribute.name === "data-indent" ||
+          attribute.name === "data-indent" ||
             attribute.name === "data-first-line-indent" ||
             attribute.name === "data-drop-cap" ||
             attribute.name === "data-scene-break") &&
