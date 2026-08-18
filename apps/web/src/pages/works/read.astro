@@ -27,7 +27,10 @@ const settings = await getPublicSettings();
     type Work,
   } from "@mums-bookshelf/shared";
   import { getRuntimePublicWork } from "../../lib/runtimeContent";
-  import { normaliseStoryHtml } from "../../lib/wordPaste";
+  import {
+    normaliseStoryHtml,
+    storyTextToEditorHtml,
+  } from "../../lib/wordPaste";
 
   const container = document.querySelector<HTMLElement>("[data-runtime-work]");
   const base = import.meta.env.BASE_URL;
@@ -48,7 +51,10 @@ const settings = await getPublicSettings();
 
   const safeStoryFragment = (story: string) => {
     const template = document.createElement("template");
-    template.innerHTML = normaliseStoryHtml(story, document);
+    const storyHtml = /<\/?[a-z][^>]*>/iu.test(story)
+      ? story
+      : storyTextToEditorHtml(story, document);
+    template.innerHTML = normaliseStoryHtml(storyHtml, document);
     const allowedTags = new Set([
       "P",
       "BR",

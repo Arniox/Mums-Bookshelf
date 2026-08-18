@@ -262,6 +262,14 @@ describe("public library", () => {
       wordHtmlToStoryHtml("<p>###</p><p>The next passage.</p>", document),
     ).toBe('<p data-scene-break="true">###</p><p>The next passage.</p>');
     expect(
+      storyTextToEditorHtml(
+        "An opening passage.\n\n###\n\nThe next passage.",
+        document,
+      ),
+    ).toBe(
+      '<p>An opening passage.</p><p data-scene-break="true">###</p><p>The next passage.</p>',
+    );
+    expect(
       wordHtmlToStoryHtml(
         '<p data-drop-cap="false">A plain opening.</p>',
         document,

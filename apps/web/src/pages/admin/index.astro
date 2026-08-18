@@ -383,8 +383,8 @@ const authorInitials = settings.authorName
           required
           maxlength="4000"></textarea></label
       >
-      <label data-full-story-field
-        ><span
+      <div data-full-story-field>
+        <span
           >Full story <abbr title="required when Full Story is selected">*</abbr
           ><small
             >Paste directly from Word, then refine it here with the writing
@@ -476,8 +476,8 @@ const authorInitials = settings.authorName
             ></span
           >
         </div>
-        <textarea name="storyContent" rows="15" hidden></textarea></label
-      >
+        <textarea name="storyContent" rows="15" hidden></textarea>
+      </div>
 
       <fieldset>
         <legend>
@@ -1397,6 +1397,21 @@ const authorInitials = settings.authorName
   const notifyRichTextChange = (editor: HTMLElement) =>
     editor.dispatchEvent(new Event("input", { bubbles: true }));
 
+  const captureEditorSelection = (editor: HTMLElement) => {
+    const selection = window.getSelection();
+    if (!selection?.rangeCount || !editor.contains(selection.anchorNode))
+      return undefined;
+    return selection.getRangeAt(0).cloneRange();
+  };
+
+  const restoreEditorSelection = (editor: HTMLElement, range?: Range) => {
+    editor.focus({ preventScroll: true });
+    if (!range) return;
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  };
+
   const insertStoryHtml = (html: string) => {
     const selection = window.getSelection();
     const range =
@@ -1449,9 +1464,13 @@ const authorInitials = settings.authorName
   document
     .querySelectorAll<HTMLButtonElement>("[data-story-command]")
     .forEach((button) => {
-      button.addEventListener("mousedown", (event) => event.preventDefault());
+      let selection: Range | undefined;
+      button.addEventListener("mousedown", (event) => {
+        selection = captureEditorSelection(storyEditor);
+        event.preventDefault();
+      });
       button.addEventListener("click", () => {
-        storyEditor.focus();
+        restoreEditorSelection(storyEditor, selection);
         const command = button.dataset.storyCommand!;
         const value =
           command === "createLink"
@@ -1466,9 +1485,13 @@ const authorInitials = settings.authorName
   document
     .querySelectorAll<HTMLButtonElement>("[data-story-block]")
     .forEach((button) => {
-      button.addEventListener("mousedown", (event) => event.preventDefault());
+      let selection: Range | undefined;
+      button.addEventListener("mousedown", (event) => {
+        selection = captureEditorSelection(storyEditor);
+        event.preventDefault();
+      });
       button.addEventListener("click", () => {
-        storyEditor.focus();
+        restoreEditorSelection(storyEditor, selection);
         executeRichTextCommand("formatBlock", button.dataset.storyBlock!);
         notifyRichTextChange(storyEditor);
       });
@@ -1821,9 +1844,13 @@ const authorInitials = settings.authorName
   settingsForm
     .querySelectorAll<HTMLButtonElement>("[data-homepage-heading-command]")
     .forEach((button) => {
-      button.addEventListener("mousedown", (event) => event.preventDefault());
+      let selection: Range | undefined;
+      button.addEventListener("mousedown", (event) => {
+        selection = captureEditorSelection(homepageHeadingEditor);
+        event.preventDefault();
+      });
       button.addEventListener("click", () => {
-        homepageHeadingEditor.focus();
+        restoreEditorSelection(homepageHeadingEditor, selection);
         executeRichTextCommand(button.dataset.homepageHeadingCommand!);
         notifyRichTextChange(homepageHeadingEditor);
       });
