@@ -226,25 +226,29 @@ const authorInitials = settings.authorName
                       type="button"
                       data-homepage-heading-command="bold"
                       title="Make selected title words bold"
-                      aria-label="Bold selected title words"><strong>B</strong></button
+                      aria-label="Bold selected title words"
+                      ><strong>B</strong></button
                     >
                     <button
                       type="button"
                       data-homepage-heading-command="italic"
                       title="Make selected title words italic"
-                      aria-label="Italic selected title words"><em>I</em></button
+                      aria-label="Italic selected title words"
+                      ><em>I</em></button
                     >
                     <button
                       type="button"
                       data-homepage-heading-command="underline"
                       title="Underline selected title words"
-                      aria-label="Underline selected title words"><u>U</u></button
+                      aria-label="Underline selected title words"
+                      ><u>U</u></button
                     >
                     <button
                       type="button"
                       data-homepage-heading-command="strikeThrough"
                       title="Cross out selected title words"
-                      aria-label="Cross out selected title words"><s>S</s></button
+                      aria-label="Cross out selected title words"
+                      ><s>S</s></button
                     >
                   </div>
                 </div>
@@ -404,21 +408,76 @@ const authorInitials = settings.authorName
             aria-label="Story formatting"
           >
             <div class="rich-story-tool-group" aria-label="Text style">
-              <button type="button" data-story-command="bold" title="Make selected words bold" aria-label="Bold selected words"><strong>B</strong></button>
-              <button type="button" data-story-command="italic" title="Make selected words italic" aria-label="Italic selected words"><em>I</em></button>
-              <button type="button" data-story-command="underline" title="Underline selected words" aria-label="Underline selected words"><u>U</u></button>
-              <button type="button" data-story-command="strikeThrough" title="Cross out selected words" aria-label="Cross out selected words"><s>S</s></button>
+              <button
+                type="button"
+                data-story-command="bold"
+                title="Make selected words bold"
+                aria-label="Bold selected words"><strong>B</strong></button
+              >
+              <button
+                type="button"
+                data-story-command="italic"
+                title="Make selected words italic"
+                aria-label="Italic selected words"><em>I</em></button
+              >
+              <button
+                type="button"
+                data-story-command="underline"
+                title="Underline selected words"
+                aria-label="Underline selected words"><u>U</u></button
+              >
+              <button
+                type="button"
+                data-story-command="strikeThrough"
+                title="Cross out selected words"
+                aria-label="Cross out selected words"><s>S</s></button
+              >
             </div>
             <div class="rich-story-tool-group" aria-label="Structure">
-              <button type="button" data-story-transform="h2" title="Turn this into a chapter heading" aria-label="Chapter heading">H2</button>
-              <button type="button" data-story-list="ul" title="Start a bullet list" aria-label="Bullet list">UL</button>
-              <button type="button" data-story-list="ol" title="Start a numbered list" aria-label="Numbered list">OL</button>
-              <button type="button" data-story-indent="in" title="Move this paragraph in" aria-label="Indent paragraph">&gt;</button>
-              <button type="button" data-story-indent="out" title="Move this paragraph out" aria-label="Outdent paragraph">&lt;</button>
+              <button
+                type="button"
+                data-story-transform="h2"
+                title="Turn this into a chapter heading"
+                aria-label="Chapter heading">H2</button
+              >
+              <button
+                type="button"
+                data-story-list="ul"
+                title="Start a bullet list"
+                aria-label="Bullet list">UL</button
+              >
+              <button
+                type="button"
+                data-story-list="ol"
+                title="Start a numbered list"
+                aria-label="Numbered list">OL</button
+              >
+              <button
+                type="button"
+                data-story-indent="in"
+                title="Move this paragraph in"
+                aria-label="Indent paragraph">&gt;</button
+              >
+              <button
+                type="button"
+                data-story-indent="out"
+                title="Move this paragraph out"
+                aria-label="Outdent paragraph">&lt;</button
+              >
             </div>
             <div class="rich-story-tool-group" aria-label="Story details">
-              <button type="button" data-story-drop-cap title="Toggle a large opening character for the selected text" aria-label="Toggle drop cap for selected text">Aa</button>
-              <button type="button" data-story-pause title="Add an editable story pause" aria-label="Scene break">***</button>
+              <button
+                type="button"
+                data-story-drop-cap
+                title="Toggle a large opening character for the selected text"
+                aria-label="Toggle drop cap for selected text">Aa</button
+              >
+              <button
+                type="button"
+                data-story-pause
+                title="Add an editable story pause"
+                aria-label="Scene break">***</button
+              >
             </div>
           </div>
           <div
@@ -1119,12 +1178,6 @@ const authorInitials = settings.authorName
     }
   };
 
-  const firstStoryParagraph = () =>
-    Array.from(storyEditor.children).find(
-      (element) =>
-        element.tagName === "P" && element.dataset.sceneBreak !== "true",
-    ) as HTMLElement | undefined;
-
   const ensureStoryDropCap = (html: string) => {
     const template = document.createElement("template");
     template.innerHTML = normaliseStoryHtml(html, document);
@@ -1132,10 +1185,14 @@ const authorInitials = settings.authorName
       return template.innerHTML;
     const paragraph = Array.from(template.content.children).find(
       (element) =>
-        element.tagName === "P" && element.getAttribute("data-scene-break") !== "true",
+        element.tagName === "P" &&
+        element.getAttribute("data-scene-break") !== "true",
     );
     if (!paragraph) return template.innerHTML;
-    const textNodes = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT);
+    const textNodes = document.createTreeWalker(
+      paragraph,
+      NodeFilter.SHOW_TEXT,
+    );
     let textNode = textNodes.nextNode() as Text | null;
     while (textNode) {
       const index = textNode.data.search(/\S/u);
@@ -1354,7 +1411,8 @@ const authorInitials = settings.authorName
   };
 
   const syncStoryEditor = (normalise = false) => {
-    if (normalise) storyEditor.innerHTML = ensureStoryDropCap(storyEditor.innerHTML);
+    if (normalise)
+      storyEditor.innerHTML = ensureStoryDropCap(storyEditor.innerHTML);
     updateStoryPauseMarkers();
     fullStoryField.value = storyEditor.innerHTML.trim();
     fullStoryField.dispatchEvent(new Event("input", { bubbles: true }));
@@ -1565,11 +1623,11 @@ const authorInitials = settings.authorName
         const range = captureEditorSelection(storyEditor);
         const selectedParagraph = storyParagraphAtSelection();
         if (!range || !selectedParagraph) return;
-        const selectedMarker =
-          (range.startContainer.nodeType === Node.ELEMENT_NODE
+        const selectedMarker = (
+          range.startContainer.nodeType === Node.ELEMENT_NODE
             ? (range.startContainer as HTMLElement)
             : range.startContainer.parentElement
-          )?.closest<HTMLElement>("[data-drop-cap='true']");
+        )?.closest<HTMLElement>("[data-drop-cap='true']");
         if (selectedMarker && storyEditor.contains(selectedMarker)) {
           selectedMarker.replaceWith(...selectedMarker.childNodes);
         } else if (!range.collapsed) {
