@@ -18,7 +18,7 @@ export async function listPublicWorks(context: Context<AppEnvironment>) {
   const type = context.req.query("type")?.trim();
   const page = Math.max(1, Number(context.req.query("page") || 1));
   const pageSize = Math.min(
-    50,
+    250,
     Math.max(1, Number(context.req.query("pageSize") || 24)),
   );
   const conditions = ["status = 'published'"];

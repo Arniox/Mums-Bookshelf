@@ -18,7 +18,7 @@ async function get<T>(path: string): Promise<T> {
 }
 
 export async function getRuntimePublicWorks(): Promise<Work[]> {
-  const result = await get<{ items: Work[] }>("/api/v1/works?pageSize=50");
+  const result = await get<{ items: Work[] }>("/api/v1/works?pageSize=250");
   return result.items;
 }
 
