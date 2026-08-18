@@ -13,10 +13,12 @@ export class ShelfBookBuilder {
   build(layout: ShelfBookLayout, home: THREE.Vector3): ShelfBook {
     const { appearance, depth, height, width } = layout;
     const root = new THREE.Group();
-    const frontCover = new THREE.Group();
-    const backCover = new THREE.Group();
-    const openSpread = new THREE.Group();
+    const leftLeaf = new THREE.Group();
+    const rightLeaf = new THREE.Group();
     const coverThickness = 0.08;
+    const paperThickness = Math.max(0.12, depth * 0.38);
+    const pageWidth = THREE.MathUtils.clamp(height * 0.38, 0.72, 1.02);
+    const pageHeight = height * 0.9;
     const coverMaterial = new THREE.MeshStandardMaterial({
       color: appearance.primaryColor,
       roughness: appearance.materialStyle === "leather" ? 0.38 : 0.68,
@@ -27,7 +29,7 @@ export class ShelfBookBuilder {
       roughness: 0.84,
     });
     const spine = new THREE.Mesh(
-      new THREE.BoxGeometry(width, height, depth),
+      new THREE.BoxGeometry(width, height, coverThickness),
       coverMaterial,
     );
     spine.castShadow = true;
@@ -48,52 +50,55 @@ export class ShelfBookBuilder {
         depthWrite: false,
       }),
     );
-    title.position.z = depth / 2 + 0.006;
+    title.position.z = coverThickness / 2 + 0.006;
     title.renderOrder = 1;
     root.add(
       title,
-      this.makeEmbossedBadge(width, height, appearance.accentColor, depth / 2),
+      this.makeEmbossedBadge(
+        width,
+        height,
+        appearance.accentColor,
+        coverThickness / 2,
+      ),
     );
 
-    const pageWidth = THREE.MathUtils.clamp(height * 0.5, 0.9, 1.38);
-    const pageHeight = height * 0.84;
-    openSpread.position.z = -depth / 2 + coverThickness;
-    this.addOpenLeaf(
-      frontCover,
+    this.addLeaf(
+      leftLeaf,
       -1,
       pageWidth,
       pageHeight,
       coverThickness,
       coverMaterial,
       pageMaterial,
+      paperThickness,
     );
-    this.addOpenLeaf(
-      backCover,
+    this.addLeaf(
+      rightLeaf,
       1,
       pageWidth,
       pageHeight,
       coverThickness,
       coverMaterial,
       pageMaterial,
+      paperThickness,
     );
-    openSpread.add(frontCover, backCover);
-    openSpread.visible = false;
-    root.add(openSpread);
+    leftLeaf.rotation.y = -Math.PI / 2;
+    rightLeaf.rotation.y = Math.PI / 2;
+    root.add(leftLeaf, rightLeaf);
 
     root.position.copy(home);
     root.rotation.z = THREE.MathUtils.degToRad(appearance.lean);
     return new ShelfBook({
       root,
-      frontCover,
-      backCover,
-      openSpread,
+      leftLeaf,
+      rightLeaf,
       home,
       homeLean: root.rotation.z,
       url: layout.url,
     });
   }
 
-  private addOpenLeaf(
+  private addLeaf(
     leaf: THREE.Group,
     direction: -1 | 1,
     pageWidth: number,
@@ -101,8 +106,9 @@ export class ShelfBookBuilder {
     coverThickness: number,
     coverMaterial: THREE.MeshStandardMaterial,
     pageMaterial: THREE.MeshStandardMaterial,
+    paperThickness: number,
   ) {
-    const centerX = direction * pageWidth * 0.5;
+    const centerX = direction * (pageWidth * 0.5 - 0.025);
     const cover = new THREE.Mesh(
       new THREE.BoxGeometry(
         pageWidth + coverThickness,
@@ -111,13 +117,17 @@ export class ShelfBookBuilder {
       ),
       coverMaterial,
     );
-    cover.position.set(centerX, 0, 0);
+    cover.position.set(centerX, 0, -paperThickness / 2 - coverThickness / 2);
     cover.castShadow = true;
     const pageBlock = new THREE.Mesh(
-      new THREE.BoxGeometry(pageWidth * 0.96, pageHeight * 0.96, 0.1),
+      new THREE.BoxGeometry(
+        pageWidth * 0.96,
+        pageHeight * 0.96,
+        paperThickness,
+      ),
       pageMaterial,
     );
-    pageBlock.position.set(centerX, 0, -0.09);
+    pageBlock.position.set(centerX, 0, 0);
     pageBlock.castShadow = true;
     const pageSurface = new THREE.Mesh(
       new THREE.PlaneGeometry(pageWidth * 0.91, pageHeight * 0.91),
@@ -126,8 +136,7 @@ export class ShelfBookBuilder {
         roughness: 0.92,
       }),
     );
-    pageSurface.rotation.y = Math.PI;
-    pageSurface.position.set(centerX, 0, -0.145);
+    pageSurface.position.set(centerX, 0, paperThickness / 2 + 0.002);
     leaf.add(cover, pageBlock, pageSurface);
   }
 

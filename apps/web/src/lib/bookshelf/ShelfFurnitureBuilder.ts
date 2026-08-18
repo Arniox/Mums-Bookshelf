@@ -23,14 +23,14 @@ export class ShelfFurnitureBuilder {
       new THREE.BoxGeometry(options.shelfWidth, options.cabinetHeight, 0.42),
       wood,
     );
-    back.position.set(0, options.cabinetHeight / 2, -0.72);
+    back.position.set(0, options.cabinetHeight / 2, -1.15);
     back.receiveShadow = true;
     furniture.add(back);
 
     [-options.shelfWidth / 2 + 0.22, options.shelfWidth / 2 - 0.22].forEach(
       (x) => {
         const side = new THREE.Mesh(
-          new THREE.BoxGeometry(0.45, options.cabinetHeight + 0.5, 1.3),
+          new THREE.BoxGeometry(0.45, options.cabinetHeight + 0.5, 2.25),
           woodEdge,
         );
         side.position.set(x, options.cabinetHeight / 2, 0);
@@ -44,7 +44,7 @@ export class ShelfFurnitureBuilder {
         new THREE.BoxGeometry(
           options.shelfWidth - 0.42,
           options.boardThickness,
-          1.45,
+          2.35,
         ),
         woodEdge,
       );

@@ -2,9 +2,8 @@ import * as THREE from "three";
 
 export type ShelfBookOptions = {
   root: THREE.Group;
-  frontCover: THREE.Group;
-  backCover: THREE.Group;
-  openSpread: THREE.Group;
+  leftLeaf: THREE.Group;
+  rightLeaf: THREE.Group;
   home: THREE.Vector3;
   homeLean: number;
   url: string;
@@ -12,9 +11,8 @@ export type ShelfBookOptions = {
 
 export class ShelfBook {
   readonly root: THREE.Group;
-  readonly frontCover: THREE.Group;
-  readonly backCover: THREE.Group;
-  readonly openSpread: THREE.Group;
+  readonly leftLeaf: THREE.Group;
+  readonly rightLeaf: THREE.Group;
   readonly home: THREE.Vector3;
   readonly homeLean: number;
   readonly url: string;
@@ -27,9 +25,8 @@ export class ShelfBook {
 
   constructor(options: ShelfBookOptions) {
     this.root = options.root;
-    this.frontCover = options.frontCover;
-    this.backCover = options.backCover;
-    this.openSpread = options.openSpread;
+    this.leftLeaf = options.leftLeaf;
+    this.rightLeaf = options.rightLeaf;
     this.home = options.home;
     this.homeLean = options.homeLean;
     this.url = options.url;
@@ -66,14 +63,8 @@ export class ShelfBook {
       this.targetPosition.y += this.hover * 0.24;
       this.targetPosition.z += this.hover * 0.18;
     }
-    this.openSpread.visible = this.pull > 0.01;
-    this.openSpread.scale.x = this.pull;
     this.root.position.lerp(this.targetPosition, 0.11);
-    this.root.rotation.y = THREE.MathUtils.lerp(
-      this.root.rotation.y,
-      this.isOpen ? Math.PI * this.pull : 0,
-      0.1,
-    );
+    this.root.rotation.y = THREE.MathUtils.lerp(this.root.rotation.y, 0, 0.1);
     this.root.rotation.z = THREE.MathUtils.lerp(
       this.root.rotation.z,
       this.isOpen ? this.homeLean * (1 - this.pull) : this.homeLean,
@@ -82,14 +73,14 @@ export class ShelfBook {
     if (!this.isOpen) {
       this.root.rotation.x = THREE.MathUtils.lerp(this.root.rotation.x, 0, 0.1);
     }
-    this.frontCover.rotation.y = THREE.MathUtils.lerp(
-      this.frontCover.rotation.y,
-      this.isOpen ? -0.08 * this.pull : 0,
+    this.leftLeaf.rotation.y = THREE.MathUtils.lerp(
+      this.leftLeaf.rotation.y,
+      (-Math.PI / 2) * (1 - this.pull),
       0.1,
     );
-    this.backCover.rotation.y = THREE.MathUtils.lerp(
-      this.backCover.rotation.y,
-      this.isOpen ? 0.08 * this.pull : 0,
+    this.rightLeaf.rotation.y = THREE.MathUtils.lerp(
+      this.rightLeaf.rotation.y,
+      (Math.PI / 2) * (1 - this.pull),
       0.1,
     );
   }
