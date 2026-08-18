@@ -62,6 +62,16 @@ describe("shared domain logic", () => {
     expect(result).not.toContain("javascript:");
   });
 
+  it("marks hash-only story paragraphs as scene breaks", () => {
+    expect(
+      sanitiseMarkdown(
+        '<p data-first-line-indent="medium">###</p><p>The next passage.</p>',
+      ),
+    ).toBe(
+      '<p data-first-line-indent="medium" data-scene-break="true">###</p><p>The next passage.</p>',
+    );
+  });
+
   it("sanitises rich homepage headings while retaining inline formatting", () => {
     const result = sanitiseHomepageHeading(
       'Stories for the <i>quietly curious</i><script>alert(1)</script><a href="javascript:alert(1)">.</a>',

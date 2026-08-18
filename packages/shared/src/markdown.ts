@@ -1,6 +1,13 @@
 import DOMPurify from "isomorphic-dompurify";
 import { marked } from "marked";
 
+function markStorySceneBreaks(html: string): string {
+  return html.replace(
+    /<p(?![^>]*\bdata-scene-break\s*=)([^>]*)>(\s*#{2,}\s*)<\/p>/giu,
+    '<p$1 data-scene-break="true">$2</p>',
+  );
+}
+
 export function sanitiseMarkdown(markdown: string): string {
   const protocolSafeMarkdown = markdown.replace(
     /\b(?:javascript|vbscript|data):/giu,
@@ -11,7 +18,7 @@ export function sanitiseMarkdown(markdown: string): string {
     gfm: true,
     breaks: false,
   });
-  return DOMPurify.sanitize(raw, {
+  const sanitised = DOMPurify.sanitize(raw, {
     ALLOWED_TAGS: [
       "p",
       "br",
@@ -32,4 +39,5 @@ export function sanitiseMarkdown(markdown: string): string {
     ALLOWED_ATTR: ["href", "title", "target", "rel"],
     ALLOW_UNKNOWN_PROTOCOLS: false,
   });
+  return markStorySceneBreaks(sanitised);
 }
