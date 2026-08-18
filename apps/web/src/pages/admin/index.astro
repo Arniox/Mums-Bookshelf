@@ -227,32 +227,28 @@ const authorInitials = settings.authorName
                       data-homepage-heading-command="bold"
                       title="Make selected title words bold"
                       aria-label="Bold selected title words"
-                      aria-pressed="false"
-                      ><strong>B</strong></button
+                      aria-pressed="false"><strong>B</strong></button
                     >
                     <button
                       type="button"
                       data-homepage-heading-command="italic"
                       title="Make selected title words italic"
                       aria-label="Italic selected title words"
-                      aria-pressed="false"
-                      ><em>I</em></button
+                      aria-pressed="false"><em>I</em></button
                     >
                     <button
                       type="button"
                       data-homepage-heading-command="underline"
                       title="Underline selected title words"
                       aria-label="Underline selected title words"
-                      aria-pressed="false"
-                      ><u>U</u></button
+                      aria-pressed="false"><u>U</u></button
                     >
                     <button
                       type="button"
                       data-homepage-heading-command="strikeThrough"
                       title="Cross out selected title words"
                       aria-label="Cross out selected title words"
-                      aria-pressed="false"
-                      ><s>S</s></button
+                      aria-pressed="false"><s>S</s></button
                     >
                   </div>
                 </div>
@@ -2066,10 +2062,7 @@ const authorInitials = settings.authorName
     executeRichTextCommand("insertText", text);
     syncHomepageHeading();
   });
-  watchRichTextToolbar(
-    homepageHeadingEditor,
-    "data-homepage-heading-command",
-  );
+  watchRichTextToolbar(homepageHeadingEditor, "data-homepage-heading-command");
   settingsForm
     .querySelectorAll<HTMLButtonElement>("[data-homepage-heading-command]")
     .forEach((button) => {
