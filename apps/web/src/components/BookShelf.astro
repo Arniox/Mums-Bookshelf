@@ -347,6 +347,8 @@ const featuredWork = works.find((work) => work.featured);
       const root = new THREE.Group();
       const frontCover = new THREE.Group();
       const backCover = new THREE.Group();
+      const coverThickness = 0.11;
+      const pageDepth = Math.max(0.16, depth - coverThickness * 2);
       const bookMaterial = new THREE.MeshStandardMaterial({
         color: appearance.primaryColor,
         roughness: appearance.materialStyle === "leather" ? 0.38 : 0.68,
@@ -357,33 +359,42 @@ const featuredWork = works.find((work) => work.featured);
         roughness: 0.9,
       });
       const pages = new THREE.Mesh(
-        new THREE.BoxGeometry(width - 0.13, height - 0.14, depth - 0.12),
+        new THREE.BoxGeometry(width - 0.12, height - 0.14, pageDepth),
         pageMaterial,
       );
-      pages.position.z = -0.01;
       pages.castShadow = true;
       root.add(pages);
+
+      // Both covers hinge at the spine, which keeps the page block enclosed.
       frontCover.position.x = -width / 2;
       const front = new THREE.Mesh(
-        new THREE.BoxGeometry(width, height, 0.1),
+        new THREE.BoxGeometry(width, height, coverThickness),
         bookMaterial,
       );
-      front.position.set(width / 2, 0, depth / 2);
+      front.position.set(
+        width / 2,
+        0,
+        pageDepth / 2 + coverThickness / 2,
+      );
       front.castShadow = true;
       frontCover.add(front);
-      backCover.position.x = width / 2;
+      backCover.position.x = -width / 2;
       const rear = new THREE.Mesh(
-        new THREE.BoxGeometry(width, height, 0.1),
+        new THREE.BoxGeometry(width, height, coverThickness),
         bookMaterial,
       );
-      rear.position.set(-width / 2, 0, -depth / 2);
+      rear.position.set(
+        width / 2,
+        0,
+        -(pageDepth / 2 + coverThickness / 2),
+      );
       rear.castShadow = true;
       backCover.add(rear);
       const spine = new THREE.Mesh(
-        new THREE.BoxGeometry(width, height, 0.12),
+        new THREE.BoxGeometry(coverThickness, height, depth),
         bookMaterial,
       );
-      spine.position.z = depth / 2 + 0.055;
+      spine.position.x = -width / 2;
       spine.castShadow = true;
       root.add(frontCover, backCover, spine);
       const titleTexture = makeTitleTexture(
@@ -400,11 +411,11 @@ const featuredWork = works.find((work) => work.featured);
           depthWrite: false,
         }),
       );
-      title.position.z = depth / 2 + 0.117;
+      title.position.z = pageDepth / 2 + coverThickness + 0.006;
       root.add(title);
       const home = new THREE.Vector3(
         cursor + width / 2,
-        shelfHeights[row]! + height / 2,
+        shelfHeights[row]! + 0.14 + height / 2 + 0.025,
         0.2,
       );
       root.position.copy(home);
@@ -555,7 +566,7 @@ const featuredWork = works.find((work) => work.featured);
         );
         book.backCover.rotation.y = THREE.MathUtils.lerp(
           book.backCover.rotation.y,
-          book.open ? 0.52 : 0,
+          book.open ? 1.18 : 0,
           0.1,
         );
       });
