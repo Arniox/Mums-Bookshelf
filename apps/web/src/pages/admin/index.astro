@@ -1385,14 +1385,15 @@ const authorInitials = settings.authorName
     fullStoryField.value = storyEditor.innerHTML.trim();
     fullStoryField.dispatchEvent(new Event("input", { bubbles: true }));
   };
-  const executeRichTextCommand = (command: string, value?: string) =>
-    (
-      Reflect.get(document, "execCommand") as (
-        commandId: string,
-        showUi?: boolean,
-        value?: string,
-      ) => boolean
-    )(command, false, value);
+  const executeRichTextCommand = (command: string, value?: string) => {
+    const execCommand = Reflect.get(document, "execCommand") as (
+      this: Document,
+      commandId: string,
+      showUi?: boolean,
+      value?: string,
+    ) => boolean;
+    return execCommand.call(document, command, false, value);
+  };
 
   const notifyRichTextChange = (editor: HTMLElement) =>
     editor.dispatchEvent(new Event("input", { bubbles: true }));
@@ -1476,7 +1477,8 @@ const authorInitials = settings.authorName
           command === "createLink"
             ? prompt("Paste the link address (https://…)")
             : undefined;
-        if (command === "insertHorizontalRule") insertStoryHtml("<p>###</p>");
+        if (command === "insertHorizontalRule")
+          executeRichTextCommand("insertHTML", "<p>###</p>");
         else if (command !== "createLink" || value)
           executeRichTextCommand(command, value || undefined);
         notifyRichTextChange(storyEditor);
