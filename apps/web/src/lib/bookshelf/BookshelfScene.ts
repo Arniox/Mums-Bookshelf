@@ -113,16 +113,16 @@ export class BookshelfScene {
   private addLighting() {
     this.keyLight = new THREE.SpotLight(
       "#ffe2ad",
-      110,
+      180,
       0,
       Math.PI / 3,
       0.55,
       1.2,
     );
     this.keyLight.position.set(
-      -this.shelfWidth * 1.8,
+      -this.shelfWidth * 1.5,
       this.cabinetHeight / 2,
-      10,
+      20,
     );
     this.keyLightTarget.position.set(0, this.cabinetHeight / 2, 0);
     this.keyLight.target = this.keyLightTarget;
