@@ -5,7 +5,10 @@ import { CanvasBookPicker } from "./CanvasBookPicker";
 import { ShelfBook } from "./ShelfBook";
 import { ShelfBookBuilder } from "./ShelfBookBuilder";
 import { ShelfFurnitureBuilder } from "./ShelfFurnitureBuilder";
-import { getShelfViewportHeight, ShelfLayoutBuilder } from "./ShelfLayoutBuilder";
+import {
+  getShelfViewportHeight,
+  ShelfLayoutBuilder,
+} from "./ShelfLayoutBuilder";
 
 type BookshelfBuilderOptions = {
   canvas: HTMLCanvasElement;
