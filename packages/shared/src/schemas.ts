@@ -79,6 +79,8 @@ const workInputBaseSchema = workBaseSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  expectedUpdatedAt: z.string().datetime({ offset: true }).optional(),
 });
 
 export const workInputSchema =
