@@ -4,12 +4,15 @@ import { success } from "./http";
 import type { AppEnvironment } from "./types";
 
 export async function exportData(context: Context<AppEnvironment>) {
-  const [works, settings, comments] = await Promise.all([
+  const [works, settings, comments, workAuditLog] = await Promise.all([
     context.env.DB.prepare("SELECT * FROM works ORDER BY created_at").all(),
     context.env.DB.prepare("SELECT * FROM site_settings WHERE id = 1").first(),
     context.env.DB.prepare(
       `SELECT id, work_id, display_name, body, moderation_status, created_at, approved_at, parent_comment_id
        FROM comments WHERE moderation_status = 'approved' AND deleted_at IS NULL ORDER BY created_at`,
+    ).all(),
+    context.env.DB.prepare(
+      "SELECT * FROM work_audit_log ORDER BY occurred_at, id",
     ).all(),
   ]);
   context.header(
@@ -17,10 +20,11 @@ export async function exportData(context: Context<AppEnvironment>) {
     `attachment; filename="author-library-${new Date().toISOString().slice(0, 10)}.json"`,
   );
   return success(context, {
-    formatVersion: 2,
+    formatVersion: 3,
     exportedAt: new Date().toISOString(),
     works: works.results.map((row) => rowToWork(row, true)),
     settings: settings ? rowToSettings(settings) : {},
     comments: comments.results,
+    workAuditLog: workAuditLog.results,
   });
 }
