@@ -22,7 +22,7 @@ const boardThickness = 0.28;
 export class BookshelfBuilder {
   private readonly canvas: HTMLCanvasElement;
   private readonly container: HTMLElement;
-  private readonly hint?: HTMLElement;
+  private readonly hint: HTMLElement | undefined;
   private readonly links: readonly HTMLAnchorElement[];
   private readonly books: ShelfBook[] = [];
   private hovered: ShelfBook | undefined;
