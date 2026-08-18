@@ -269,7 +269,7 @@ const featuredWork = works.find((work) => work.featured);
     renderer.shadowMap.type = THREE.PCFShadowMap;
 
     const scene = new THREE.Scene();
-  scene.background = new THREE.Color("#482718");
+    scene.background = new THREE.Color("#482718");
     const camera = new THREE.PerspectiveCamera(33, 1, 0.1, 100);
     camera.position.set(0, 4.9, 12.8);
     camera.lookAt(0, 2.7, 0);
@@ -521,10 +521,16 @@ const featuredWork = works.find((work) => work.featured);
     const animate = () => {
       frame = window.requestAnimationFrame(animate);
       books.forEach((book) => {
-        book.hover = THREE.MathUtils.lerp(book.hover, book === hovered && !book.open ? 1 : 0, 0.16);
+        book.hover = THREE.MathUtils.lerp(
+          book.hover,
+          book === hovered && !book.open ? 1 : 0,
+          0.16,
+        );
         const target = book.open
           ? new THREE.Vector3(0, 3.25, 2.65)
-          : book.home.clone().add(new THREE.Vector3(0, book.hover * 0.24, book.hover * 0.18));
+          : book.home
+              .clone()
+              .add(new THREE.Vector3(0, book.hover * 0.24, book.hover * 0.18));
         book.root.position.lerp(target, 0.11);
         book.root.rotation.y = THREE.MathUtils.lerp(
           book.root.rotation.y,
