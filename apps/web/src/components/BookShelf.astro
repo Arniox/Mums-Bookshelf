@@ -439,7 +439,13 @@ const featuredWork = works.find((work) => work.featured);
         root.add(title);
         const home = new THREE.Vector3(
           cursor + width / 2,
-          shelfHeights[row]! + boardThickness / 2 + height / 2 + 0.025,
+          shelfHeights[row]! +
+            boardThickness / 2 +
+            height / 2 +
+            Math.abs(
+              Math.sin(THREE.MathUtils.degToRad(appearance.lean)) * width * 0.5,
+            ) +
+            0.025,
           0.2,
         );
         root.position.copy(home);
