@@ -325,7 +325,7 @@ export async function patchWork(context: Context<AppEnvironment>) {
 export async function archiveWork(context: Context<AppEnvironment>) {
   const expectedUpdatedAt = context.req.header("If-Unmodified-Since");
   if (!expectedUpdatedAt) throw staleWorkError();
-  const id = context.req.param("id");
+  const id = context.req.param("id")!;
   const existing = await context.env.DB.prepare(
     "SELECT * FROM works WHERE id = ?",
   )
