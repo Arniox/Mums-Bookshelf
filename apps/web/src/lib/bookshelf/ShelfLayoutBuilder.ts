@@ -19,6 +19,14 @@ export type ShelfLayout = {
   shelfHeights: number[];
 };
 
+export function getShelfViewportHeight(
+  rowCount: number,
+  compact: boolean,
+): number {
+  const baseHeight = compact ? 390 : 530;
+  return baseHeight + Math.max(rowCount - 1, 0) * 330;
+}
+
 type ShelfLayoutBuilderOptions = {
   boardThickness: number;
   shelfPadding: number;

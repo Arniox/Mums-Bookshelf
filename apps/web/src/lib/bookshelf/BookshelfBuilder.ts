@@ -5,7 +5,7 @@ import { CanvasBookPicker } from "./CanvasBookPicker";
 import { ShelfBook } from "./ShelfBook";
 import { ShelfBookBuilder } from "./ShelfBookBuilder";
 import { ShelfFurnitureBuilder } from "./ShelfFurnitureBuilder";
-import { ShelfLayoutBuilder } from "./ShelfLayoutBuilder";
+import { getShelfViewportHeight, ShelfLayoutBuilder } from "./ShelfLayoutBuilder";
 
 type BookshelfBuilderOptions = {
   canvas: HTMLCanvasElement;
@@ -140,12 +140,12 @@ export class BookshelfBuilder {
   };
 
   private updateViewportHeight(rowCount: number) {
-    const baseHeight = window.matchMedia("(max-width: 640px)").matches
-      ? 390
-      : 530;
     this.container.style.setProperty(
       "--webgl-shelf-height",
-      `${baseHeight + (rowCount - 1) * 330}px`,
+      `${getShelfViewportHeight(
+        rowCount,
+        window.matchMedia("(max-width: 640px)").matches,
+      )}px`,
     );
   }
 }

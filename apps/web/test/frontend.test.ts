@@ -2,6 +2,10 @@ import { getBookAppearance } from "@mums-bookshelf/shared";
 import { Window } from "happy-dom";
 import { describe, expect, it } from "vitest";
 import { works } from "../src/data/sample";
+import {
+  getShelfViewportHeight,
+  ShelfLayoutBuilder,
+} from "../src/lib/bookshelf/ShelfLayoutBuilder";
 import { matchesWork } from "../src/lib/filterWorks";
 import { localWorkDraftKey, parseLocalWorkDraft } from "../src/lib/localDraft";
 import {
@@ -104,6 +108,41 @@ describe("public library", () => {
     const appearance = getBookAppearance(works[0]!.id);
     expect(appearance.height).toBeGreaterThanOrEqual(184);
     expect(appearance.titlePosition).toBe("middle");
+  });
+
+  it("adds shelves and canvas height for hundreds of books without overflow", () => {
+    const document = new Window().document as unknown as Document;
+    const links = Array.from({ length: 240 }, (_, index) => {
+      const link = document.createElement("a");
+      link.href = `/works/stress-${index}/`;
+      link.dataset.bookTitle = `Stress book ${index}`;
+      return link;
+    });
+    const builder = new ShelfLayoutBuilder({
+      shelfWidth: 15,
+      shelfPadding: 0.65,
+      shelfSpacing: 3.55,
+      boardThickness: 0.28,
+    });
+    const layout = builder.fromLinks(links);
+    const capacity = builder.shelfWidth - builder.shelfPadding * 2;
+
+    expect(layout.rows.length).toBeGreaterThan(1);
+    expect(layout.rows.flat()).toHaveLength(links.length);
+    layout.rows.forEach((row) => {
+      const width = row.reduce(
+        (total, book, index) => total + book.width + (index ? 0.08 : 0),
+        0,
+      );
+      expect(width).toBeLessThanOrEqual(capacity);
+    });
+    expect(layout.shelfHeights).toHaveLength(layout.rows.length);
+    expect(getShelfViewportHeight(layout.rows.length, false)).toBe(
+      530 + (layout.rows.length - 1) * 330,
+    );
+    expect(getShelfViewportHeight(layout.rows.length, false)).toBeGreaterThan(
+      530,
+    );
   });
 
   it("validates local editor drafts before restoring them", () => {
