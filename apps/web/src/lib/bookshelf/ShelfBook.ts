@@ -4,6 +4,7 @@ export type ShelfBookOptions = {
   root: THREE.Group;
   frontCover: THREE.Group;
   backCover: THREE.Group;
+  openSpread: THREE.Group;
   home: THREE.Vector3;
   homeLean: number;
   url: string;
@@ -13,6 +14,7 @@ export class ShelfBook {
   readonly root: THREE.Group;
   readonly frontCover: THREE.Group;
   readonly backCover: THREE.Group;
+  readonly openSpread: THREE.Group;
   readonly home: THREE.Vector3;
   readonly homeLean: number;
   readonly url: string;
@@ -27,6 +29,7 @@ export class ShelfBook {
     this.root = options.root;
     this.frontCover = options.frontCover;
     this.backCover = options.backCover;
+    this.openSpread = options.openSpread;
     this.home = options.home;
     this.homeLean = options.homeLean;
     this.url = options.url;
@@ -63,6 +66,8 @@ export class ShelfBook {
       this.targetPosition.y += this.hover * 0.24;
       this.targetPosition.z += this.hover * 0.18;
     }
+    this.openSpread.visible = this.pull > 0.01;
+    this.openSpread.scale.x = this.pull;
     this.root.position.lerp(this.targetPosition, 0.11);
     this.root.rotation.y = THREE.MathUtils.lerp(
       this.root.rotation.y,
@@ -79,12 +84,12 @@ export class ShelfBook {
     }
     this.frontCover.rotation.y = THREE.MathUtils.lerp(
       this.frontCover.rotation.y,
-      this.isOpen ? -1.18 * this.pull : 0,
+      this.isOpen ? -0.08 * this.pull : 0,
       0.1,
     );
     this.backCover.rotation.y = THREE.MathUtils.lerp(
       this.backCover.rotation.y,
-      this.isOpen ? 1.18 * this.pull : 0,
+      this.isOpen ? 0.08 * this.pull : 0,
       0.1,
     );
   }

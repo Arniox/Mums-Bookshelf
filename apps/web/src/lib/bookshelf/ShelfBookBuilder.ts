@@ -15,50 +15,25 @@ export class ShelfBookBuilder {
     const root = new THREE.Group();
     const frontCover = new THREE.Group();
     const backCover = new THREE.Group();
-    const coverThickness = 0.11;
-    const pageDepth = Math.max(0.16, depth - coverThickness * 2);
+    const openSpread = new THREE.Group();
+    const coverThickness = 0.08;
+    const spineDepth = 0.12;
     const coverMaterial = new THREE.MeshStandardMaterial({
       color: appearance.primaryColor,
       roughness: appearance.materialStyle === "leather" ? 0.38 : 0.68,
       metalness: 0.03,
     });
     const pageMaterial = new THREE.MeshStandardMaterial({
-      color: "#eadfc9",
-      roughness: 0.9,
+      color: "#e9ddc4",
+      roughness: 0.84,
     });
-    const pages = new THREE.Mesh(
-      new THREE.BoxGeometry(width - 0.12, height - 0.14, pageDepth),
-      pageMaterial,
-    );
-    pages.castShadow = true;
-    root.add(pages);
-
-    const coverZ = pageDepth / 2 + coverThickness / 2;
-    frontCover.position.x = -width / 2;
-    const front = new THREE.Mesh(
-      new THREE.BoxGeometry(width, height, coverThickness),
-      coverMaterial,
-    );
-    front.position.set(width / 2, 0, coverZ);
-    front.castShadow = true;
-    frontCover.add(front);
-
-    backCover.position.x = -width / 2;
-    const back = new THREE.Mesh(
-      new THREE.BoxGeometry(width, height, coverThickness),
-      coverMaterial,
-    );
-    back.position.set(width / 2, 0, -coverZ);
-    back.castShadow = true;
-    backCover.add(back);
-
     const spine = new THREE.Mesh(
-      new THREE.BoxGeometry(coverThickness, height, depth),
+      new THREE.BoxGeometry(width, height, spineDepth),
       coverMaterial,
     );
-    spine.position.x = -width / 2;
+    spine.position.z = depth / 2 - spineDepth / 2;
     spine.castShadow = true;
-    root.add(frontCover, backCover, spine);
+    root.add(spine);
 
     const titleTexture = this.titleTextures.create({
       title: layout.title,
@@ -75,17 +50,37 @@ export class ShelfBookBuilder {
         depthWrite: false,
       }),
     );
-    title.position.set(width / 2, 0, coverZ + coverThickness / 2 + 0.006);
+    title.position.z = depth / 2 + 0.006;
     title.renderOrder = 1;
-    frontCover.add(
+    root.add(
       title,
-      this.makeEmbossedBadge(
-        width,
-        height,
-        appearance.accentColor,
-        coverZ + coverThickness / 2,
-      ),
+      this.makeEmbossedBadge(width, height, appearance.accentColor, depth / 2),
     );
+
+    const pageWidth = THREE.MathUtils.clamp(height * 0.5, 0.9, 1.38);
+    const pageHeight = height * 0.84;
+    openSpread.position.z = -depth / 2 + coverThickness;
+    this.addOpenLeaf(
+      frontCover,
+      -1,
+      pageWidth,
+      pageHeight,
+      coverThickness,
+      coverMaterial,
+      pageMaterial,
+    );
+    this.addOpenLeaf(
+      backCover,
+      1,
+      pageWidth,
+      pageHeight,
+      coverThickness,
+      coverMaterial,
+      pageMaterial,
+    );
+    openSpread.add(frontCover, backCover);
+    openSpread.visible = false;
+    root.add(openSpread);
 
     root.position.copy(home);
     root.rotation.z = THREE.MathUtils.degToRad(appearance.lean);
@@ -93,10 +88,49 @@ export class ShelfBookBuilder {
       root,
       frontCover,
       backCover,
+      openSpread,
       home,
       homeLean: root.rotation.z,
       url: layout.url,
     });
+  }
+
+  private addOpenLeaf(
+    leaf: THREE.Group,
+    direction: -1 | 1,
+    pageWidth: number,
+    pageHeight: number,
+    coverThickness: number,
+    coverMaterial: THREE.MeshStandardMaterial,
+    pageMaterial: THREE.MeshStandardMaterial,
+  ) {
+    const centerX = direction * pageWidth * 0.5;
+    const cover = new THREE.Mesh(
+      new THREE.BoxGeometry(
+        pageWidth + coverThickness,
+        pageHeight + coverThickness,
+        coverThickness,
+      ),
+      coverMaterial,
+    );
+    cover.position.set(centerX, 0, 0);
+    cover.castShadow = true;
+    const pageBlock = new THREE.Mesh(
+      new THREE.BoxGeometry(pageWidth * 0.96, pageHeight * 0.96, 0.1),
+      pageMaterial,
+    );
+    pageBlock.position.set(centerX, 0, -0.09);
+    pageBlock.castShadow = true;
+    const pageSurface = new THREE.Mesh(
+      new THREE.PlaneGeometry(pageWidth * 0.91, pageHeight * 0.91),
+      new THREE.MeshStandardMaterial({
+        color: "#f6ecd8",
+        roughness: 0.92,
+      }),
+    );
+    pageSurface.rotation.y = Math.PI;
+    pageSurface.position.set(centerX, 0, -0.145);
+    leaf.add(cover, pageBlock, pageSurface);
   }
 
   private makeEmbossedBadge(
