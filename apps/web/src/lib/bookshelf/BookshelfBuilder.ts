@@ -150,6 +150,7 @@ export class BookshelfBuilder {
       `${getShelfViewportHeight(
         rowCount,
         window.matchMedia("(max-width: 640px)").matches,
+        this.container.getBoundingClientRect().width,
       )}px`,
     );
   }

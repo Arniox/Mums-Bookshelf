@@ -137,11 +137,14 @@ describe("public library", () => {
       expect(width).toBeLessThanOrEqual(capacity);
     });
     expect(layout.shelfHeights).toHaveLength(layout.rows.length);
-    expect(getShelfViewportHeight(layout.rows.length, false)).toBe(
-      530 + (layout.rows.length - 1) * 330,
+    expect(getShelfViewportHeight(layout.rows.length, false, 800)).toBe(
+      530 + (layout.rows.length - 1) * (800 * (3.55 / 15)),
     );
-    expect(getShelfViewportHeight(layout.rows.length, false)).toBeGreaterThan(
-      530,
+    expect(
+      getShelfViewportHeight(layout.rows.length, false, 800),
+    ).toBeGreaterThan(530);
+    expect(getShelfViewportHeight(layout.rows.length, false, 400)).toBeLessThan(
+      getShelfViewportHeight(layout.rows.length, false, 800),
     );
   });
 

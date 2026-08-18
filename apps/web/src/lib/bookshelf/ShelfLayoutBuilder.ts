@@ -22,9 +22,11 @@ export type ShelfLayout = {
 export function getShelfViewportHeight(
   rowCount: number,
   compact: boolean,
+  viewportWidth: number,
 ): number {
   const baseHeight = compact ? 390 : 530;
-  return baseHeight + Math.max(rowCount - 1, 0) * 330;
+  const rowHeight = viewportWidth * (3.55 / 15);
+  return baseHeight + Math.max(rowCount - 1, 0) * rowHeight;
 }
 
 type ShelfLayoutBuilderOptions = {
