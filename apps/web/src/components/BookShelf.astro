@@ -543,7 +543,7 @@ const featuredWork = works.find((work) => work.featured);
       scene.updateMatrixWorld(true);
       camera.updateMatrixWorld();
       const corner = new THREE.Vector3();
-      return books
+      const matches = books
         .map((book) => {
           const box = new THREE.Box3().setFromObject(book.root);
           const min = new THREE.Vector2(Infinity, Infinity);
@@ -557,7 +557,12 @@ const featuredWork = works.find((work) => work.featured);
               });
             });
           });
-          return { book, min, max, distance: camera.position.distanceTo(book.root.position) };
+          return {
+            book,
+            min,
+            max,
+            distance: camera.position.distanceTo(book.root.position),
+          };
         })
         .filter(
           ({ min, max }) =>
@@ -565,8 +570,17 @@ const featuredWork = works.find((work) => work.featured);
             pointer.x <= max.x &&
             pointer.y >= min.y &&
             pointer.y <= max.y,
-        )
-        .sort((left, right) => left.distance - right.distance)[0]?.book;
+        );
+      canvas.dataset.hitDebug = JSON.stringify({
+        pointer: [pointer.x, pointer.y],
+        bounds: books.slice(0, 3).map((book) => {
+          const box = new THREE.Box3().setFromObject(book.root);
+          return [box.min.toArray(), box.max.toArray()];
+        }),
+        matches: matches.length,
+      });
+      return matches.sort((left, right) => left.distance - right.distance)[0]
+        ?.book;
     };
     const select = (book: ShelfBook) => {
       selected = book;
