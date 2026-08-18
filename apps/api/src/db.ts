@@ -45,6 +45,12 @@ export function rowToWork(row: WorkRow, privileged = false): Work {
 export function rowToSettings(row: Record<string, unknown>): PublicSettings {
   return {
     authorName: String(row.author_name),
+    homepageEyebrow: String(
+      row.homepage_eyebrow || "Fiction · Essays · Small observations",
+    ),
+    homepageHeadingHtml: String(
+      row.homepage_heading_html || "Stories for the <em>quietly curious.</em>",
+    ),
     introduction: String(row.introduction),
     biography: String(row.biography),
     ...(row.profile_image_url
