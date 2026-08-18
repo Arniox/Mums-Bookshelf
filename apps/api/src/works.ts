@@ -100,7 +100,9 @@ function insertStatement(
   context: Context<AppEnvironment>,
   id: string,
   work: ReturnType<typeof normaliseWork>,
-  now: string,
+  createdAt: string,
+  updatedAt: string,
+  expectedUpdatedAt?: string,
 ) {
   return context.env.DB.prepare(
     `INSERT INTO works (${workColumns})
@@ -116,7 +118,8 @@ function insertStatement(
        purchase_url = excluded.purchase_url,
        social_post_url = excluded.social_post_url, social_provider = excluded.social_provider,
        social_embed_enabled = excluded.social_embed_enabled, work_image_url = excluded.work_image_url,
-       genres_json = excluded.genres_json, featured = excluded.featured`,
+       genres_json = excluded.genres_json, featured = excluded.featured
+     WHERE works.updated_at = ?`,
   ).bind(
     id,
     work.slug || slugify(work.title),
@@ -124,8 +127,8 @@ function insertStatement(
     work.status,
     work.publicationType,
     work.publishedAt ?? null,
-    now,
-    now,
+    createdAt,
+    updatedAt,
     work.wordCount ?? null,
     work.readingTimeMinutes ?? null,
     work.blurb,
@@ -141,15 +144,57 @@ function insertStatement(
     work.workImageUrl ?? null,
     JSON.stringify(work.genres),
     work.featured ? 1 : 0,
+    expectedUpdatedAt ?? null,
+  );
+}
+
+function auditStatement(
+  context: Context<AppEnvironment>,
+  action: "created" | "updated" | "archived",
+  workId: string,
+  occurredAt: string,
+  previousUpdatedAt: string | undefined,
+  nextUpdatedAt: string,
+  before: unknown,
+  after: unknown,
+) {
+  const user = context.get("user")!;
+  return context.env.DB.prepare(
+    `INSERT INTO work_audit_log (
+       id, work_id, action, actor_user_id, actor_username, request_id,
+       occurred_at, previous_updated_at, next_updated_at, before_json, after_json
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).bind(
+    crypto.randomUUID(),
+    workId,
+    action,
+    user.id,
+    user.username,
+    context.get("requestId"),
+    occurredAt,
+    previousUpdatedAt ?? null,
+    nextUpdatedAt,
+    before ? JSON.stringify(before) : null,
+    JSON.stringify(after),
+  );
+}
+
+function staleWorkError() {
+  return new ApiError(
+    409,
+    "work_outdated",
+    "This work changed in another session. Reopen it to review the latest version before saving.",
   );
 }
 
 export async function createWork(context: Context<AppEnvironment>) {
-  const work = normaliseWork(await parseJsonBody(context));
+  const { expectedUpdatedAt: _expectedUpdatedAt, ...work } = normaliseWork(
+    await parseJsonBody(context),
+  );
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   try {
-    await insertStatement(context, id, work, now).run();
+    await insertStatement(context, id, work, now, now).run();
   } catch (error) {
     if (String(error).includes("UNIQUE"))
       throw new ApiError(
@@ -164,6 +209,16 @@ export async function createWork(context: Context<AppEnvironment>) {
   )
     .bind(id)
     .first();
+  await auditStatement(
+    context,
+    "created",
+    id,
+    now,
+    undefined,
+    now,
+    undefined,
+    rowToWork(created!, true),
+  ).run();
   return success(context, rowToWork(created!, true), 201);
 }
 
@@ -176,15 +231,23 @@ export async function replaceWork(context: Context<AppEnvironment>) {
     .first();
   if (!existing)
     throw new ApiError(404, "work_not_found", "Work was not found.");
-  const work = normaliseWork(await parseJsonBody(context));
+  const { expectedUpdatedAt, ...work } = normaliseWork(
+    await parseJsonBody(context),
+  );
+  if (!expectedUpdatedAt) throw staleWorkError();
   const createdAt = String(existing.created_at);
+  const previous = rowToWork(existing, true);
+  const updatedAt = new Date().toISOString();
   try {
-    await insertStatement(context, id, work, createdAt).run();
-    await context.env.DB.prepare(
-      "UPDATE works SET created_at = ?, updated_at = ? WHERE id = ?",
-    )
-      .bind(createdAt, new Date().toISOString(), id)
-      .run();
+    const result = await insertStatement(
+      context,
+      id,
+      work,
+      createdAt,
+      updatedAt,
+      expectedUpdatedAt,
+    ).run();
+    if (!result.meta.changes) throw staleWorkError();
   } catch (error) {
     if (String(error).includes("UNIQUE"))
       throw new ApiError(
@@ -194,7 +257,20 @@ export async function replaceWork(context: Context<AppEnvironment>) {
       );
     throw error;
   }
-  return getAdminWork(context);
+  const updated = await context.env.DB.prepare("SELECT * FROM works WHERE id = ?")
+    .bind(id)
+    .first();
+  await auditStatement(
+    context,
+    "updated",
+    id,
+    updatedAt,
+    previous.updatedAt,
+    updatedAt,
+    previous,
+    rowToWork(updated!, true),
+  ).run();
+  return success(context, rowToWork(updated!, true));
 }
 
 export async function patchWork(context: Context<AppEnvironment>) {
@@ -211,25 +287,65 @@ export async function patchWork(context: Context<AppEnvironment>) {
       patch.error.issues[0]?.message || "Work is invalid.",
     );
   }
+  const { expectedUpdatedAt, ...patchData } = patch.data;
+  if (!expectedUpdatedAt) throw staleWorkError();
   const existing = rowToWork(row, true);
-  const merged = normaliseWork({ ...existing, ...patch.data });
-  await insertStatement(context, id, merged, existing.createdAt).run();
-  await context.env.DB.prepare(
-    "UPDATE works SET created_at = ?, updated_at = ? WHERE id = ?",
-  )
-    .bind(existing.createdAt, new Date().toISOString(), id)
-    .run();
-  return getAdminWork(context);
+  const merged = normaliseWork({ ...existing, ...patchData });
+  const { expectedUpdatedAt: _mergedExpectedUpdatedAt, ...work } = merged;
+  const updatedAt = new Date().toISOString();
+  const result = await insertStatement(
+    context,
+    id,
+    work,
+    existing.createdAt,
+    updatedAt,
+    expectedUpdatedAt,
+  ).run();
+  if (!result.meta.changes) throw staleWorkError();
+  const updated = await context.env.DB.prepare("SELECT * FROM works WHERE id = ?")
+    .bind(id)
+    .first();
+  await auditStatement(
+    context,
+    "updated",
+    id,
+    updatedAt,
+    existing.updatedAt,
+    updatedAt,
+    existing,
+    rowToWork(updated!, true),
+  ).run();
+  return success(context, rowToWork(updated!, true));
 }
 
 export async function archiveWork(context: Context<AppEnvironment>) {
+  const expectedUpdatedAt = context.req.header("If-Unmodified-Since");
+  if (!expectedUpdatedAt) throw staleWorkError();
+  const id = context.req.param("id");
+  const existing = await context.env.DB.prepare("SELECT * FROM works WHERE id = ?")
+    .bind(id)
+    .first();
+  if (!existing) throw new ApiError(404, "work_not_found", "Work was not found.");
+  const previous = rowToWork(existing, true);
+  const updatedAt = new Date().toISOString();
   const result = await context.env.DB.prepare(
-    "UPDATE works SET status = 'archived', updated_at = ? WHERE id = ?",
+    "UPDATE works SET status = 'archived', updated_at = ? WHERE id = ? AND updated_at = ?",
   )
-    .bind(new Date().toISOString(), context.req.param("id"))
+    .bind(updatedAt, id, expectedUpdatedAt)
     .run();
   if (!result.meta.changes)
-    throw new ApiError(404, "work_not_found", "Work was not found.");
+    throw staleWorkError();
+  const archived = { ...previous, status: "archived", updatedAt };
+  await auditStatement(
+    context,
+    "archived",
+    id,
+    updatedAt,
+    previous.updatedAt,
+    updatedAt,
+    previous,
+    archived,
+  ).run();
   return success(context, { archived: true });
 }
 
