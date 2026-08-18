@@ -537,9 +537,10 @@ const featuredWork = works.find((work) => work.featured);
         -((event.clientY - bounds.top) / bounds.height) * 2 + 1,
       );
       raycaster.setFromCamera(pointer, camera);
-      return findBook(
-        raycaster.intersectObjects(scene.children, true)[0]?.object ?? null,
-      );
+      return raycaster
+        .intersectObjects(scene.children, true)
+        .map((intersection) => findBook(intersection.object))
+        .find((book): book is ShelfBook => Boolean(book));
     };
     const select = (book: ShelfBook) => {
       selected = book;
