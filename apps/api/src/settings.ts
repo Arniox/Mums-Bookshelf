@@ -1,4 +1,4 @@
-import { sanitiseHomepageHeading } from "@mums-bookshelf/shared/markdown";
+import { sanitiseHomepageHeading } from "@mums-bookshelf/shared/content";
 import { publicSettingsSchema } from "@mums-bookshelf/shared/schemas";
 import type { Context } from "hono";
 import { rowToSettings } from "./db";

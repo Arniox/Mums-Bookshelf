@@ -12,6 +12,24 @@ export function slugify(value: string): string {
 
 export const DEFAULT_READING_WORDS_PER_MINUTE = 230;
 
+const homepageHeadingTags = new Set(["b", "br", "em", "i", "s", "strong", "u"]);
+
+export function sanitiseHomepageHeading(html: string): string {
+  return html
+    .replace(/<!--[\s\S]*?-->/gu, "")
+    .replace(
+      /<(?:script|style|iframe|object|embed|svg|math|template)\b[^>]*>[\s\S]*?<\/\s*(?:script|style|iframe|object|embed|svg|math|template)\s*>/giu,
+      "",
+    )
+    .replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/giu, (tag, tagName: string) => {
+      const name = tagName.toLowerCase();
+      if (!homepageHeadingTags.has(name)) return "";
+      if (name === "br") return "<br>";
+      return tag.startsWith("</") ? `</${name}>` : `<${name}>`;
+    })
+    .trim();
+}
+
 export function calculateReadingTime(
   content: string,
   wordsPerMinute = DEFAULT_READING_WORDS_PER_MINUTE,
