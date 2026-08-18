@@ -51,7 +51,7 @@ const featuredWork = works.find((work) => work.featured);
         <div class="webgl-bookshelf" data-webgl-bookshelf aria-hidden="true">
           <canvas data-bookshelf-canvas />
           <p class="webgl-bookshelf-hint">
-            Select a book to pull it from the shelf. Drag it to turn the cover.
+            Select a book to pull it from the shelf.
           </p>
         </div>
         <ol class="shelves shelf-fallback" data-shelf-list>
@@ -232,24 +232,15 @@ const featuredWork = works.find((work) => work.featured);
     context.textAlign = "center";
     context.font = "46px Georgia, serif";
     context.fillText(mark, 256, 135);
-    context.font = "600 32px Georgia, serif";
-    const words = title.split(/\s+/);
-    const lines: string[] = [];
-    let line = "";
-    words.forEach((word) => {
-      const candidate = line ? `${line} ${word}` : word;
-      if (context.measureText(candidate).width > 340 && line) {
-        lines.push(line);
-        line = word;
-      } else {
-        line = candidate;
-      }
-    });
-    if (line) lines.push(line);
-    const lineStart = 382 - ((lines.length - 1) * 42) / 2;
-    lines.forEach((text, index) =>
-      context.fillText(text, 256, lineStart + index * 42),
-    );
+    context.save();
+    context.translate(256, 390);
+    context.rotate(-Math.PI / 2);
+    context.font = "700 148px 'Arial Narrow', Arial, sans-serif";
+    const titleWidth = context.measureText(title).width;
+    const titleScale = Math.min(1, 620 / titleWidth);
+    context.scale(titleScale, 1);
+    context.fillText(title, 0, 0);
+    context.restore();
     const texture = new THREE.CanvasTexture(textureCanvas);
     texture.colorSpace = THREE.SRGBColorSpace;
     return texture;
@@ -270,8 +261,8 @@ const featuredWork = works.find((work) => work.featured);
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color("#482718");
-    const camera = new THREE.PerspectiveCamera(33, 1, 0.1, 100);
-    camera.position.set(0, 4.9, 12.8);
+    const camera = new THREE.PerspectiveCamera(29, 1, 0.1, 100);
+    camera.position.set(0, 4.5, 10.8);
     camera.lookAt(0, 2.7, 0);
     const warmLight = new THREE.SpotLight(
       "#ffe2ad",
@@ -325,23 +316,25 @@ const featuredWork = works.find((work) => work.featured);
     const shelfHeights = shelfRows.map(
       (_, index) => 0.25 + index * shelfSpacing,
     );
-    const cabinetHeight = Math.max(7.2, shelfRows.length * shelfSpacing + 0.25);
+    const cabinetHeight = Math.max(4.25, shelfRows.length * shelfSpacing + 0.9);
+    const occupiedShelfCenter =
+      (shelfHeights[0]! + shelfHeights.at(-1)!) / 2 + 1.55;
     const updateShelfViewportHeight = () => {
       const baseHeight = window.matchMedia("(max-width: 640px)").matches
         ? 390
         : 530;
       webglShelf.style.setProperty(
         "--webgl-shelf-height",
-        `${baseHeight + (shelfRows.length - 1) * 245}px`,
+        `${baseHeight + (shelfRows.length - 1) * 330}px`,
       );
     };
     updateShelfViewportHeight();
     camera.position.set(
       0,
-      cabinetHeight / 2 + 1.2,
-      12.8 + Math.max(0, shelfRows.length - 2) * 2.2,
+      occupiedShelfCenter + 0.65,
+      9.2,
     );
-    camera.lookAt(0, cabinetHeight / 2, 0);
+    camera.lookAt(0, occupiedShelfCenter, 0);
     const wood = new THREE.MeshStandardMaterial({
       color: "#5a301d",
       roughness: 0.62,
@@ -428,14 +421,16 @@ const featuredWork = works.find((work) => work.featured);
           appearance.spineStyle,
         );
         const title = new THREE.Mesh(
-          new THREE.PlaneGeometry(width * 0.79, height * 0.74),
+          new THREE.PlaneGeometry(width * 0.94, height * 0.9),
           new THREE.MeshBasicMaterial({
             map: titleTexture,
             transparent: true,
             depthWrite: false,
+            depthTest: false,
           }),
         );
         title.position.z = pageDepth / 2 + coverThickness + 0.006;
+        title.renderOrder = 1;
         root.add(title);
         const home = new THREE.Vector3(
           cursor + width / 2,

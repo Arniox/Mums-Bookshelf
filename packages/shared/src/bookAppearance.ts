@@ -61,7 +61,7 @@ export function getBookAppearance(seedValue: string): BookAppearance {
     primaryColor: palette[0],
     accentColor: palette[1],
     height: Math.round(184 + sample(seed, 1) * 54),
-    width: Math.round(37 + sample(seed, 2) * 28),
+    width: Math.round(14 + sample(seed, 2) * 8),
     depth: Math.round(8 + sample(seed, 3) * 12),
     lean: Number((-3.2 + sample(seed, 4) * 6.4).toFixed(2)),
     borderRadius: Math.round(2 + sample(seed, 5) * 8),
