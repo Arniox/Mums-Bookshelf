@@ -284,8 +284,7 @@ const featuredWork = works.find((work) => work.featured);
 
   const renderWebglShelf = () => {
     disposeWebglShelf?.();
-    if (!canvas || !webglShelf || !shelfList || reduceMotion)
-      return false;
+    if (!canvas || !webglShelf || !shelfList || reduceMotion) return false;
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
