@@ -57,10 +57,11 @@ export class CanvasBookPicker {
 
   private readonly handlePointerMove = (event: PointerEvent) => {
     if (event.pointerType === "touch") {
-      this.touchMoved ||= Math.hypot(
-        event.clientX - this.touchStartX,
-        event.clientY - this.touchStartY,
-      ) > touchTapSlopPixels;
+      this.touchMoved ||=
+        Math.hypot(
+          event.clientX - this.touchStartX,
+          event.clientY - this.touchStartY,
+        ) > touchTapSlopPixels;
       return;
     }
     const book = this.pick(event);
