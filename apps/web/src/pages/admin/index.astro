@@ -419,42 +419,32 @@ const authorInitials = settings.authorName
             >
             <button
               type="button"
-              data-story-block="h2"
+              data-story-transform="h2"
               title="Turn this into a chapter heading">Chapter heading</button
             >
             <button
               type="button"
-              data-story-block="blockquote"
-              title="Set this apart as quoted words">Quoted words</button
-            >
-            <button
-              type="button"
-              data-story-command="insertUnorderedList"
+              data-story-list="ul"
               title="Start a bullet list">Bullet list</button
             >
             <button
               type="button"
-              data-story-command="insertOrderedList"
+              data-story-list="ol"
               title="Start a numbered list">Numbered list</button
             >
             <button
               type="button"
-              data-story-command="indent"
+              data-story-indent="in"
               title="Move this paragraph in">Indent</button
             >
             <button
               type="button"
-              data-story-command="outdent"
+              data-story-indent="out"
               title="Move this paragraph out">Outdent</button
             >
             <button
               type="button"
-              data-story-command="createLink"
-              title="Add a link to selected words">Add link</button
-            >
-            <button
-              type="button"
-              data-story-command="insertHorizontalRule"
+              data-story-pause
               title="Add an editable story pause">Scene break</button
             >
           </div>
@@ -1413,6 +1403,45 @@ const authorInitials = settings.authorName
     selection?.addRange(range);
   };
 
+  const storyParagraphAtSelection = () => {
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return undefined;
+    const node = selection.getRangeAt(0).startContainer;
+    const element =
+      node.nodeType === Node.ELEMENT_NODE
+        ? (node as HTMLElement)
+        : node.parentElement;
+    const paragraph = element?.closest<HTMLParagraphElement>("p");
+    return paragraph && storyEditor.contains(paragraph) ? paragraph : undefined;
+  };
+
+  const storySelectionHtml = () => {
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return "";
+    const range = selection.getRangeAt(0);
+    if (range.collapsed) return storyParagraphAtSelection()?.innerHTML || "";
+    const container = document.createElement("div");
+    container.append(range.cloneContents());
+    return container.innerHTML;
+  };
+
+  const replaceStorySelection = (html: string) => {
+    if (!html.trim()) return;
+    executeRichTextCommand("insertHTML", html);
+  };
+
+  const insertStoryPause = () => {
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    executeRichTextCommand("insertParagraph");
+    executeRichTextCommand("insertText", "###");
+    executeRichTextCommand("insertParagraph");
+  };
+
   const insertStoryHtml = (html: string) => {
     const selection = window.getSelection();
     const range =
@@ -1473,19 +1502,12 @@ const authorInitials = settings.authorName
       button.addEventListener("click", () => {
         restoreEditorSelection(storyEditor, selection);
         const command = button.dataset.storyCommand!;
-        const value =
-          command === "createLink"
-            ? prompt("Paste the link address (https://…)")
-            : undefined;
-        if (command === "insertHorizontalRule")
-          executeRichTextCommand("insertHTML", "<p>###</p>");
-        else if (command !== "createLink" || value)
-          executeRichTextCommand(command, value || undefined);
+        executeRichTextCommand(command);
         notifyRichTextChange(storyEditor);
       });
     });
   document
-    .querySelectorAll<HTMLButtonElement>("[data-story-block]")
+    .querySelectorAll<HTMLButtonElement>("[data-story-transform]")
     .forEach((button) => {
       let selection: Range | undefined;
       button.addEventListener("mousedown", (event) => {
@@ -1494,7 +1516,57 @@ const authorInitials = settings.authorName
       });
       button.addEventListener("click", () => {
         restoreEditorSelection(storyEditor, selection);
-        executeRichTextCommand("formatBlock", button.dataset.storyBlock!);
+        const tag = button.dataset.storyTransform!;
+        replaceStorySelection(`<${tag}>${storySelectionHtml()}</${tag}>`);
+        notifyRichTextChange(storyEditor);
+      });
+    });
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-story-list]")
+    .forEach((button) => {
+      let selection: Range | undefined;
+      button.addEventListener("mousedown", (event) => {
+        selection = captureEditorSelection(storyEditor);
+        event.preventDefault();
+      });
+      button.addEventListener("click", () => {
+        restoreEditorSelection(storyEditor, selection);
+        const listTag = button.dataset.storyList!;
+        replaceStorySelection(
+          `<${listTag}><li>${storySelectionHtml()}</li></${listTag}>`,
+        );
+        notifyRichTextChange(storyEditor);
+      });
+    });
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-story-indent]")
+    .forEach((button) => {
+      let selection: Range | undefined;
+      button.addEventListener("mousedown", (event) => {
+        selection = captureEditorSelection(storyEditor);
+        event.preventDefault();
+      });
+      button.addEventListener("click", () => {
+        restoreEditorSelection(storyEditor, selection);
+        const paragraph = storyParagraphAtSelection();
+        if (!paragraph) return;
+        if (button.dataset.storyIndent === "in")
+          paragraph.dataset.indent = "true";
+        else delete paragraph.dataset.indent;
+        notifyRichTextChange(storyEditor);
+      });
+    });
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-story-pause]")
+    .forEach((button) => {
+      let selection: Range | undefined;
+      button.addEventListener("mousedown", (event) => {
+        selection = captureEditorSelection(storyEditor);
+        event.preventDefault();
+      });
+      button.addEventListener("click", () => {
+        restoreEditorSelection(storyEditor, selection);
+        insertStoryPause();
         notifyRichTextChange(storyEditor);
       });
     });
