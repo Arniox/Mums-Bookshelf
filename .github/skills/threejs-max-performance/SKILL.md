@@ -1,7 +1,7 @@
 ---
 name: threejs-max-performance
-description: 'Build, optimize, debug, and review high-performance Three.js, WebGL, WebXR, GLSL shaders, and Astro 3D experiences. Use when creating a Three.js scene, animation, custom shader, glsl-canvas workflow, rendering optimization, GPU profiling, memory-leak fix, or responsive WebGL component. Targets Three.js ES modules and BufferGeometry.'
-argument-hint: 'Describe the Three.js scene, shader, rendering issue, or optimization goal.'
+description: "Build, optimize, debug, and review high-performance Three.js, WebGL, WebXR, GLSL shaders, and Astro 3D experiences. Use when creating a Three.js scene, animation, custom shader, glsl-canvas workflow, rendering optimization, GPU profiling, memory-leak fix, or responsive WebGL component. Targets Three.js ES modules and BufferGeometry."
+argument-hint: "Describe the Three.js scene, shader, rendering issue, or optimization goal."
 user-invocable: true
 ---
 
