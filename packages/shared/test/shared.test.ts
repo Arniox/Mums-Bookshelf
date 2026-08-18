@@ -6,6 +6,7 @@ import {
   commentInputSchema,
   getBookAppearance,
   isAllowedExternalUrl,
+  sanitiseHomepageHeading,
   sanitiseMarkdown,
   slugify,
   workSchema,
@@ -57,6 +58,15 @@ describe("shared domain logic", () => {
     const result = sanitiseMarkdown(
       "# Safe\n<script>alert(1)</script>[bad](javascript:alert(1))",
     );
+    expect(result).not.toContain("<script");
+    expect(result).not.toContain("javascript:");
+  });
+
+  it("sanitises rich homepage headings while retaining inline formatting", () => {
+    const result = sanitiseHomepageHeading(
+      'Stories for the <i>quietly curious</i><script>alert(1)</script><a href="javascript:alert(1)">.</a>',
+    );
+    expect(result).toContain("<i>quietly curious</i>");
     expect(result).not.toContain("<script");
     expect(result).not.toContain("javascript:");
   });
