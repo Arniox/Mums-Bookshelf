@@ -91,7 +91,7 @@ const personSchema = {
 
     <BookShelf
       works={works}
-      recentWorkSlugs={recent.map((work) => work.slug)}
+      recentWorkSlugs={recent.slice(0, 1).map((work) => work.slug)}
     />
   </div>
 
