@@ -1437,9 +1437,7 @@ const authorInitials = settings.authorName
     range.collapse(true);
     selection.removeAllRanges();
     selection.addRange(range);
-    executeRichTextCommand("insertParagraph");
-    executeRichTextCommand("insertText", "###");
-    executeRichTextCommand("insertParagraph");
+    executeRichTextCommand("insertText", "\n###\n");
   };
 
   const insertStoryHtml = (html: string) => {
