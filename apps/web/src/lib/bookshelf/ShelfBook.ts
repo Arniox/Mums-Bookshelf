@@ -113,7 +113,8 @@ export class ShelfBook {
       Math.abs(
         (Math.PI / 2) * (1 - this.pageOpen) - this.rightLeaf.rotation.y,
       ) > 0.001;
-    if (!isMoving) this.snapToRest(targetYaw, targetLean, pageOpenTarget);
+    if (!isMoving)
+      this.snapToRest(targetYaw, targetLean, pageOpenTarget, hoverTarget);
     return isMoving;
   }
 
@@ -121,13 +122,21 @@ export class ShelfBook {
     targetYaw: number,
     targetLean: number,
     pageOpenTarget: number,
+    hoverTarget: number,
   ) {
-    this.hover = this.isOpen ? 0 : this.hover > 0.5 ? 1 : 0;
+    this.hover = this.isOpen ? 0 : hoverTarget;
     if (this.isOpen) {
       this.settle = 1;
       this.pull = 1;
     }
     this.pageOpen = pageOpenTarget;
+    this.targetPosition.copy(this.home);
+    if (this.isOpen) {
+      this.targetPosition.z += 1.65;
+    } else {
+      this.targetPosition.y += this.hover * 0.24;
+      this.targetPosition.z += this.hover * 0.18;
+    }
     this.root.position.copy(this.targetPosition);
     this.root.rotation.y = targetYaw;
     this.root.rotation.z = targetLean;
