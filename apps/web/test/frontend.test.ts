@@ -18,6 +18,7 @@ import {
 } from "../src/lib/randomiseWorks";
 import {
   hasStructuredStoryHtml,
+  normaliseStoryHtml,
   storyTextToEditorHtml,
   wordHtmlToStoryHtml,
 } from "../src/lib/wordPaste";
@@ -307,6 +308,12 @@ describe("public library", () => {
         document,
       ),
     ).toBe('<p data-drop-cap="false">A plain opening.</p>');
+    expect(
+      normaliseStoryHtml(
+        '<p><span data-drop-cap="true">T</span>he opening.</p>',
+        document,
+      ),
+    ).toBe('<p><span data-drop-cap="true">T</span>he opening.</p>');
     expect(
       storyTextToEditorHtml(
         `<!-- /* Font Definitions */\n@font-face { font-family: "Cambria Math"; }\n-->\nI shouldn't be here.\n\nDaddy's home.`,

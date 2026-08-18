@@ -1215,6 +1215,35 @@ const authorInitials = settings.authorName
     return template.innerHTML;
   };
 
+  const addDefaultStoryDropCap = () => {
+    if (storyEditor.querySelector("[data-drop-cap='true']")) return;
+    const paragraph = Array.from(storyEditor.children).find(
+      (element) =>
+        element.tagName === "P" && element.getAttribute("data-scene-break") !== "true",
+    );
+    if (!paragraph) return;
+    const textNodes = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT);
+    let textNode = textNodes.nextNode() as Text | null;
+    while (textNode) {
+      const index = textNode.data.search(/\S/u);
+      if (index >= 0) {
+        const characters = Array.from(textNode.data.slice(index));
+        const firstCharacter = characters.shift();
+        if (!firstCharacter) return;
+        const marker = document.createElement("span");
+        marker.dataset.dropCap = "true";
+        marker.textContent = firstCharacter;
+        textNode.replaceWith(
+          document.createTextNode(textNode.data.slice(0, index)),
+          marker,
+          document.createTextNode(characters.join("")),
+        );
+        return;
+      }
+      textNode = textNodes.nextNode() as Text | null;
+    }
+  };
+
   const currentDraftKey = () => {
     const id = (workForm.elements.namedItem("id") as HTMLInputElement).value;
     return localWorkDraftKey(id || undefined);
@@ -1528,6 +1557,7 @@ const authorInitials = settings.authorName
         ? wordHtmlToStoryHtml(html, document)
         : storyTextToEditorHtml(text || html || "", document),
     );
+    addDefaultStoryDropCap();
     syncStoryEditor();
   });
 
