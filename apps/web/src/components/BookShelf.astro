@@ -287,6 +287,61 @@ const featuredWork = works.find((work) => work.featured);
     scene.add(warmLight, new THREE.HemisphereLight("#f7dbad", "#25130c", 2.4));
 
     const shelfWidth = 15;
+    const shelfPadding = 0.65;
+    const shelfSpacing = 3.55;
+    const boardThickness = 0.28;
+    const links = [
+      ...shelfList.querySelectorAll<HTMLAnchorElement>(".book"),
+    ];
+    type ShelfLayout = {
+      link: HTMLAnchorElement;
+      appearance: ReturnType<typeof getBookAppearance>;
+      width: number;
+      height: number;
+      depth: number;
+    };
+    const shelfRows: ShelfLayout[][] = [[]];
+    const shelfCapacity = shelfWidth - shelfPadding * 2;
+    let rowWidth = 0;
+    links.forEach((link) => {
+      const appearance = getBookAppearance(
+        link.closest<HTMLElement>(".book-slot")?.dataset.workId ||
+          link.dataset.title ||
+          "book",
+      );
+      const layout = {
+        link,
+        appearance,
+        width: appearance.width / 46,
+        height: appearance.height / 78,
+        depth: 0.42 + appearance.depth / 95,
+      };
+      const gap = rowWidth ? 0.08 : 0;
+      if (rowWidth && rowWidth + gap + layout.width > shelfCapacity) {
+        shelfRows.push([]);
+        rowWidth = 0;
+      }
+      shelfRows.at(-1)!.push(layout);
+      rowWidth += (rowWidth ? 0.08 : 0) + layout.width;
+    });
+    const shelfHeights = shelfRows.map((_, index) => 0.25 + index * shelfSpacing);
+    const cabinetHeight = Math.max(7.2, shelfRows.length * shelfSpacing + 0.25);
+    const updateShelfViewportHeight = () => {
+      const baseHeight = window.matchMedia("(max-width: 640px)").matches
+        ? 390
+        : 530;
+      webglShelf.style.setProperty(
+        "--webgl-shelf-height",
+        `${baseHeight + (shelfRows.length - 1) * 245}px`,
+      );
+    };
+    updateShelfViewportHeight();
+    camera.position.set(
+      0,
+      cabinetHeight / 2 + 1.2,
+      12.8 + Math.max(0, shelfRows.length - 2) * 2.2,
+    );
+    camera.lookAt(0, cabinetHeight / 2, 0);
     const wood = new THREE.MeshStandardMaterial({
       color: "#5a301d",
       roughness: 0.62,
@@ -297,53 +352,30 @@ const featuredWork = works.find((work) => work.featured);
       roughness: 0.72,
     });
     const back = new THREE.Mesh(
-      new THREE.BoxGeometry(shelfWidth, 7.2, 0.42),
+      new THREE.BoxGeometry(shelfWidth, cabinetHeight, 0.42),
       wood,
     );
-    back.position.set(0, 3.7, -0.72);
+    back.position.set(0, cabinetHeight / 2, -0.72);
     back.receiveShadow = true;
     scene.add(back);
     [-shelfWidth / 2 + 0.22, shelfWidth / 2 - 0.22].forEach((x) => {
       const side = new THREE.Mesh(
-        new THREE.BoxGeometry(0.45, 7.7, 1.3),
+        new THREE.BoxGeometry(0.45, cabinetHeight + 0.5, 1.3),
         woodEdge,
       );
-      side.position.set(x, 3.85, 0);
+      side.position.set(x, cabinetHeight / 2, 0);
       side.castShadow = true;
       scene.add(side);
     });
 
-    const links = [...shelfList.querySelectorAll<HTMLAnchorElement>(".book")];
     const books: ShelfBook[] = [];
-    const totalBookWidth = links.reduce((total, link) => {
-      const appearance = getBookAppearance(
-        link.closest<HTMLElement>(".book-slot")?.dataset.workId ||
-          link.dataset.title ||
-          "book",
+    shelfRows.forEach((shelfRow, row) => {
+      const rowBookWidth = shelfRow.reduce(
+        (total, book, index) => total + book.width + (index ? 0.08 : 0),
+        0,
       );
-      return total + appearance.width / 46 + 0.08;
-    }, 0);
-    const shelfPadding = 0.65;
-    let cursor =
-      totalBookWidth < shelfWidth - shelfPadding * 2
-        ? -totalBookWidth / 2
-        : -shelfWidth / 2 + shelfPadding;
-    let row = 0;
-    const shelfHeights: number[] = [0.25];
-    links.forEach((link) => {
-      const appearance = getBookAppearance(
-        link.closest<HTMLElement>(".book-slot")?.dataset.workId ||
-          link.dataset.title ||
-          "book",
-      );
-      const width = appearance.width / 46;
-      const height = appearance.height / 78;
-      const depth = 0.42 + appearance.depth / 95;
-      if (cursor + width > shelfWidth / 2 - 0.52) {
-        row += 1;
-        cursor = -shelfWidth / 2 + shelfPadding;
-        shelfHeights.push(row * 3.55 + 0.25);
-      }
+      let cursor = -rowBookWidth / 2;
+      shelfRow.forEach(({ link, appearance, width, height, depth }) => {
       const root = new THREE.Group();
       const frontCover = new THREE.Group();
       const backCover = new THREE.Group();
@@ -407,7 +439,7 @@ const featuredWork = works.find((work) => work.featured);
       root.add(title);
       const home = new THREE.Vector3(
         cursor + width / 2,
-        shelfHeights[row]! + 0.14 + height / 2 + 0.025,
+        shelfHeights[row]! + boardThickness / 2 + height / 2 + 0.025,
         0.2,
       );
       root.position.copy(home);
@@ -429,10 +461,11 @@ const featuredWork = works.find((work) => work.featured);
       scene.add(root);
       books.push(book);
       cursor += width + 0.08;
+      });
     });
     shelfHeights.forEach((height) => {
       const board = new THREE.Mesh(
-        new THREE.BoxGeometry(shelfWidth - 0.42, 0.28, 1.45),
+        new THREE.BoxGeometry(shelfWidth - 0.42, boardThickness, 1.45),
         woodEdge,
       );
       board.position.set(0, height, -0.05);
@@ -516,6 +549,7 @@ const featuredWork = works.find((work) => work.featured);
       pointerDown = undefined;
     };
     const resize = () => {
+      updateShelfViewportHeight();
       const { width, height } = webglShelf.getBoundingClientRect();
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
