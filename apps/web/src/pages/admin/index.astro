@@ -586,6 +586,7 @@ wordHtmlToStoryHtml,
   let dirty = false;
   let originalStatus = "draft";
   let localSaveTimer: number | undefined;
+  let workSaveInFlight = false;
 
   const request = async (path: string, init: RequestInit = {}) => {
     const headers = new Headers(init.headers);
@@ -1418,6 +1419,7 @@ wordHtmlToStoryHtml,
 
   workForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (workSaveInFlight) return;
     syncStoryEditor(true);
     const visibility = String(
       (workForm.elements.namedItem("contentVisibility") as RadioNodeList).value,
@@ -1485,11 +1487,15 @@ wordHtmlToStoryHtml,
     )
       return;
     const wasPublished = originalStatus === "published";
+    workSaveInFlight = true;
     editorStatus.textContent = "Saving…";
-    if (submitButton) {
-      setButtonBusy(submitButton, true);
-      submitButton.disabled = true;
-    }
+    const actionButtons = Array.from(
+      workForm.querySelectorAll<HTMLButtonElement>("[data-editor-action]"),
+    );
+    actionButtons.forEach((button) => {
+      setButtonBusy(button, button === submitButton);
+      button.disabled = true;
+    });
     try {
       await request(id ? `/api/v1/admin/works/${id}` : "/api/v1/admin/works", {
         method: id ? "PUT" : "POST",
@@ -1523,10 +1529,11 @@ wordHtmlToStoryHtml,
     } catch (error) {
       editorStatus.textContent = (error as Error).message;
     } finally {
-      if (submitButton) {
-        setButtonBusy(submitButton, false);
-        submitButton.disabled = false;
-      }
+      workSaveInFlight = false;
+      actionButtons.forEach((button) => {
+        setButtonBusy(button, false);
+        button.disabled = false;
+      });
     }
   });
 
