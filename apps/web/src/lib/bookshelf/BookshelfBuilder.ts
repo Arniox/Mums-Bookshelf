@@ -52,8 +52,10 @@ export class BookshelfBuilder {
       (layout.shelfHeights[0]! + layout.shelfHeights.at(-1)!) / 2 + 1.55;
     this.scene = new BookshelfScene({
       canvas: this.canvas,
+      cabinetHeight: layout.cabinetHeight,
       container: this.container,
       focusY,
+      shelfWidth,
     });
     this.scene.scene.add(
       new ShelfFurnitureBuilder().build({

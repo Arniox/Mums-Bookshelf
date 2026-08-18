@@ -2,9 +2,25 @@ import * as THREE from "three";
 
 type BookshelfSceneOptions = {
   canvas: HTMLCanvasElement;
+  cabinetHeight: number;
   container: HTMLElement;
   focusY: number;
+  shelfWidth: number;
 };
+
+export function getCameraFrameDistance(
+  cabinetHeight: number,
+  shelfWidth: number,
+  aspect: number,
+  fieldOfView: number,
+): number {
+  const halfVerticalFieldOfView = THREE.MathUtils.degToRad(fieldOfView / 2);
+  const tangent = Math.tan(halfVerticalFieldOfView);
+  const verticalDistance = (cabinetHeight / 2 + 0.4) / tangent;
+  const horizontalDistance =
+    (shelfWidth / 2 + 0.4) / (tangent * Math.max(aspect, 0.1));
+  return Math.max(verticalDistance, horizontalDistance, 9.2);
+}
 
 export class BookshelfScene {
   readonly camera: THREE.PerspectiveCamera;
@@ -12,10 +28,16 @@ export class BookshelfScene {
   readonly scene = new THREE.Scene();
 
   private readonly container: HTMLElement;
+  private readonly cabinetHeight: number;
+  private readonly focusY: number;
   private readonly resizeObserver: ResizeObserver;
+  private readonly shelfWidth: number;
 
   constructor(options: BookshelfSceneOptions) {
     this.container = options.container;
+    this.cabinetHeight = options.cabinetHeight;
+    this.focusY = options.focusY;
+    this.shelfWidth = options.shelfWidth;
     this.renderer = new THREE.WebGLRenderer({
       canvas: options.canvas,
       antialias: true,
@@ -30,8 +52,6 @@ export class BookshelfScene {
 
     this.scene.background = new THREE.Color("#482718");
     this.camera = new THREE.PerspectiveCamera(29, 1, 0.1, 100);
-    this.camera.position.set(0, options.focusY + 0.65, 9.2);
-    this.camera.lookAt(0, options.focusY, 0);
     this.addLighting();
     this.resizeObserver = new ResizeObserver(this.resize);
     this.resizeObserver.observe(this.container);
@@ -77,6 +97,14 @@ export class BookshelfScene {
     const safeHeight = Math.max(height, 1);
     this.renderer.setSize(width, safeHeight, false);
     this.camera.aspect = width / safeHeight;
+    const distance = getCameraFrameDistance(
+      this.cabinetHeight,
+      this.shelfWidth,
+      this.camera.aspect,
+      this.camera.fov,
+    );
+    this.camera.position.set(0, this.focusY, distance);
+    this.camera.lookAt(0, this.focusY, 0);
     this.camera.updateProjectionMatrix();
   };
 
