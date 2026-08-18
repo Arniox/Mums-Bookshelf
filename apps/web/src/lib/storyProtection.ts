@@ -1,8 +1,8 @@
 const hasStorySelection = (story: HTMLElement) => {
   const selection = window.getSelection();
   if (!selection || selection.rangeCount === 0) return false;
-  return (
-    story.contains(selection.anchorNode) || story.contains(selection.focusNode)
+  return [...Array.from({ length: selection.rangeCount })].some((_, index) =>
+    selection.getRangeAt(index).intersectsNode(story),
   );
 };
 
@@ -14,6 +14,10 @@ export const protectStoryContent = (story: HTMLElement | null) => {
   story.addEventListener("contextmenu", preventStoryAction);
   story.addEventListener("dragstart", preventStoryAction);
   story.addEventListener("selectstart", preventStoryAction);
+
+  document.addEventListener("selectionchange", () => {
+    if (hasStorySelection(story)) window.getSelection()?.removeAllRanges();
+  });
 
   document.addEventListener("copy", (event) => {
     if (hasStorySelection(story)) event.preventDefault();
