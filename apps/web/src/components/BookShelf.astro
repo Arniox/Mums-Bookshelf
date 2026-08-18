@@ -371,11 +371,7 @@ const featuredWork = works.find((work) => work.featured);
         new THREE.BoxGeometry(width, height, coverThickness),
         bookMaterial,
       );
-      front.position.set(
-        width / 2,
-        0,
-        pageDepth / 2 + coverThickness / 2,
-      );
+      front.position.set(width / 2, 0, pageDepth / 2 + coverThickness / 2);
       front.castShadow = true;
       frontCover.add(front);
       backCover.position.x = -width / 2;
@@ -383,11 +379,7 @@ const featuredWork = works.find((work) => work.featured);
         new THREE.BoxGeometry(width, height, coverThickness),
         bookMaterial,
       );
-      rear.position.set(
-        width / 2,
-        0,
-        -(pageDepth / 2 + coverThickness / 2),
-      );
+      rear.position.set(width / 2, 0, -(pageDepth / 2 + coverThickness / 2));
       rear.castShadow = true;
       backCover.add(rear);
       const spine = new THREE.Mesh(
