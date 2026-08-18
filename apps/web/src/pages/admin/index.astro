@@ -1464,6 +1464,14 @@ const authorInitials = settings.authorName
     return execCommand.call(document, command, false, value);
   };
 
+  const isRichTextCommandActive = (command: string) => {
+    const queryCommandState = Reflect.get(document, "queryCommandState") as (
+      this: Document,
+      commandId: string,
+    ) => boolean;
+    return queryCommandState.call(document, command);
+  };
+
   const notifyRichTextChange = (editor: HTMLElement) =>
     editor.dispatchEvent(new Event("input", { bubbles: true }));
 
@@ -1480,7 +1488,7 @@ const authorInitials = settings.authorName
       ?.querySelectorAll<HTMLButtonElement>(`[${commandAttribute}]`)
       .forEach((button) => {
         const command = button.getAttribute(commandAttribute)!;
-        const isActive = isEditing && document.queryCommandState(command);
+        const isActive = isEditing && isRichTextCommandActive(command);
         button.classList.toggle("is-active", isActive);
         button.setAttribute("aria-pressed", String(isActive));
       });
