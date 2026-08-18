@@ -21,6 +21,7 @@ type BookshelfBuilderOptions = {
 const shelfPadding = 0.65;
 const shelfSpacing = 3.55;
 const boardThickness = 0.28;
+const redirectDelayMilliseconds = 180;
 
 export class BookshelfBuilder {
   private readonly canvas: HTMLCanvasElement;
@@ -33,6 +34,7 @@ export class BookshelfBuilder {
   private picker: CanvasBookPicker | undefined;
   private scene: BookshelfScene | undefined;
   private selected: ShelfBook | undefined;
+  private redirectTimer: number | undefined;
   private rowCount = 0;
   private shelfWidth = 8;
   private animationRunning = false;
@@ -139,6 +141,10 @@ export class BookshelfBuilder {
   }
 
   private disposeShelf() {
+    if (this.redirectTimer !== undefined) {
+      window.clearTimeout(this.redirectTimer);
+      this.redirectTimer = undefined;
+    }
     this.picker?.dispose();
     this.picker = undefined;
     this.scene?.dispose();
@@ -156,6 +162,7 @@ export class BookshelfBuilder {
     this.activeBooks.forEach((book) => {
       if (!book.update(book === this.hovered, camera.position)) {
         this.activeBooks.delete(book);
+        if (book === this.selected) this.scheduleNavigation(book);
       }
     });
     this.scene.render();
@@ -172,10 +179,7 @@ export class BookshelfBuilder {
   };
 
   private readonly pickBook = (book: ShelfBook) => {
-    if (this.selected === book) {
-      window.location.assign(book.url);
-      return;
-    }
+    if (this.selected) return;
     this.selected = book;
     this.books.forEach((candidate) => {
       candidate.setSelected(candidate === book);
@@ -186,6 +190,13 @@ export class BookshelfBuilder {
       this.hint.textContent = "Select the open book again to begin reading.";
     }
   };
+
+  private scheduleNavigation(book: ShelfBook) {
+    if (this.redirectTimer !== undefined) return;
+    this.redirectTimer = window.setTimeout(() => {
+      window.location.assign(book.url);
+    }, redirectDelayMilliseconds);
+  }
 
   private requestAnimation() {
     if (!this.scene || this.animationRunning) return;
