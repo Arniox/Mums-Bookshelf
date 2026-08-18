@@ -373,7 +373,7 @@ const featuredWork = works.find((work) => work.featured);
       root.add(title);
       const home = new THREE.Vector3(
         cursor + width / 2,
-        shelfHeights[row] + height / 2,
+        shelfHeights[row]! + height / 2,
         0.04,
       );
       root.position.copy(home);
@@ -428,7 +428,7 @@ const featuredWork = works.find((work) => work.featured);
       );
       raycaster.setFromCamera(pointer, camera);
       return findBook(
-        raycaster.intersectObjects(scene.children, true)[0]?.object,
+        raycaster.intersectObjects(scene.children, true)[0]?.object ?? null,
       );
     };
     const select = (book: ShelfBook) => {
@@ -535,7 +535,10 @@ const featuredWork = works.find((work) => work.featured);
           ? mesh.material
           : [mesh.material];
         materials.forEach((material) => {
-          material.map?.dispose();
+          const texturedMaterial = material as THREE.Material & {
+            map?: THREE.Texture;
+          };
+          texturedMaterial.map?.dispose();
           material.dispose();
         });
       });
