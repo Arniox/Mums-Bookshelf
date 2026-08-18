@@ -19,6 +19,10 @@ export type ShelfLayout = {
   shelfHeights: number[];
 };
 
+export function getResponsiveShelfWidth(viewportWidth: number): number {
+  return Math.min(12, Math.max(4.5, viewportWidth / 100));
+}
+
 export function getShelfViewportHeight(
   rowCount: number,
   compact: boolean,
