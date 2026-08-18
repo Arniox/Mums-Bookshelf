@@ -1243,10 +1243,14 @@ const authorInitials = settings.authorName
         const marker = document.createElement("span");
         marker.dataset.dropCap = "true";
         marker.textContent = firstCharacter;
-        const leadingText = document.createTextNode(textNode.data.slice(0, index));
+        const leadingText = document.createTextNode(
+          textNode.data.slice(0, index),
+        );
         const trailingText = document.createTextNode(characters.join(""));
         const selection = window.getSelection();
-        const range = selection?.rangeCount ? selection.getRangeAt(0) : undefined;
+        const range = selection?.rangeCount
+          ? selection.getRangeAt(0)
+          : undefined;
         const cursorWasInOpeningText =
           range?.collapsed && range.startContainer === textNode
             ? range.startOffset
