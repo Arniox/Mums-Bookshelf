@@ -227,6 +227,21 @@ const structuredData = {
   } from "@mums-bookshelf/shared";
   import { getRuntimePublicWork } from "../../lib/runtimeContent";
 
+  const shelfArrivalKey = "mums-bookshelf:shelf-arrival";
+  const arrivingFromShelf = (() => {
+    try {
+      const origin = sessionStorage.getItem(shelfArrivalKey);
+      sessionStorage.removeItem(shelfArrivalKey);
+      return origin === window.location.href;
+    } catch {
+      return false;
+    }
+  })();
+  if (arrivingFromShelf)
+    document
+      .querySelector<HTMLElement>(".work-detail-header")
+      ?.classList.add("is-shelf-arrival");
+
   const share = document.querySelector<HTMLButtonElement>("[data-share]");
   const status = document.querySelector<HTMLElement>("[data-share-status]");
   const title = document.querySelector<HTMLElement>("[data-work-title]");

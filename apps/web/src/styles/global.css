@@ -2037,28 +2037,36 @@ fieldset {
   z-index: 200;
   margin: 0;
   transform-origin: center center;
-  transform-origin: center;
   backface-visibility: hidden;
   will-change: transform, opacity;
   box-shadow: 14px 20px 38px rgba(24, 12, 7, 0.46);
   pointer-events: none;
-  animation: book-to-desk 560ms cubic-bezier(0.22, 0.78, 0.22, 1) both;
+  animation: book-to-desk 1050ms cubic-bezier(0.22, 0.78, 0.22, 1) both;
 }
 
 @keyframes book-to-desk {
   from {
-    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+    transform: translate(0, 0) rotate(var(--book-lean)) scale(1);
   }
-  58% {
+  30% {
     transform: translate(
         calc(var(--book-fly-x) * 0.35),
         calc(var(--book-fly-y) * 0.35)
       )
-      rotate(-4deg) scale(1.14);
+      rotate(0deg) scale(1.14);
+  }
+  64% {
+    transform: translate(
+        calc(var(--book-fly-x) * 0.72),
+        calc(var(--book-fly-y) * 0.72)
+      )
+      rotateY(-68deg) rotateZ(-3deg) scale(1.82, 1.18);
   }
   to {
-    transform: translate(var(--book-fly-x), var(--book-fly-y)) rotateY(-22deg)
-      scale(2.45, 1.32);
+    opacity: 0.96;
+    transform: translate(var(--book-fly-x), var(--book-fly-y)) rotateY(-84deg)
+      rotateZ(-2deg) scale(2.18, 1.28);
   }
 }
 
@@ -2080,8 +2088,11 @@ fieldset {
     -16px 22px 40px rgba(53, 35, 25, 0.17),
     16px 22px 40px rgba(53, 35, 25, 0.2),
     inset 0 0 35px rgba(88, 60, 39, 0.08);
-  animation: open-on-desk 520ms ease-out both;
   transform-origin: center bottom;
+}
+
+.work-detail-header.is-shelf-arrival {
+  animation: open-on-desk 760ms cubic-bezier(0.18, 0.8, 0.24, 1) both;
 }
 
 .work-detail-header::before {

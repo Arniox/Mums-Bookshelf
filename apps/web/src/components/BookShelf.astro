@@ -136,6 +136,7 @@ const featuredWork = works.find((work) => work.featured);
   const reduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
+  const shelfArrivalKey = "mums-bookshelf:shelf-arrival";
   let activeFlyingBook: HTMLAnchorElement | undefined;
 
   const workUrl = (slug: string) => `${base}works/${slug}/`;
@@ -165,9 +166,9 @@ const featuredWork = works.find((work) => work.featured);
     event.preventDefault();
     if (activeFlyingBook) return;
     const bounds = book.getBoundingClientRect();
-    book.classList.add("is-opening");
     const flyingBook = book.cloneNode(true) as HTMLAnchorElement;
     flyingBook.classList.add("flying-book");
+    flyingBook.classList.remove("is-opening");
     flyingBook.removeAttribute("href");
     flyingBook.setAttribute("aria-hidden", "true");
     flyingBook.style.top = `${bounds.top}px`;
@@ -184,12 +185,18 @@ const featuredWork = works.find((work) => work.featured);
     );
     activeFlyingBook = flyingBook;
     document.body.append(flyingBook);
+    book.classList.add("is-opening");
     window.setTimeout(() => {
+      try {
+        sessionStorage.setItem(shelfArrivalKey, book.href);
+      } catch {
+        // The destination still works when browser storage is unavailable.
+      }
       activeFlyingBook?.remove();
       activeFlyingBook = undefined;
       book.classList.remove("is-opening");
       window.location.assign(book.href);
-    }, 560);
+    }, 1050);
   };
 
   const bindBookOpening = () => {
