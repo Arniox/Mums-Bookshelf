@@ -53,10 +53,7 @@ export class CanvasBookPicker {
     this.canvas.removeEventListener("click", this.handleClick);
     this.canvas.removeEventListener("pointerdown", this.handlePointerDown);
     this.canvas.removeEventListener("pointerup", this.handlePointerUp);
-    this.canvas.removeEventListener(
-      "pointercancel",
-      this.handlePointerCancel,
-    );
+    this.canvas.removeEventListener("pointercancel", this.handlePointerCancel);
     this.canvas.style.cursor = "default";
   }
 
