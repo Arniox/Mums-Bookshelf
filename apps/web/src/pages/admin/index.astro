@@ -328,6 +328,7 @@ const authorInitials = settings.authorName
     </header>
     <form class="editor-form" data-work-form>
       <input type="hidden" name="id" />
+      <input type="hidden" name="updatedAt" />
       <p class="required-note"><abbr title="required">*</abbr> Required</p>
       <label
         ><span>Title <abbr title="required">*</abbr></span><input
@@ -1173,7 +1174,8 @@ const authorInitials = settings.authorName
         ) ||
         !element.name ||
         element.name === "id" ||
-        element.name === "status"
+        element.name === "status" ||
+        element.name === "updatedAt"
       )
         return;
       if (element instanceof HTMLInputElement && element.type === "radio") {
@@ -1491,6 +1493,7 @@ const authorInitials = settings.authorName
     const payload = {
       slug: String(formData.get("slug")),
       title: String(formData.get("title")),
+      expectedUpdatedAt: optional("updatedAt"),
       status:
         action === "publish" || originalStatus === "published"
           ? "published"
