@@ -209,10 +209,11 @@ const featuredWork = works.find((work) => work.featured);
     style: string,
   ) => {
     const textureCanvas = document.createElement("canvas");
-    textureCanvas.width = 512;
-    textureCanvas.height = 768;
+    textureCanvas.width = 1024;
+    textureCanvas.height = 1536;
     const context = textureCanvas.getContext("2d");
     if (!context) return new THREE.CanvasTexture(textureCanvas);
+    context.scale(2, 2);
     context.clearRect(0, 0, textureCanvas.width, textureCanvas.height);
     context.strokeStyle = accent;
     context.globalAlpha = 0.8;
@@ -243,6 +244,9 @@ const featuredWork = works.find((work) => work.featured);
     context.restore();
     const texture = new THREE.CanvasTexture(textureCanvas);
     texture.colorSpace = THREE.SRGBColorSpace;
+    texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
     return texture;
   };
 
@@ -416,6 +420,7 @@ const featuredWork = works.find((work) => work.featured);
           appearance.accentColor,
           appearance.spineStyle,
         );
+        titleTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
         const title = new THREE.Mesh(
           new THREE.PlaneGeometry(width * 0.94, height * 0.9),
           new THREE.MeshBasicMaterial({
