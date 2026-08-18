@@ -90,6 +90,7 @@ const featuredWork = works.find((work) => work.featured);
                   href={`${base}works/${work.slug}/`}
                   aria-label={`${work.title}, ${work.publicationType.replace("-", " ")}`}
                   data-title={work.title.toLowerCase()}
+                  data-book-title={work.title}
                   data-type={work.publicationType}
                   data-genres={work.genres.join(" ").toLowerCase()}
                   data-book-color={appearance.primaryColor}
@@ -180,6 +181,25 @@ const featuredWork = works.find((work) => work.featured);
     url: string;
     open: number;
     turn: number;
+    hover: number;
+  };
+
+  const bindFallbackOpening = () => {
+    shelfList?.querySelectorAll<HTMLAnchorElement>(".book").forEach((book) => {
+      book.addEventListener("click", (event) => {
+        if (
+          reduceMotion ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey
+        )
+          return;
+        event.preventDefault();
+        book.classList.add("is-opening");
+        window.setTimeout(() => window.location.assign(book.href), 180);
+      });
+    });
   };
 
   const makeTitleTexture = (
@@ -237,22 +257,21 @@ const featuredWork = works.find((work) => work.featured);
 
   const renderWebglShelf = () => {
     disposeWebglShelf?.();
-    if (!canvas || !webglShelf || !shelfList || reduceMotion) return;
+    if (!canvas || !webglShelf || !shelfList || reduceMotion) return false;
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      alpha: true,
       antialias: true,
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog("#2b1710", 15, 28);
+  scene.background = new THREE.Color("#482718");
     const camera = new THREE.PerspectiveCamera(33, 1, 0.1, 100);
-    camera.position.set(0, 5.2, 17.5);
+    camera.position.set(0, 4.9, 12.8);
     camera.lookAt(0, 2.7, 0);
     const warmLight = new THREE.SpotLight(
       "#ffe2ad",
@@ -296,7 +315,19 @@ const featuredWork = works.find((work) => work.featured);
 
     const links = [...shelfList.querySelectorAll<HTMLAnchorElement>(".book")];
     const books: ShelfBook[] = [];
-    let cursor = -shelfWidth / 2 + 0.65;
+    const totalBookWidth = links.reduce((total, link) => {
+      const appearance = getBookAppearance(
+        link.closest<HTMLElement>(".book-slot")?.dataset.workId ||
+          link.dataset.title ||
+          "book",
+      );
+      return total + appearance.width / 46 + 0.08;
+    }, 0);
+    const shelfPadding = 0.65;
+    let cursor =
+      totalBookWidth < shelfWidth - shelfPadding * 2
+        ? -totalBookWidth / 2
+        : -shelfWidth / 2 + shelfPadding;
     let row = 0;
     const shelfHeights: number[] = [0.25];
     links.forEach((link) => {
@@ -310,7 +341,7 @@ const featuredWork = works.find((work) => work.featured);
       const depth = 0.42 + appearance.depth / 95;
       if (cursor + width > shelfWidth / 2 - 0.52) {
         row += 1;
-        cursor = -shelfWidth / 2 + 0.65;
+        cursor = -shelfWidth / 2 + shelfPadding;
         shelfHeights.push(row * 3.55 + 0.25);
       }
       const root = new THREE.Group();
@@ -356,7 +387,7 @@ const featuredWork = works.find((work) => work.featured);
       spine.castShadow = true;
       root.add(frontCover, backCover, spine);
       const titleTexture = makeTitleTexture(
-        link.dataset.title || "",
+        link.dataset.bookTitle || link.dataset.title || "",
         appearance.mark,
         appearance.accentColor,
         appearance.spineStyle,
@@ -374,7 +405,7 @@ const featuredWork = works.find((work) => work.featured);
       const home = new THREE.Vector3(
         cursor + width / 2,
         shelfHeights[row]! + height / 2,
-        0.04,
+        0.2,
       );
       root.position.copy(home);
       root.rotation.z = THREE.MathUtils.degToRad(appearance.lean);
@@ -389,6 +420,7 @@ const featuredWork = works.find((work) => work.featured);
         url: link.href,
         open: 0,
         turn: 0,
+        hover: 0,
       };
       root.userData.shelfBook = book;
       scene.add(root);
@@ -409,6 +441,7 @@ const featuredWork = works.find((work) => work.featured);
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     let selected: ShelfBook | undefined;
+    let hovered: ShelfBook | undefined;
     let pointerDown: { x: number; y: number } | undefined;
     let isDragging = false;
     let frame = 0;
@@ -447,6 +480,7 @@ const featuredWork = works.find((work) => work.featured);
     };
     const onPointerMove = (event: PointerEvent) => {
       const book = bookAt(event);
+      hovered = book;
       canvas.style.cursor = book ? "grab" : "default";
       if (!pointerDown || !selected) return;
       const dx = event.clientX - pointerDown.x;
@@ -466,6 +500,10 @@ const featuredWork = works.find((work) => work.featured);
         pointerDown = { x: event.clientX, y: event.clientY };
       }
     };
+    const onPointerLeave = () => {
+      hovered = undefined;
+      canvas.style.cursor = "default";
+    };
     const onPointerUp = (event: PointerEvent) => {
       const book = bookAt(event);
       if (!isDragging && book) {
@@ -483,7 +521,10 @@ const featuredWork = works.find((work) => work.featured);
     const animate = () => {
       frame = window.requestAnimationFrame(animate);
       books.forEach((book) => {
-        const target = book.open ? new THREE.Vector3(0, 3.25, 2.65) : book.home;
+        book.hover = THREE.MathUtils.lerp(book.hover, book === hovered && !book.open ? 1 : 0, 0.16);
+        const target = book.open
+          ? new THREE.Vector3(0, 3.25, 2.65)
+          : book.home.clone().add(new THREE.Vector3(0, book.hover * 0.24, book.hover * 0.18));
         book.root.position.lerp(target, 0.11);
         book.root.rotation.y = THREE.MathUtils.lerp(
           book.root.rotation.y,
@@ -519,6 +560,7 @@ const featuredWork = works.find((work) => work.featured);
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointermove", onPointerMove);
     canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointerleave", onPointerLeave);
     resize();
     animate();
     shelf?.classList.add("has-webgl-bookshelf");
@@ -528,6 +570,7 @@ const featuredWork = works.find((work) => work.featured);
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointerleave", onPointerLeave);
       scene.traverse((object) => {
         const mesh = object as THREE.Mesh;
         mesh.geometry?.dispose();
@@ -544,6 +587,7 @@ const featuredWork = works.find((work) => work.featured);
       });
       renderer.dispose();
     };
+    return true;
   };
 
   const renderShelf = (publishedWorks: Work[]) => {
@@ -583,6 +627,7 @@ const featuredWork = works.find((work) => work.featured);
         `${work.title}, ${work.publicationType.replace("-", " ")}`,
       );
       book.dataset.bookColor = appearance.primaryColor;
+      book.dataset.bookTitle = work.title;
       const styleVariables: [string, string][] = [
         ["--book-color", appearance.primaryColor],
         ["--book-accent", appearance.accentColor],
@@ -646,11 +691,11 @@ const featuredWork = works.find((work) => work.featured);
       featuredNote.append(link);
     }
     orderShelf();
-    renderWebglShelf();
+    if (!renderWebglShelf()) bindFallbackOpening();
   };
 
   orderShelf();
-  renderWebglShelf();
+  if (!renderWebglShelf()) bindFallbackOpening();
   void getRuntimePublicWorks()
     .then(renderShelf)
     .catch(() => undefined);

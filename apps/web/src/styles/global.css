@@ -528,11 +528,10 @@ button.is-loading::before {
 .book.is-opening {
   z-index: 3;
   filter: brightness(1.08);
-  transform: translateY(-13px) translateZ(28px) rotate(0deg) rotateY(-7deg);
+  transform: translateY(-13px) rotate(var(--book-lean));
 }
 
 .book.is-opening {
-  opacity: 0;
   pointer-events: none;
 }
 
@@ -2090,7 +2089,7 @@ fieldset {
 .library-room .book:hover,
 .library-room .book:focus-visible,
 .library-room .book.is-opening {
-  transform: translateY(-24px) translateZ(45px) rotate(0deg) rotateY(-10deg);
+  transform: translateY(-24px) rotate(var(--book-lean));
   filter: brightness(1.12) saturate(1.05);
   box-shadow:
     inset 5px 0 8px rgba(255, 255, 255, 0.1),
