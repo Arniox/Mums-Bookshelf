@@ -438,7 +438,8 @@ button.is-loading::before {
 
 .webgl-bookshelf {
   position: relative;
-  height: var(--webgl-shelf-height, 510px);
+  height: min(var(--webgl-shelf-height, 510px), calc(100dvh - 10rem));
+  min-height: min(var(--webgl-shelf-height, 510px), 390px);
   overflow: hidden;
   border: 1px solid rgba(239, 195, 130, 0.16);
   background:
