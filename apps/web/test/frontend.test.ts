@@ -138,6 +138,31 @@ describe("public library", () => {
     expect(book.root.rotation.z).toBe(0);
   });
 
+  it("settles an open book back at home", () => {
+    const home = new THREE.Vector3(0, 2, 0.2);
+    const book = new ShelfBook({
+      root: new THREE.Group(),
+      leftLeaf: new THREE.Group(),
+      rightLeaf: new THREE.Group(),
+      home,
+      homeLean: 0,
+      url: "/works/test/",
+    });
+    const camera = new THREE.Vector3(0, 2, 10);
+
+    book.setSelected(true);
+    for (let frame = 0; frame < 240; frame += 1) book.update(false, camera);
+    expect(book.root.position.z).toBeGreaterThan(home.z + 1);
+
+    book.setSelected(false);
+    let moving = true;
+    for (let frame = 0; frame < 240 && moving; frame += 1) {
+      moving = book.update(false, camera);
+    }
+    expect(moving).toBe(false);
+    expect(book.root.position).toEqual(home);
+  });
+
   it("adds shelves and canvas height for hundreds of books without overflow", () => {
     const document = new Window().document as unknown as Document;
     const links = Array.from({ length: 240 }, (_, index) => {

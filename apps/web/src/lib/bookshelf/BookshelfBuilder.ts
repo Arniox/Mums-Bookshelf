@@ -189,7 +189,7 @@ export class BookshelfBuilder {
     });
     this.requestAnimation();
     if (this.hint) {
-      this.hint.textContent = "Select the open book again to begin reading.";
+      this.hint.textContent = "Opening your story...";
     }
   };
 
