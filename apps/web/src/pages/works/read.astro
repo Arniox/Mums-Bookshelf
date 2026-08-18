@@ -27,11 +27,11 @@ const settings = await getPublicSettings();
     type Work,
   } from "@mums-bookshelf/shared";
   import { getRuntimePublicWork } from "../../lib/runtimeContent";
+  import { protectStoryContent } from "../../lib/storyProtection";
   import {
     normaliseStoryHtml,
     storyTextToEditorHtml,
   } from "../../lib/wordPaste";
-  import { protectStoryContent } from "../../lib/storyProtection";
 
   const container = document.querySelector<HTMLElement>("[data-runtime-work]");
   const base = import.meta.env.BASE_URL;
