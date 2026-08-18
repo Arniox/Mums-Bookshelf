@@ -56,7 +56,11 @@ const personSchema = {
       >
         <span class="announcement-mark" aria-hidden="true"> ✦ </span>
         <span>
-          <strong>From Denise's writing desk</strong>
+          <strong
+            >From <span data-author-first-name
+              >{settings.authorName.split(/\s+/)[0]}</span
+            >'s writing desk</strong
+          >
           <span data-homepage-announcement-text>{settings.announcement}</span>
         </span>
       </aside>

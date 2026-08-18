@@ -24,7 +24,7 @@ const authorInitials = settings.authorName
     <div class="about-layout">
       {
         settings.profileImageUrl ? (
-          <figure class="author-portrait">
+          <figure class="author-portrait" data-about-portrait>
             <img
               src={settings.profileImageUrl}
               alt={`${settings.authorName}, author`}
@@ -38,6 +38,7 @@ const authorInitials = settings.authorName
             class="portrait-placeholder"
             role="img"
             aria-label={`A decorative monogram portrait placeholder for ${settings.authorName}`}
+            data-about-portrait
           >
             <span>{authorInitials}</span>
             <small>Photo coming soon</small>
@@ -83,6 +84,46 @@ const authorInitials = settings.authorName
         "[data-about-author-name]",
       );
       if (authorName) authorName.textContent = settings.authorName;
+      const portrait = document.querySelector<HTMLElement>(
+        "[data-about-portrait]",
+      );
+      if (portrait) {
+        if (settings.profileImageUrl) {
+          const figure = document.createElement("figure");
+          figure.className = "author-portrait";
+          figure.dataset.aboutPortrait = "";
+          const image = document.createElement("img");
+          image.src = settings.profileImageUrl;
+          image.alt = `${settings.authorName}, author`;
+          image.width = 960;
+          image.height = 1200;
+          image.decoding = "async";
+          figure.append(image);
+          portrait.replaceWith(figure);
+        } else {
+          const placeholder = document.createElement("div");
+          placeholder.className = "portrait-placeholder";
+          placeholder.dataset.aboutPortrait = "";
+          placeholder.setAttribute("role", "img");
+          placeholder.setAttribute(
+            "aria-label",
+            `A decorative monogram portrait placeholder for ${settings.authorName}`,
+          );
+          const initials = settings.authorName
+            .split(/\s+/)
+            .map((name) => name[0])
+            .filter(Boolean)
+            .slice(0, 2)
+            .join("")
+            .toUpperCase();
+          const mark = document.createElement("span");
+          mark.textContent = initials;
+          const note = document.createElement("small");
+          note.textContent = "Photo coming soon";
+          placeholder.append(mark, note);
+          portrait.replaceWith(placeholder);
+        }
+      }
       const biography = document.querySelector<HTMLElement>(
         "[data-about-biography]",
       );
