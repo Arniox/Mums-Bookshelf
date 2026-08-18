@@ -1,0 +1,2 @@
+ALTER TABLE site_settings ADD COLUMN homepage_eyebrow TEXT NOT NULL DEFAULT 'Fiction · Essays · Small observations';
+ALTER TABLE site_settings ADD COLUMN homepage_heading_html TEXT NOT NULL DEFAULT 'Stories for the <em>quietly curious.</em>';
