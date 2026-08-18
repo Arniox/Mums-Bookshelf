@@ -195,7 +195,7 @@ const featuredWork = works.find((work) => work.featured);
     const bookshelf = new BookshelfBuilder({
       canvas,
       container: webglShelf,
-      hint,
+      hint: hint ?? undefined,
       links: [...shelfList.querySelectorAll<HTMLAnchorElement>(".book")],
     });
     bookshelf.start();
