@@ -20,6 +20,7 @@ export class ShelfBook {
   private readonly targetPosition = new THREE.Vector3();
   private open = 0;
   private hover = 0;
+  private pageOpen = 0;
   private pull = 0;
   private pullStarted = false;
   private settle = 0;
@@ -39,6 +40,7 @@ export class ShelfBook {
 
   setSelected(selected: boolean) {
     this.open = Number(selected);
+    this.pageOpen = 0;
     this.pull = 0;
     this.pullStarted = false;
     this.settle = 0;
@@ -63,8 +65,16 @@ export class ShelfBook {
       this.targetPosition.y += this.hover * 0.24;
       this.targetPosition.z += this.hover * 0.18;
     }
+    const pageOpenTarget = this.isOpen
+      ? THREE.MathUtils.clamp((this.pull - 0.8) / 0.2, 0, 1)
+      : 0;
+    this.pageOpen = THREE.MathUtils.lerp(this.pageOpen, pageOpenTarget, 0.1);
     this.root.position.lerp(this.targetPosition, 0.11);
-    this.root.rotation.y = THREE.MathUtils.lerp(this.root.rotation.y, 0, 0.1);
+    this.root.rotation.y = THREE.MathUtils.lerp(
+      this.root.rotation.y,
+      this.isOpen ? Math.PI * this.pull : 0,
+      0.1,
+    );
     this.root.rotation.z = THREE.MathUtils.lerp(
       this.root.rotation.z,
       this.isOpen ? this.homeLean * (1 - this.pull) : this.homeLean,
@@ -75,12 +85,12 @@ export class ShelfBook {
     }
     this.leftLeaf.rotation.y = THREE.MathUtils.lerp(
       this.leftLeaf.rotation.y,
-      (-Math.PI / 2) * (1 - this.pull),
+      (-Math.PI / 2) * (1 - this.pageOpen),
       0.1,
     );
     this.rightLeaf.rotation.y = THREE.MathUtils.lerp(
       this.rightLeaf.rotation.y,
-      (Math.PI / 2) * (1 - this.pull),
+      (Math.PI / 2) * (1 - this.pageOpen),
       0.1,
     );
   }
