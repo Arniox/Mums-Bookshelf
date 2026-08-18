@@ -1450,7 +1450,7 @@ textarea {
 .stat-grid {
   margin: 2rem 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
 }
 .deployment-progress {
@@ -1570,7 +1570,7 @@ textarea {
   text-transform: uppercase;
   vertical-align: middle;
 }
-.admin-list-row span,
+.admin-list-row > div > span,
 .admin-list-row time {
   color: var(--muted);
   font-size: 0.72rem;
@@ -1586,17 +1586,36 @@ textarea {
   color: var(--muted);
   font-size: 0.75rem;
 }
-.comment-row .comment-status {
+.status-badge {
   display: block;
   width: fit-content;
   margin-top: 0.55rem;
   padding: 0.18rem 0.5rem;
-  border: 1px solid var(--line);
-  color: var(--plum);
+  border: 1px solid currentColor;
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+.status-badge--published,
+.status-badge--approved {
+  color: #32603f;
+  background: rgba(50, 96, 63, 0.1);
+}
+.status-badge--draft,
+.status-badge--pending {
+  color: #8b5a12;
+  background: rgba(139, 90, 18, 0.1);
+}
+.status-badge--archived,
+.status-badge--rejected {
+  color: #8a2638;
+  background: rgba(138, 38, 56, 0.09);
+}
+.admin-list-row .status-badge {
+  display: inline-block;
+  margin: 0;
+  vertical-align: middle;
 }
 .comment-row .button-row {
   margin-top: 0.8rem;

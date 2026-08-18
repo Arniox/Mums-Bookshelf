@@ -123,6 +123,9 @@ const authorInitials = settings.authorName
             <strong data-stat-drafts>—</strong><span>Drafts</span>
           </article>
           <article>
+            <strong data-stat-archived>—</strong><span>Archived</span>
+          </article>
+          <article>
             <strong data-stat-featured>—</strong><span>Featured</span>
           </article>
           <article>
@@ -154,6 +157,10 @@ const authorInitials = settings.authorName
         <div class="dashboard-heading">
           <div>
             <p class="eyebrow">Reader responses</p><h2>Comment moderation</h2>
+            <p class="settings-intro">
+              Rejected comments stay here for review but are hidden from
+              readers. You can approve them again at any time.
+            </p>
           </div>
         </div>
         <div class="admin-list" data-comments-list></div>
@@ -988,7 +995,7 @@ const authorInitials = settings.authorName
     <article class="admin-list-row">
       <div>
         <strong>${escape(work.title)}${work.featured ? ' <span class="featured-work-badge">Featured</span>' : ""}</strong>
-        <span>${escape(work.status)} · ${escape(work.publicationType).replace("-", " ")}</span>
+        <span><span class="status-badge status-badge--${escape(work.status)}">${escape(work.status)}</span> · ${escape(work.publicationType).replace("-", " ")}</span>
       </div>
       <time>${new Date(work.updatedAt).toLocaleDateString()}</time>
       <button class="text-button" type="button" data-edit-work="${escape(work.id)}">Edit</button>
@@ -1021,6 +1028,8 @@ const authorInitials = settings.authorName
       String(works.filter((work) => work.status === "published").length);
     document.querySelector<HTMLElement>("[data-stat-drafts]")!.textContent =
       String(works.filter((work) => work.status === "draft").length);
+    document.querySelector<HTMLElement>("[data-stat-archived]")!.textContent =
+      String(works.filter((work) => work.status === "archived").length);
     document.querySelector<HTMLElement>("[data-stat-featured]")!.textContent =
       String(works.filter((work) => work.featured).length);
     document.querySelector<HTMLElement>("[data-stat-comments]")!.textContent =
@@ -1091,11 +1100,10 @@ const authorInitials = settings.authorName
             (comment) => `<article class="comment-row">
           <p>“${escape(comment.body)}”</p>
           <span>${escape(comment.display_name || "Anonymous")} on <strong>${escape(comment.work_title)}</strong> · ${new Date(comment.created_at).toLocaleDateString()}</span>
-          <span class="comment-status">${escape(comment.moderation_status)}</span>
+          <span class="status-badge status-badge--${escape(comment.moderation_status)}">${escape(comment.moderation_status)}</span>
           <div class="button-row">
             ${comment.moderation_status !== "approved" ? `<button class="button secondary" data-comment-action="approved" data-comment-id="${escape(comment.id)}">Approve</button>` : ""}
             ${comment.moderation_status !== "rejected" ? `<button class="text-button" data-comment-action="rejected" data-comment-id="${escape(comment.id)}">Reject</button>` : ""}
-            <button class="text-button" data-comment-action="delete" data-comment-id="${escape(comment.id)}">Delete</button>
           </div>
         </article>`,
           )
@@ -1109,16 +1117,12 @@ const authorInitials = settings.authorName
           button.disabled = true;
           try {
             const path = `/api/v1/admin/comments/${button.dataset.commentId}`;
-            if (button.dataset.commentAction === "delete") {
-              await request(path, { method: "DELETE" });
-            } else {
-              await request(path, {
-                method: "PATCH",
-                body: JSON.stringify({
-                  moderationStatus: button.dataset.commentAction,
-                }),
-              });
-            }
+            await request(path, {
+              method: "PATCH",
+              body: JSON.stringify({
+                moderationStatus: button.dataset.commentAction,
+              }),
+            });
             await loadDashboard();
           } finally {
             setButtonBusy(button, false);
