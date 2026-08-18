@@ -78,7 +78,8 @@ const settings = await getPublicSettings();
         if (
           (attribute.name === "data-indent" ||
             attribute.name === "data-first-line-indent" ||
-            attribute.name === "data-drop-cap") &&
+            attribute.name === "data-drop-cap" ||
+            attribute.name === "data-scene-break") &&
           attribute.value === "true"
         )
           return;
