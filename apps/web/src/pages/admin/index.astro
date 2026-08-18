@@ -1372,6 +1372,9 @@ const authorInitials = settings.authorName
       ) => boolean
     )(command, false, value);
 
+  const notifyRichTextChange = (editor: HTMLElement) =>
+    editor.dispatchEvent(new Event("input", { bubbles: true }));
+
   const insertStoryHtml = (html: string) => {
     const selection = window.getSelection();
     const range =
@@ -1434,7 +1437,7 @@ const authorInitials = settings.authorName
             : undefined;
         if (command !== "createLink" || value)
           executeRichTextCommand(command, value || undefined);
-        syncStoryEditor();
+        notifyRichTextChange(storyEditor);
       });
     });
   document
@@ -1444,7 +1447,7 @@ const authorInitials = settings.authorName
       button.addEventListener("click", () => {
         storyEditor.focus();
         executeRichTextCommand("formatBlock", button.dataset.storyBlock!);
-        syncStoryEditor();
+        notifyRichTextChange(storyEditor);
       });
     });
 
@@ -1799,7 +1802,7 @@ const authorInitials = settings.authorName
       button.addEventListener("click", () => {
         homepageHeadingEditor.focus();
         executeRichTextCommand(button.dataset.homepageHeadingCommand!);
-        syncHomepageHeading();
+        notifyRichTextChange(homepageHeadingEditor);
       });
     });
   profileImageInput.addEventListener("input", updateProfilePreview);

@@ -1068,6 +1068,36 @@ textarea {
   font-size: 2.5rem;
 }
 
+.story-content hr,
+.rich-story-canvas hr {
+  width: min(11rem, 42%);
+  height: 1.5rem;
+  margin: 3.25rem auto;
+  border: 0;
+  background:
+    linear-gradient(var(--gold), var(--gold)) left center / calc(50% - 0.8rem)
+      1px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) right center / calc(50% - 0.8rem)
+      1px no-repeat;
+  color: var(--plum);
+  text-align: center;
+}
+
+.story-content hr::after,
+.rich-story-canvas hr::after {
+  content: "◆";
+  display: inline-block;
+  padding: 0 0.5rem;
+  background: var(--paper);
+  font-size: 0.75rem;
+  line-height: 1.5rem;
+  vertical-align: top;
+}
+
+.rich-story-canvas hr::after {
+  background: #fffdf7;
+}
+
 .story-content [data-indent="true"],
 .rich-story-canvas [data-indent="true"] {
   margin-left: 2.25rem;

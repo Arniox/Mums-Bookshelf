@@ -252,6 +252,14 @@ export function normaliseStoryHtml(
   let currentList: HTMLElement | undefined;
   Array.from(output.children).forEach((element) => {
     const listItem = element as HTMLElement;
+    if (
+      listItem.tagName === "P" &&
+      /^(?:---+|#{2,})$/u.test(listItem.textContent?.trim() || "")
+    ) {
+      listItem.replaceWith(document.createElement("hr"));
+      currentList = undefined;
+      return;
+    }
     if (listItem.tagName !== "LI" || !listItem.dataset.wordList) {
       currentList = undefined;
       return;
@@ -308,7 +316,7 @@ export function storyTextToEditorHtml(value: string, document: Document) {
       output.push(
         `<h${heading[1]!.length}>${inlineMarkdownToHtml(heading[2]!)}</h${heading[1]!.length}>`,
       );
-    } else if (/^(?:---+|#{3,})$/u.test(line)) {
+    } else if (/^(?:---+|#{2,})$/u.test(line)) {
       output.push("<hr>");
     } else if (line.startsWith("> ")) {
       output.push(

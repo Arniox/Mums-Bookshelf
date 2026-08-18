@@ -254,8 +254,11 @@ describe("public library", () => {
       storyTextToEditorHtml("## A heading\n\nA **bold** line", document),
     ).toBe("<h2>A heading</h2><p>A <strong>bold</strong> line</p>");
     expect(
-      storyTextToEditorHtml("###\n\n#####\n\n### A heading", document),
+      storyTextToEditorHtml("##\n\n#####\n\n### A heading", document),
     ).toBe("<hr><hr><h3>A heading</h3>");
+    expect(
+      wordHtmlToStoryHtml("<p>###</p><p>The next passage.</p>", document),
+    ).toBe("<hr><p>The next passage.</p>");
     expect(
       wordHtmlToStoryHtml(
         '<p data-drop-cap="false">A plain opening.</p>',
