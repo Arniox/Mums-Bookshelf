@@ -575,7 +575,7 @@ const authorInitials = settings.authorName
         <strong>Your writing is protected while you edit.</strong>
         <p>
           A recovery copy is saved in this browser. Use <em
-            >Save draft online</em
+            >Save online</em
           >
           to continue on another device. Nothing becomes public until you choose
           <em>Publish now</em>.
@@ -596,7 +596,7 @@ const authorInitials = settings.authorName
         <button
           class="button secondary"
           type="submit"
-          data-editor-action="draft">Save draft online</button
+          data-editor-action="save">Save online</button
         >
         <button
           class="button primary"
@@ -1486,7 +1486,7 @@ const authorInitials = settings.authorName
     const submitter = (event as SubmitEvent).submitter;
     const submitButton =
       submitter instanceof HTMLButtonElement ? submitter : null;
-    const action = submitButton?.dataset.editorAction || "draft";
+    const action = submitButton?.dataset.editorAction || "save";
     const formData = new FormData(workForm);
     const id = String(formData.get("id") || "");
     const optional = (name: string) =>
@@ -1495,7 +1495,10 @@ const authorInitials = settings.authorName
     const payload = {
       slug: String(formData.get("slug")),
       title: String(formData.get("title")),
-      status: action === "publish" ? "published" : "draft",
+      status:
+        action === "publish" || originalStatus === "published"
+          ? "published"
+          : "draft",
       publicationType: String(formData.get("publicationType")),
       publishedAt: date ? `${date}T00:00:00Z` : undefined,
       wordCount: optional("wordCount")
@@ -1532,14 +1535,6 @@ const authorInitials = settings.authorName
       )
     )
       return;
-    if (
-      action === "draft" &&
-      originalStatus === "published" &&
-      !confirm(
-        "Save this published work as a draft? It will be removed from the public website when the automatic update finishes.",
-      )
-    )
-      return;
     const wasPublished = originalStatus === "published";
     workSaveInFlight = true;
     editorStatus.textContent = "Saving…";
@@ -1551,33 +1546,36 @@ const authorInitials = settings.authorName
       button.disabled = true;
     });
     try {
-      await request(id ? `/api/v1/admin/works/${id}` : "/api/v1/admin/works", {
-        method: id ? "PUT" : "POST",
-        body: JSON.stringify(payload),
-      });
+      const savedWork = await request(
+        id ? `/api/v1/admin/works/${id}` : "/api/v1/admin/works",
+        {
+          method: id ? "PUT" : "POST",
+          body: JSON.stringify(payload),
+        },
+      );
       dirty = false;
       window.clearTimeout(localSaveTimer);
       clearLocalDraft();
-      originalStatus = payload.status;
+      originalStatus = savedWork.status;
       await loadDashboard();
-      const needsSeoRefresh = action === "publish" || wasPublished;
+      const needsSeoRefresh = savedWork.status === "published" || wasPublished;
       if (needsSeoRefresh) {
         try {
           await triggerDeployment(editorStatus);
           editorStatus.textContent =
-            action === "publish"
+            savedWork.status === "published"
               ? "Published and visible now. Static SEO files will refresh in the background."
               : "Draft saved. The public version has been removed; static SEO files will refresh in the background.";
           window.setTimeout(() => dialog.close(), 1800);
         } catch (deploymentError) {
           editorStatus.textContent =
-            action === "publish"
+            savedWork.status === "published"
               ? `Published and visible now. ${(deploymentError as Error).message}`
               : `Draft saved and removed from the public site. ${(deploymentError as Error).message}`;
         }
       } else {
         editorStatus.textContent =
-          "Draft saved online. You can continue on another device.";
+          "Saved online. You can continue on another device.";
         window.setTimeout(() => dialog.close(), 1200);
       }
     } catch (error) {
