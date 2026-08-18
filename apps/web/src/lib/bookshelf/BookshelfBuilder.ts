@@ -116,7 +116,12 @@ export class BookshelfBuilder {
   }
 
   private readonly animate = () => {
-    this.books.forEach((book) => book.update(book === this.hovered));
+    const camera = this.scene?.camera;
+    if (camera) {
+      this.books.forEach((book) =>
+        book.update(book === this.hovered, camera.position),
+      );
+    }
     this.scene?.render();
   };
 

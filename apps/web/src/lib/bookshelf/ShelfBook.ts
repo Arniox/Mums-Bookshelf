@@ -18,6 +18,7 @@ export class ShelfBook {
   readonly url: string;
 
   private readonly targetPosition = new THREE.Vector3();
+  private readonly cameraOffset = new THREE.Vector3();
   private open = 0;
   private hover = 0;
   private pageOpen = 0;
@@ -46,7 +47,7 @@ export class ShelfBook {
     this.settle = 0;
   }
 
-  update(isHovered: boolean) {
+  update(isHovered: boolean, cameraPosition: THREE.Vector3) {
     this.hover = THREE.MathUtils.lerp(
       this.hover,
       isHovered && !this.isOpen ? 1 : 0,
@@ -70,9 +71,12 @@ export class ShelfBook {
       : 0;
     this.pageOpen = THREE.MathUtils.lerp(this.pageOpen, pageOpenTarget, 0.1);
     this.root.position.lerp(this.targetPosition, 0.11);
+    this.cameraOffset.subVectors(cameraPosition, this.root.position);
+    const openYaw =
+      Math.PI + Math.atan2(this.cameraOffset.x, this.cameraOffset.z);
     this.root.rotation.y = THREE.MathUtils.lerp(
       this.root.rotation.y,
-      this.isOpen ? Math.PI * this.pull : 0,
+      this.isOpen ? openYaw * this.pull : 0,
       0.1,
     );
     this.root.rotation.z = THREE.MathUtils.lerp(
