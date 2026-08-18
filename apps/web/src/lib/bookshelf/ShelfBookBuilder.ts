@@ -5,6 +5,14 @@ import type { ShelfBookLayout } from "./ShelfLayoutBuilder";
 
 export class ShelfBookBuilder {
   private readonly titleTextures: BookTitleTextureFactory;
+  private readonly pageMaterial = new THREE.MeshStandardMaterial({
+    color: "#e9ddc4",
+    roughness: 0.84,
+  });
+  private readonly pageSurfaceMaterial = new THREE.MeshStandardMaterial({
+    color: "#f6ecd8",
+    roughness: 0.92,
+  });
 
   constructor(titleTextures: BookTitleTextureFactory) {
     this.titleTextures = titleTextures;
@@ -24,10 +32,6 @@ export class ShelfBookBuilder {
       color: appearance.primaryColor,
       roughness: appearance.materialStyle === "leather" ? 0.38 : 0.68,
       metalness: 0.03,
-    });
-    const pageMaterial = new THREE.MeshStandardMaterial({
-      color: "#e9ddc4",
-      roughness: 0.84,
     });
     const spine = new THREE.Mesh(
       new THREE.BoxGeometry(width, height, coverThickness),
@@ -71,7 +75,7 @@ export class ShelfBookBuilder {
       coverHeight,
       coverThickness,
       coverMaterial,
-      pageMaterial,
+      this.pageMaterial,
       paperThickness,
     );
     this.addLeaf(
@@ -82,7 +86,7 @@ export class ShelfBookBuilder {
       coverHeight,
       coverThickness,
       coverMaterial,
-      pageMaterial,
+      this.pageMaterial,
       paperThickness,
     );
     leftLeaf.rotation.y = -Math.PI / 2;
@@ -135,10 +139,7 @@ export class ShelfBookBuilder {
     pageBlock.castShadow = true;
     const pageSurface = new THREE.Mesh(
       new THREE.PlaneGeometry(pageWidth * 0.91, pageHeight * 0.91),
-      new THREE.MeshStandardMaterial({
-        color: "#f6ecd8",
-        roughness: 0.92,
-      }),
+      this.pageSurfaceMaterial,
     );
     pageSurface.position.set(centerX, 0, -paperThickness / 2 - 0.002);
     leaf.add(cover, pageBlock, pageSurface);

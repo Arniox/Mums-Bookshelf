@@ -6,6 +6,7 @@ import { ShelfBook } from "./ShelfBook";
 import { ShelfBookBuilder } from "./ShelfBookBuilder";
 import { ShelfFurnitureBuilder } from "./ShelfFurnitureBuilder";
 import {
+  getResponsiveShelfWidth,
   getShelfViewportHeight,
   ShelfLayoutBuilder,
 } from "./ShelfLayoutBuilder";
@@ -17,7 +18,6 @@ type BookshelfBuilderOptions = {
   links: readonly HTMLAnchorElement[];
 };
 
-const shelfWidth = 8;
 const shelfPadding = 0.65;
 const shelfSpacing = 3.55;
 const boardThickness = 0.28;
@@ -28,11 +28,14 @@ export class BookshelfBuilder {
   private readonly hint: HTMLElement | undefined;
   private readonly links: readonly HTMLAnchorElement[];
   private readonly books: ShelfBook[] = [];
+  private readonly activeBooks = new Set<ShelfBook>();
   private hovered: ShelfBook | undefined;
   private picker: CanvasBookPicker | undefined;
   private scene: BookshelfScene | undefined;
   private selected: ShelfBook | undefined;
   private rowCount = 0;
+  private shelfWidth = 8;
+  private animationRunning = false;
   private viewportObserver: ResizeObserver | undefined;
   private viewportWidth = Number.NaN;
 
@@ -44,14 +47,30 @@ export class BookshelfBuilder {
   }
 
   start() {
+    this.viewportObserver = new ResizeObserver(this.handleViewportResize);
+    this.viewportObserver.observe(this.container);
+    this.rebuildShelf();
+  }
+
+  dispose() {
+    this.viewportObserver?.disconnect();
+    this.viewportObserver = undefined;
+    this.disposeShelf();
+  }
+
+  private rebuildShelf() {
+    const viewportWidth = this.container.getBoundingClientRect().width;
+    if (!viewportWidth) return;
+    this.disposeShelf();
+    this.shelfWidth = getResponsiveShelfWidth(viewportWidth);
     const layout = new ShelfLayoutBuilder({
-      shelfWidth,
+      shelfWidth: this.shelfWidth,
       shelfPadding,
       shelfSpacing,
       boardThickness,
     }).fromLinks(this.links);
     this.rowCount = layout.rows.length;
-    this.updateViewportHeight(layout.rows.length);
+    this.updateViewportHeight(viewportWidth, true);
     const focusY =
       (layout.shelfHeights[0]! + layout.shelfHeights.at(-1)!) / 2 + 1.55;
     this.scene = new BookshelfScene({
@@ -59,11 +78,11 @@ export class BookshelfBuilder {
       cabinetHeight: layout.cabinetHeight,
       container: this.container,
       focusY,
-      shelfWidth,
+      shelfWidth: this.shelfWidth,
     });
     this.scene.scene.add(
       new ShelfFurnitureBuilder().build({
-        shelfWidth,
+        shelfWidth: this.shelfWidth,
         boardThickness,
         cabinetHeight: layout.cabinetHeight,
         shelfHeights: layout.shelfHeights,
@@ -108,40 +127,48 @@ export class BookshelfBuilder {
       camera: this.scene.camera,
       books: this.books,
       onHover: (book) => {
+        if (book === this.hovered) return;
+        if (this.hovered) this.activeBooks.add(this.hovered);
         this.hovered = book;
+        if (book) this.activeBooks.add(book);
+        this.requestAnimation();
       },
       onPick: this.pickBook,
     });
-    this.viewportObserver = new ResizeObserver(this.handleViewportResize);
-    this.viewportObserver.observe(this.container);
-    this.scene.setAnimationLoop(this.animate);
+    this.scene.render();
   }
 
-  dispose() {
+  private disposeShelf() {
     this.picker?.dispose();
     this.picker = undefined;
-    this.viewportObserver?.disconnect();
-    this.viewportObserver = undefined;
     this.scene?.dispose();
     this.scene = undefined;
     this.books.length = 0;
+    this.activeBooks.clear();
+    this.animationRunning = false;
     this.hovered = undefined;
     this.selected = undefined;
   }
 
-  private readonly animate = (time: number) => {
+  private readonly animate = () => {
     const camera = this.scene?.camera;
-    if (camera) {
-      this.books.forEach((book) =>
-        book.update(book === this.hovered, camera.position),
-      );
+    if (!camera || !this.scene) return;
+    this.activeBooks.forEach((book) => {
+      if (!book.update(book === this.hovered, camera.position)) {
+        this.activeBooks.delete(book);
+      }
+    });
+    this.scene.render();
+    if (!this.activeBooks.size) {
+      this.scene.setAnimationLoop(null);
+      this.animationRunning = false;
     }
-    this.scene?.updateLighting(time);
-    this.scene?.render();
   };
 
   private readonly handleViewportResize = () => {
-    this.updateViewportHeight(this.rowCount);
+    const viewportWidth = this.container.getBoundingClientRect().width;
+    if (Math.abs(viewportWidth - this.viewportWidth) < 1) return;
+    this.rebuildShelf();
   };
 
   private readonly pickBook = (book: ShelfBook) => {
@@ -150,25 +177,32 @@ export class BookshelfBuilder {
       return;
     }
     this.selected = book;
-    this.books.forEach((candidate) =>
-      candidate.setSelected(candidate === book),
-    );
+    this.books.forEach((candidate) => {
+      candidate.setSelected(candidate === book);
+      this.activeBooks.add(candidate);
+    });
+    this.requestAnimation();
     if (this.hint) {
       this.hint.textContent = "Select the open book again to begin reading.";
     }
   };
 
-  private updateViewportHeight(rowCount: number) {
-    const viewportWidth = this.container.getBoundingClientRect().width;
-    if (Math.abs(viewportWidth - this.viewportWidth) < 1) return;
+  private requestAnimation() {
+    if (!this.scene || this.animationRunning) return;
+    this.animationRunning = true;
+    this.scene.setAnimationLoop(this.animate);
+  }
+
+  private updateViewportHeight(viewportWidth: number, force = false) {
+    if (!force && Math.abs(viewportWidth - this.viewportWidth) < 1) return;
     this.viewportWidth = viewportWidth;
     this.container.style.setProperty(
       "--webgl-shelf-height",
       `${getShelfViewportHeight(
-        rowCount,
+        this.rowCount,
         window.matchMedia("(max-width: 640px)").matches,
         viewportWidth,
-        shelfWidth,
+        this.shelfWidth,
         shelfSpacing,
       )}px`,
     );

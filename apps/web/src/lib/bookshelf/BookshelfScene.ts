@@ -65,14 +65,6 @@ export class BookshelfScene {
     this.renderer.setAnimationLoop(animate);
   }
 
-  updateLighting(time: number) {
-    const swing = Math.sin(time * 0.00045);
-    const baseX = this.keyLightSide * this.shelfWidth * 0.28;
-    this.keyLight.position.x = baseX + swing * this.shelfWidth * 0.1;
-    this.keyLight.position.y = this.cabinetHeight + 3 + swing * 0.22;
-    this.keyLightTarget.position.x = swing * this.shelfWidth * 0.04;
-  }
-
   render() {
     this.scene.updateMatrixWorld(true);
     this.renderer.render(this.scene, this.camera);
@@ -123,16 +115,16 @@ export class BookshelfScene {
     this.keyLightSide = Math.random() < 0.5 ? -1 : 1;
     this.keyLight = new THREE.SpotLight(
       "#ffe2ad",
-      320,
+      180,
       0,
       Math.PI / 3,
       0.55,
       1.2,
     );
     this.keyLight.position.set(
-      this.keyLightSide * this.shelfWidth * 0.28,
-      this.cabinetHeight + 3,
-      7,
+      this.keyLightSide * this.shelfWidth * 0.48,
+      this.cabinetHeight / 2 + 1,
+      14,
     );
     this.keyLightTarget.position.set(0, this.cabinetHeight / 2, 0);
     this.keyLight.target = this.keyLightTarget;

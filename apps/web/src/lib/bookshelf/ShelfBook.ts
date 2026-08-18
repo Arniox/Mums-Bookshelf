@@ -47,7 +47,7 @@ export class ShelfBook {
     this.settle = 0;
   }
 
-  update(isHovered: boolean, cameraPosition: THREE.Vector3) {
+  update(isHovered: boolean, cameraPosition: THREE.Vector3): boolean {
     this.hover = THREE.MathUtils.lerp(
       this.hover,
       isHovered && !this.isOpen ? 1 : 0,
@@ -96,6 +96,19 @@ export class ShelfBook {
       this.rightLeaf.rotation.y,
       (Math.PI / 2) * (1 - this.pageOpen),
       0.1,
+    );
+    const targetYaw = this.isOpen ? openYaw * this.pull : 0;
+    const targetLean = this.isOpen
+      ? this.homeLean * (1 - this.pull)
+      : this.homeLean;
+    return (
+      this.targetPosition.distanceToSquared(this.root.position) > 0.000001 ||
+      Math.abs(targetYaw - this.root.rotation.y) > 0.001 ||
+      Math.abs(targetLean - this.root.rotation.z) > 0.001 ||
+      Math.abs((-Math.PI / 2) * (1 - this.pageOpen) - this.leftLeaf.rotation.y) >
+        0.001 ||
+      Math.abs((Math.PI / 2) * (1 - this.pageOpen) - this.rightLeaf.rotation.y) >
+        0.001
     );
   }
 }
