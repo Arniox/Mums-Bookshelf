@@ -157,6 +157,13 @@ describe("public library", () => {
 
     expect(layout.rows.length).toBeGreaterThan(1);
     expect(layout.rows.flat()).toHaveLength(links.length);
+    expect(
+      layout.rows
+        .slice()
+        .reverse()
+        .flat()
+        .map((book) => book.id),
+    ).toEqual(links.map((link) => link.dataset.bookTitle));
     layout.rows.forEach((row) => {
       const width = row.reduce(
         (total, book, index) => total + book.width + (index ? 0.08 : 0),
