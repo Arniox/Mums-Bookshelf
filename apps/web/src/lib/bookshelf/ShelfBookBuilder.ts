@@ -17,7 +17,6 @@ export class ShelfBookBuilder {
     const backCover = new THREE.Group();
     const openSpread = new THREE.Group();
     const coverThickness = 0.08;
-    const spineDepth = 0.12;
     const coverMaterial = new THREE.MeshStandardMaterial({
       color: appearance.primaryColor,
       roughness: appearance.materialStyle === "leather" ? 0.38 : 0.68,
@@ -28,10 +27,9 @@ export class ShelfBookBuilder {
       roughness: 0.84,
     });
     const spine = new THREE.Mesh(
-      new THREE.BoxGeometry(width, height, spineDepth),
+      new THREE.BoxGeometry(width, height, depth),
       coverMaterial,
     );
-    spine.position.z = depth / 2 - spineDepth / 2;
     spine.castShadow = true;
     root.add(spine);
 
@@ -168,7 +166,7 @@ export class ShelfBookBuilder {
     rim.position.z = 0.016;
     gem.position.z = 0.03;
     badge.add(base, rim, gem);
-    badge.position.set(width / 2, -height / 2 + radius * 2.1, frontZ + 0.018);
+    badge.position.set(0, -height / 2 + radius * 2.1, frontZ + 0.018);
     return badge;
   }
 }
