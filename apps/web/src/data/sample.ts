@@ -2,6 +2,8 @@ import type { PublicSettings, Work } from "@mums-bookshelf/shared";
 
 export const settings: PublicSettings = {
   authorName: "Denise Diehl",
+  homepageEyebrow: "Fiction · Essays · Small observations",
+  homepageHeadingHtml: "Stories for the <em>quietly curious.</em>",
   introduction: "Writes stories about the weird and wonderful.",
   biography:
     "Denise Diehl spent over 40 years working in laboratory science. After retiring with her husband to a small town in New Zealand, she wrote her first novel and short stories — a fun new adventure to match the latest decade of her life. Her writing leans towards the speculative and weird, think twilight zone. Several short stories have been published in various magazines including Frivolous Comma, Promised Protagonists, Starspun Lit, and 101 Words.",

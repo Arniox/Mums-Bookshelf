@@ -1652,6 +1652,16 @@ fieldset {
 .rich-story-canvas > :first-child {
   margin-top: 0;
 }
+
+.homepage-heading-editor .rich-story-canvas {
+  min-height: 7.2rem;
+  font: 600 clamp(2rem, 4vw, 3.25rem) / 0.98 var(--serif);
+}
+
+.homepage-heading-editor .rich-story-canvas em {
+  color: var(--plum);
+  font-weight: 500;
+}
 .draft-safety-note {
   padding: 1rem 1.2rem;
   border-left: 4px solid var(--gold);
