@@ -571,8 +571,22 @@ const featuredWork = works.find((work) => work.featured);
             pointer.y >= min.y &&
             pointer.y <= max.y,
         );
-      return matches.sort((left, right) => left.distance - right.distance)[0]
-        ?.book;
+      const directMatch = matches.sort(
+        (left, right) => left.distance - right.distance,
+      )[0]?.book;
+      if (directMatch) return directMatch;
+
+      const nearest = books
+        .map((book) => {
+          const center = book.root.getWorldPosition(new THREE.Vector3());
+          center.project(camera);
+          return {
+            book,
+            distance: pointer.distanceTo(center),
+          };
+        })
+        .sort((left, right) => left.distance - right.distance)[0];
+      return nearest?.book;
     };
     const select = (book: ShelfBook) => {
       selected = book;
