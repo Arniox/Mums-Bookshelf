@@ -19,7 +19,7 @@ const authorInitials = settings.authorName
   <article class="about-page">
     <header>
       <p class="eyebrow">About the author</p>
-      <h1>{settings.authorName}</h1>
+      <h1 data-about-author-name>{settings.authorName}</h1>
     </header>
     <div class="about-layout">
       {
@@ -45,13 +45,15 @@ const authorInitials = settings.authorName
         )
       }
       <div class="about-copy">
-        {
-          settings.biography
-            .split("\n\n")
-            .map((paragraph) => <p>{paragraph}</p>)
-        }
+        <div data-about-biography>
+          {
+            settings.biography
+              .split("\n\n")
+              .map((paragraph) => <p>{paragraph}</p>)
+          }
+        </div>
         <h2>Elsewhere</h2>
-        <ul class="social-list">
+        <ul class="social-list" data-about-social-links>
           {
             Object.entries(settings.socialLinks).map(([label, url]) => (
               <li>
@@ -71,3 +73,50 @@ const authorInitials = settings.authorName
     </div>
   </article>
 </BaseLayout>
+
+<script>
+  import { getRuntimePublicSettings } from "../lib/runtimeContent";
+
+  void getRuntimePublicSettings()
+    .then((settings) => {
+      const authorName = document.querySelector<HTMLElement>(
+        "[data-about-author-name]",
+      );
+      if (authorName) authorName.textContent = settings.authorName;
+      const biography = document.querySelector<HTMLElement>(
+        "[data-about-biography]",
+      );
+      if (biography) {
+        biography.replaceChildren(
+          ...settings.biography
+            .split("\n\n")
+            .filter(Boolean)
+            .map((paragraph) => {
+              const element = document.createElement("p");
+              element.textContent = paragraph;
+              return element;
+            }),
+        );
+      }
+      const links = document.querySelector<HTMLElement>(
+        "[data-about-social-links]",
+      );
+      if (links) {
+        const entries = [
+          ...Object.entries(settings.socialLinks),
+          ...(settings.contactLink ? [["Contact", settings.contactLink]] : []),
+        ];
+        links.replaceChildren(
+          ...entries.map(([label, url]) => {
+            const item = document.createElement("li");
+            const link = document.createElement("a");
+            link.href = url;
+            link.textContent = `${label} ↗`;
+            item.append(link);
+            return item;
+          }),
+        );
+      }
+    })
+    .catch(() => undefined);
+</script>

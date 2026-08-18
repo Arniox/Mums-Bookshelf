@@ -32,27 +32,32 @@ const personSchema = {
   <div class="library-room">
     <section class="library-intro" aria-labelledby="welcome-title">
       <div class="library-sign">
-        <p class="eyebrow">{settings.homepageEyebrow}</p>
-        <h1 id="welcome-title" set:html={settings.homepageHeadingHtml} />
-        <p class="hero-intro">{settings.introduction}</p>
-        <a class="text-link" href={`${base}about/`}
-          >Meet {settings.authorName.split(/\s+/)[0]}
+        <p class="eyebrow" data-homepage-eyebrow>{settings.homepageEyebrow}</p>
+        <h1
+          id="welcome-title"
+          data-homepage-heading
+          set:html={settings.homepageHeadingHtml}
+        />
+        <p class="hero-intro" data-author-introduction>{settings.introduction}</p>
+        <a class="text-link" href={`${base}about/`} data-homepage-author-link
+          >Meet <span data-author-first-name>{settings.authorName.split(/\s+/)[0]}</span>
           <span aria-hidden="true">→</span></a
         >
       </div>
-      {
-        settings.announcement && (
-          <aside class="room-announcement" aria-label="Author announcement">
+      <aside
+        class="room-announcement"
+        aria-label="Author announcement"
+        data-homepage-announcement
+        hidden={!settings.announcement}
+      >
             <span class="announcement-mark" aria-hidden="true">
               ✦
             </span>
             <span>
               <strong>From Denise's writing desk</strong>
-              <span>{settings.announcement}</span>
+              <span data-homepage-announcement-text>{settings.announcement}</span>
             </span>
-          </aside>
-        )
-      }
+      </aside>
     </section>
 
     {
@@ -97,13 +102,16 @@ const personSchema = {
 
   <section class="closing-note">
     <span aria-hidden="true">“</span>
-    <blockquote>{settings.introduction}</blockquote>
-    <p>— {settings.authorName}</p>
+    <blockquote data-author-introduction>{settings.introduction}</blockquote>
+    <p>— <span data-author-name>{settings.authorName}</span></p>
   </section>
 </BaseLayout>
 
 <script>
-  import { getRuntimePublicWorks } from "../lib/runtimeContent";
+  import {
+    getRuntimePublicSettings,
+    getRuntimePublicWorks,
+  } from "../lib/runtimeContent";
 
   const recentList =
     document.querySelector<HTMLOListElement>("[data-recent-list]");
@@ -145,5 +153,38 @@ const personSchema = {
 
   void getRuntimePublicWorks()
     .then(renderRecent)
+    .catch(() => undefined);
+
+  void getRuntimePublicSettings()
+    .then((settings) => {
+      const eyebrow = document.querySelector<HTMLElement>(
+        "[data-homepage-eyebrow]",
+      );
+      if (eyebrow) eyebrow.textContent = settings.homepageEyebrow;
+      const heading = document.querySelector<HTMLElement>(
+        "[data-homepage-heading]",
+      );
+      if (heading) heading.innerHTML = settings.homepageHeadingHtml;
+      document
+        .querySelectorAll<HTMLElement>("[data-author-first-name]")
+        .forEach((element) => {
+          element.textContent = settings.authorName.split(/\s+/)[0] || "";
+        });
+      document
+        .querySelectorAll<HTMLElement>("[data-author-name]")
+        .forEach((element) => {
+          element.textContent = settings.authorName;
+        });
+      const announcement = document.querySelector<HTMLElement>(
+        "[data-homepage-announcement]",
+      );
+      const announcementText = document.querySelector<HTMLElement>(
+        "[data-homepage-announcement-text]",
+      );
+      if (announcement && announcementText) {
+        announcement.hidden = !settings.announcement;
+        announcementText.textContent = settings.announcement || "";
+      }
+    })
     .catch(() => undefined);
 </script>
