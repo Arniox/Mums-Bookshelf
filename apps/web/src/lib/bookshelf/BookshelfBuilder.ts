@@ -21,7 +21,7 @@ type BookshelfBuilderOptions = {
 const shelfPadding = 0.65;
 const shelfSpacing = 3.55;
 const boardThickness = 0.28;
-const redirectDelayMilliseconds = 90;
+const redirectDelayMilliseconds = 25;
 
 export class BookshelfBuilder {
   private readonly canvas: HTMLCanvasElement;
