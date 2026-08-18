@@ -100,6 +100,12 @@ describe("public library", () => {
     expect(getBookAppearance(works[0]!.id).mark).toBe(appearance.mark);
   });
 
+  it("uses taller books with centered spine titles", () => {
+    const appearance = getBookAppearance(works[0]!.id);
+    expect(appearance.height).toBeGreaterThanOrEqual(184);
+    expect(appearance.titlePosition).toBe("middle");
+  });
+
   it("validates local editor drafts before restoring them", () => {
     expect(localWorkDraftKey("work-1")).toBe(
       "mums-bookshelf:work-draft:work-1",
