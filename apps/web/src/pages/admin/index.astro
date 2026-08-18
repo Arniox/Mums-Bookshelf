@@ -1427,6 +1427,16 @@ const authorInitials = settings.authorName
 
   const replaceStorySelection = (html: string) => {
     if (!html.trim()) return;
+    const selection = window.getSelection();
+    if (selection?.rangeCount && selection.getRangeAt(0).collapsed) {
+      const paragraph = storyParagraphAtSelection();
+      if (paragraph) {
+        const range = document.createRange();
+        range.selectNodeContents(paragraph);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
     executeRichTextCommand("insertHTML", html);
   };
 
