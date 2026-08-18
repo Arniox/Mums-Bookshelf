@@ -61,7 +61,7 @@ export class BookshelfScene {
     this.resize();
   }
 
-  setAnimationLoop(animate: (time: number) => void) {
+  setAnimationLoop(animate: ((time: number) => void) | null) {
     this.renderer.setAnimationLoop(animate);
   }
 

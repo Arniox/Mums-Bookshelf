@@ -3,6 +3,7 @@ import { Window } from "happy-dom";
 import { describe, expect, it } from "vitest";
 import { works } from "../src/data/sample";
 import {
+  getResponsiveShelfWidth,
   getShelfViewportHeight,
   ShelfLayoutBuilder,
 } from "../src/lib/bookshelf/ShelfLayoutBuilder";
@@ -176,6 +177,9 @@ describe("public library", () => {
         builder.shelfSpacing,
       ),
     );
+    expect(getResponsiveShelfWidth(800)).toBe(8);
+    expect(getResponsiveShelfWidth(600)).toBe(6);
+    expect(getResponsiveShelfWidth(2_000)).toBe(12);
   });
 
   it("validates local editor drafts before restoring them", () => {
