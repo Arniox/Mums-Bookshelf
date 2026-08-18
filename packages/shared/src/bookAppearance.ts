@@ -60,7 +60,7 @@ export function getBookAppearance(seedValue: string): BookAppearance {
   return {
     primaryColor: palette[0],
     accentColor: palette[1],
-    height: Math.round(142 + sample(seed, 1) * 54),
+    height: Math.round(184 + sample(seed, 1) * 54),
     width: Math.round(37 + sample(seed, 2) * 28),
     depth: Math.round(8 + sample(seed, 3) * 12),
     lean: Number((-3.2 + sample(seed, 4) * 6.4).toFixed(2)),
@@ -73,7 +73,7 @@ export function getBookAppearance(seedValue: string): BookAppearance {
       ["cloth", "leather", "paper", "linen"] as const,
       sample(seed, 7),
     ),
-    titlePosition: choice(["top", "middle", "low"] as const, sample(seed, 8)),
+    titlePosition: "middle",
     mark: choice(bookMarks, sample(seed, 9)),
   };
 }
