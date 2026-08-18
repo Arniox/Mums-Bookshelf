@@ -21,7 +21,7 @@ type BookshelfBuilderOptions = {
 const shelfPadding = 0.65;
 const shelfSpacing = 3.55;
 const boardThickness = 0.28;
-const redirectDelayMilliseconds = 180;
+const redirectDelayMilliseconds = 90;
 
 export class BookshelfBuilder {
   private readonly canvas: HTMLCanvasElement;
@@ -51,10 +51,12 @@ export class BookshelfBuilder {
   start() {
     this.viewportObserver = new ResizeObserver(this.handleViewportResize);
     this.viewportObserver.observe(this.container);
+    window.addEventListener("pageshow", this.handlePageShow);
     this.rebuildShelf();
   }
 
   dispose() {
+    window.removeEventListener("pageshow", this.handlePageShow);
     this.viewportObserver?.disconnect();
     this.viewportObserver = undefined;
     this.disposeShelf();
@@ -197,6 +199,22 @@ export class BookshelfBuilder {
       window.location.assign(book.url);
     }, redirectDelayMilliseconds);
   }
+
+  private readonly handlePageShow = () => {
+    if (this.redirectTimer !== undefined) {
+      window.clearTimeout(this.redirectTimer);
+      this.redirectTimer = undefined;
+    }
+    this.selected = undefined;
+    this.books.forEach((book) => {
+      book.setSelected(false);
+      this.activeBooks.add(book);
+    });
+    if (this.hint) {
+      this.hint.textContent = "Select a book to pull it from the shelf.";
+    }
+    this.requestAnimation();
+  };
 
   private requestAnimation() {
     if (!this.scene || this.animationRunning) return;
