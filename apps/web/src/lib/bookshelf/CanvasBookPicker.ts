@@ -9,6 +9,8 @@ type PickerOptions = {
   onPick: (book: ShelfBook) => void;
 };
 
+const touchTapSlopPixels = 12;
+
 export class CanvasBookPicker {
   private readonly canvas: HTMLCanvasElement;
   private readonly camera: THREE.Camera;
@@ -19,6 +21,10 @@ export class CanvasBookPicker {
   private readonly pointer = new THREE.Vector2();
   private readonly raycaster = new THREE.Raycaster();
   private hoveredBook: ShelfBook | undefined;
+  private touchMoved = false;
+  private touchStartX = 0;
+  private touchStartY = 0;
+  private suppressNextClick = false;
 
   constructor(options: PickerOptions) {
     this.canvas = options.canvas;
@@ -34,16 +40,29 @@ export class CanvasBookPicker {
     });
     this.canvas.addEventListener("pointerleave", this.handlePointerLeave);
     this.canvas.addEventListener("click", this.handleClick);
+    this.canvas.addEventListener("pointerdown", this.handlePointerDown, {
+      passive: true,
+    });
+    this.canvas.addEventListener("pointerup", this.handlePointerUp);
   }
 
   dispose() {
     this.canvas.removeEventListener("pointermove", this.handlePointerMove);
     this.canvas.removeEventListener("pointerleave", this.handlePointerLeave);
     this.canvas.removeEventListener("click", this.handleClick);
+    this.canvas.removeEventListener("pointerdown", this.handlePointerDown);
+    this.canvas.removeEventListener("pointerup", this.handlePointerUp);
     this.canvas.style.cursor = "default";
   }
 
   private readonly handlePointerMove = (event: PointerEvent) => {
+    if (event.pointerType === "touch") {
+      this.touchMoved ||= Math.hypot(
+        event.clientX - this.touchStartX,
+        event.clientY - this.touchStartY,
+      ) > touchTapSlopPixels;
+      return;
+    }
     const book = this.pick(event);
     this.hoveredBook = book;
     this.canvas.style.cursor = book ? "pointer" : "default";
@@ -57,7 +76,26 @@ export class CanvasBookPicker {
   };
 
   private readonly handleClick = (event: MouseEvent) => {
+    if (this.suppressNextClick) {
+      this.suppressNextClick = false;
+      return;
+    }
     const book = this.pick(event) ?? this.hoveredBook;
+    if (book) this.onPick(book);
+  };
+
+  private readonly handlePointerDown = (event: PointerEvent) => {
+    if (event.pointerType !== "touch") return;
+    this.touchMoved = false;
+    this.touchStartX = event.clientX;
+    this.touchStartY = event.clientY;
+  };
+
+  private readonly handlePointerUp = (event: PointerEvent) => {
+    if (event.pointerType !== "touch") return;
+    this.suppressNextClick = true;
+    if (this.touchMoved) return;
+    const book = this.pick(event);
     if (book) this.onPick(book);
   };
 
