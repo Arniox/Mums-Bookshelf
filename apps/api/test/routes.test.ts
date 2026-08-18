@@ -31,8 +31,8 @@ class FakeStatement {
     if (this.sql.includes("FROM sessions s JOIN admin_users")) {
       return this.database.session as T;
     }
-    if (this.sql.includes("SELECT id FROM works WHERE id"))
-      return { id: "work-1" } as T;
+    if (this.sql.includes("FROM works WHERE id"))
+      return this.database.work as T;
     return null;
   }
 
@@ -47,6 +47,22 @@ class FakeDatabase {
   session: Record<string, unknown> | null = null;
   rateCount = 1;
   slugConflict = false;
+  work = {
+    id: "work-1",
+    slug: "existing-work",
+    title: "Existing Work",
+    status: "published",
+    publication_type: "short-story",
+    published_at: "2026-08-17T00:00:00.000Z",
+    created_at: "2026-08-16T00:00:00.000Z",
+    updated_at: "2026-08-17T00:00:00.000Z",
+    blurb: "A valid blurb.",
+    content_visibility: "external-only",
+    primary_external_url: "https://example.com/existing-work",
+    social_embed_enabled: 0,
+    genres_json: "[]",
+    featured: 0,
+  };
 
   prepare(sql: string) {
     const statement = new FakeStatement(sql, this);
@@ -324,6 +340,60 @@ describe("API routes", () => {
     expect(await response.json()).toMatchObject({
       error: { code: "slug_conflict" },
     });
+  });
+
+  it("rejects an edit that does not include the version it opened", async () => {
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/works/work-1",
+      {
+        method: "PUT",
+        headers: {
+          Origin: "https://allowed.example",
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(workPayload()),
+      },
+      env,
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({
+      error: { code: "work_outdated" },
+    });
+  });
+
+  it("guards versioned edits in SQL and records their audit trail", async () => {
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/works/work-1",
+      {
+        method: "PUT",
+        headers: {
+          Origin: "https://allowed.example",
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...workPayload(),
+          expectedUpdatedAt: database.work.updated_at,
+        }),
+      },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(
+      database.statements.some((statement) =>
+        statement.sql.includes("WHERE works.updated_at = ?"),
+      ),
+    ).toBe(true);
+    expect(
+      database.statements.some((statement) =>
+        statement.sql.includes("INSERT INTO work_audit_log"),
+      ),
+    ).toBe(true);
   });
 
   it("publishes every draft with one database update", async () => {
@@ -690,4 +760,20 @@ async function activeAccessToken(database: FakeDatabase, env: Bindings) {
     { id: "user-1", username: "author" },
     "session-1",
   );
+}
+
+function workPayload() {
+  return {
+    slug: "existing-work",
+    title: "Existing Work",
+    status: "published",
+    publicationType: "short-story",
+    publishedAt: "2026-08-17T00:00:00.000Z",
+    blurb: "A valid blurb.",
+    contentVisibility: "external-only",
+    primaryExternalUrl: "https://example.com/existing-work",
+    socialEmbedEnabled: false,
+    genres: [],
+    featured: false,
+  };
 }
