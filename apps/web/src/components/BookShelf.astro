@@ -130,6 +130,8 @@ const featuredWork = works.find((work) => work.featured);
 <script>
   import { getBookAppearance, type Work } from "@mums-bookshelf/shared";
   import * as THREE from "three";
+  import { CanvasBookPicker } from "../lib/bookshelf/CanvasBookPicker";
+  import { ShelfBook } from "../lib/bookshelf/ShelfBook";
   import { dailyFeaturedOrder } from "../lib/randomiseWorks";
   import { getRuntimePublicWorks } from "../lib/runtimeContent";
 
@@ -168,20 +170,6 @@ const featuredWork = works.find((work) => work.featured);
       (item) => item.dataset.featured === "true",
       (item) => item.dataset.orderKey || "",
     ).forEach((item) => accessibleList.append(item));
-  };
-
-  type ShelfBook = {
-    root: THREE.Group;
-    frontCover: THREE.Group;
-    backCover: THREE.Group;
-    home: THREE.Vector3;
-    homeLean: number;
-    width: number;
-    height: number;
-    url: string;
-    open: number;
-    turn: number;
-    hover: number;
   };
 
   const bindFallbackOpening = () => {
@@ -485,20 +473,14 @@ const featuredWork = works.find((work) => work.featured);
         );
         root.position.copy(home);
         root.rotation.z = THREE.MathUtils.degToRad(appearance.lean);
-        const book: ShelfBook = {
+        const book = new ShelfBook({
           root,
           frontCover,
           backCover,
           home,
           homeLean: root.rotation.z,
-          width,
-          height,
           url: link.href,
-          open: 0,
-          turn: 0,
-          hover: 0,
-        };
-        root.userData.shelfBook = book;
+        });
         scene.add(root);
         books.push(book);
         cursor += width + 0.08;
@@ -517,16 +499,29 @@ const featuredWork = works.find((work) => work.featured);
 
     let selected: ShelfBook | undefined;
     let hovered: ShelfBook | undefined;
-    let frame = 0;
     const select = (book: ShelfBook) => {
       selected = book;
       books.forEach((candidate) => {
-        candidate.open = candidate === book ? 1 : 0;
+        candidate.setSelected(candidate === book);
       });
       if (hint)
-        hint.textContent =
-          "Drag the open book to turn it. Select it again to begin reading.";
+        hint.textContent = "Select the open book again to begin reading.";
     };
+    const picker = new CanvasBookPicker({
+      canvas,
+      camera,
+      books,
+      onHover: (book) => {
+        hovered = book;
+      },
+      onPick: (book) => {
+        if (selected === book) {
+          window.location.assign(book.url);
+          return;
+        }
+        select(book);
+      },
+    });
     const resize = () => {
       updateShelfViewportHeight();
       const { width, height } = webglShelf.getBoundingClientRect();
@@ -535,57 +530,20 @@ const featuredWork = works.find((work) => work.featured);
       camera.updateProjectionMatrix();
     };
     const animate = () => {
-      frame = window.requestAnimationFrame(animate);
       books.forEach((book) => {
-        book.hover = THREE.MathUtils.lerp(
-          book.hover,
-          book === hovered && !book.open ? 1 : 0,
-          0.16,
-        );
-        const target = book.open
-          ? new THREE.Vector3(0, 3.25, 2.65)
-          : book.home
-              .clone()
-              .add(new THREE.Vector3(0, book.hover * 0.24, book.hover * 0.18));
-        book.root.position.lerp(target, 0.11);
-        book.root.rotation.y = THREE.MathUtils.lerp(
-          book.root.rotation.y,
-          book.open ? book.turn : 0,
-          0.1,
-        );
-        book.root.rotation.z = THREE.MathUtils.lerp(
-          book.root.rotation.z,
-          book.open ? -0.06 : book.homeLean,
-          0.1,
-        );
-        if (!book.open)
-          book.root.rotation.x = THREE.MathUtils.lerp(
-            book.root.rotation.x,
-            0,
-            0.1,
-          );
-        book.frontCover.rotation.y = THREE.MathUtils.lerp(
-          book.frontCover.rotation.y,
-          book.open ? -1.18 : 0,
-          0.1,
-        );
-        book.backCover.rotation.y = THREE.MathUtils.lerp(
-          book.backCover.rotation.y,
-          book.open ? 1.18 : 0,
-          0.1,
-        );
+        book.update(book === hovered);
       });
       scene.updateMatrixWorld(true);
-      camera.updateMatrixWorld();
       renderer.render(scene, camera);
     };
     const observer = new ResizeObserver(resize);
     observer.observe(webglShelf);
     resize();
-    animate();
+    renderer.setAnimationLoop(animate);
     shelf?.classList.add("has-webgl-bookshelf");
     disposeWebglShelf = () => {
-      window.cancelAnimationFrame(frame);
+      renderer.setAnimationLoop(null);
+      picker.dispose();
       observer.disconnect();
       scene.traverse((object) => {
         const mesh = object as THREE.Mesh;
