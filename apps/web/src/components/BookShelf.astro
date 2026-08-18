@@ -217,10 +217,13 @@ const featuredWork = works.find((work) => work.featured);
     context.save();
     context.translate(256, 390);
     context.rotate(-Math.PI / 2);
-    context.font = "900 154px 'Arial Black', Arial, sans-serif";
-    const titleWidth = context.measureText(title).width;
-    const titleScale = Math.min(1, 500 / titleWidth);
-    context.scale(titleScale, 1);
+    const titleFont = "Cormorant Garamond, Georgia, serif";
+    context.font = `600 154px ${titleFont}`;
+    const titleFontSize = Math.min(
+      154,
+      (154 * 500) / Math.max(context.measureText(title).width, 1),
+    );
+    context.font = `600 ${titleFontSize}px ${titleFont}`;
     context.fillText(title, 0, 0);
     context.restore();
     const texture = new THREE.CanvasTexture(textureCanvas);
@@ -277,9 +280,12 @@ const featuredWork = works.find((work) => work.featured);
     const renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
+      powerPreference: "high-performance",
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.08;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
 
@@ -439,14 +445,16 @@ const featuredWork = works.find((work) => work.featured);
           appearance.accentColor,
           appearance.spineStyle,
         );
-        titleTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        titleTexture.anisotropy = Math.min(
+          renderer.capabilities.getMaxAnisotropy(),
+          4,
+        );
         const title = new THREE.Mesh(
           new THREE.PlaneGeometry(width * 0.94, height * 0.76),
           new THREE.MeshBasicMaterial({
             map: titleTexture,
             transparent: true,
             depthWrite: false,
-            depthTest: false,
           }),
         );
         title.position.z = pageDepth / 2 + coverThickness + 0.006;
