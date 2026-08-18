@@ -145,7 +145,10 @@ const { workId } = Astro.props;
     };
 
     const savePendingComment = (comment: PendingComment) => {
-      localStorage.setItem(pendingCommentKey(comment.workId), JSON.stringify(comment));
+      localStorage.setItem(
+        pendingCommentKey(comment.workId),
+        JSON.stringify(comment),
+      );
     };
 
     const updateCommentCount = () => {

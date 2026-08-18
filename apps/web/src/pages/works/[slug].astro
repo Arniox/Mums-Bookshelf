@@ -94,7 +94,9 @@ const structuredData = {
         <h1 data-work-title>{work.title}</h1>
         <p class="work-blurb" data-work-blurb>{work.blurb}</p>
         <dl class="work-facts">
-          <dt data-work-publisher-label hidden={!work.publisherName}>Publisher</dt>
+          <dt data-work-publisher-label hidden={!work.publisherName}>
+            Publisher
+          </dt>
           <dd data-work-publisher hidden={!work.publisherName}>
             {work.publisherName}
           </dd>
@@ -219,17 +221,19 @@ const structuredData = {
 
 <script>
   import {
-areSameExternalUrls,
-calculateReadingTimeFromWordCount,
-type Work,
-} from "@mums-bookshelf/shared";
-import { getRuntimePublicWork } from "../../lib/runtimeContent";
+    areSameExternalUrls,
+    calculateReadingTimeFromWordCount,
+    type Work,
+  } from "@mums-bookshelf/shared";
+  import { getRuntimePublicWork } from "../../lib/runtimeContent";
 
   const share = document.querySelector<HTMLButtonElement>("[data-share]");
   const status = document.querySelector<HTMLElement>("[data-share-status]");
   const title = document.querySelector<HTMLElement>("[data-work-title]");
   const blurb = document.querySelector<HTMLElement>("[data-work-blurb]");
-  const publisher = document.querySelector<HTMLElement>("[data-work-publisher]");
+  const publisher = document.querySelector<HTMLElement>(
+    "[data-work-publisher]",
+  );
   const publisherLabel = document.querySelector<HTMLElement>(
     "[data-work-publisher-label]",
   );

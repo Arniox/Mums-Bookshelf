@@ -8,7 +8,12 @@ interface Props {
   label?: string;
 }
 
-const { title, seed, authorName, label = `A work by ${authorName}` } = Astro.props;
+const {
+  title,
+  seed,
+  authorName,
+  label = `A work by ${authorName}`,
+} = Astro.props;
 const appearance = getBookAppearance(seed);
 ---
 

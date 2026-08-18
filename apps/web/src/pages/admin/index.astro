@@ -351,8 +351,10 @@ const authorInitials = settings.authorName
             <button type="button" data-story-command="italic" title="Italic"
               ><em>I</em></button
             >
-            <button type="button" data-story-command="underline" title="Underline"
-              ><u>U</u></button
+            <button
+              type="button"
+              data-story-command="underline"
+              title="Underline"><u>U</u></button
             >
             <button
               type="button"
@@ -407,7 +409,8 @@ const authorInitials = settings.authorName
         <div class="checkbox story-drop-cap-control">
           <input type="checkbox" data-story-drop-cap checked />
           <span
-            >Use the large opening letter <small>Matches the reader view</small></span
+            >Use the large opening letter <small>Matches the reader view</small
+            ></span
           >
         </div>
         <textarea name="storyContent" rows="15" hidden></textarea></label
@@ -557,17 +560,17 @@ const authorInitials = settings.authorName
 
 <script>
   import { areSameExternalUrls } from "@mums-bookshelf/shared";
-import {
-localWorkDraftKey,
-parseLocalWorkDraft,
-type LocalWorkDraft,
-} from "../../lib/localDraft";
-import {
-hasStructuredStoryHtml,
-normaliseStoryHtml,
-storyTextToEditorHtml,
-wordHtmlToStoryHtml,
-} from "../../lib/wordPaste";
+  import {
+    localWorkDraftKey,
+    parseLocalWorkDraft,
+    type LocalWorkDraft,
+  } from "../../lib/localDraft";
+  import {
+    hasStructuredStoryHtml,
+    normaliseStoryHtml,
+    storyTextToEditorHtml,
+    wordHtmlToStoryHtml,
+  } from "../../lib/wordPaste";
 
   type ApiWork = Record<string, any>;
   interface ApiComment {
