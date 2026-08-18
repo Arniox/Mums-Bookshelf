@@ -136,6 +136,7 @@ const featuredWork = works.find((work) => work.featured);
   const reduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
+  let activeFlyingBook: HTMLAnchorElement | undefined;
 
   const workUrl = (slug: string) => `${base}works/${slug}/`;
   const orderShelf = () => {
@@ -162,6 +163,7 @@ const featuredWork = works.find((work) => work.featured);
     )
       return;
     event.preventDefault();
+    if (activeFlyingBook) return;
     const bounds = book.getBoundingClientRect();
     book.classList.add("is-opening");
     const flyingBook = book.cloneNode(true) as HTMLAnchorElement;
@@ -180,8 +182,14 @@ const featuredWork = works.find((work) => work.featured);
       "--book-fly-y",
       `${window.innerHeight / 2 - (bounds.top + bounds.height / 2)}px`,
     );
+    activeFlyingBook = flyingBook;
     document.body.append(flyingBook);
-    window.setTimeout(() => window.location.assign(book.href), 560);
+    window.setTimeout(() => {
+      activeFlyingBook?.remove();
+      activeFlyingBook = undefined;
+      book.classList.remove("is-opening");
+      window.location.assign(book.href);
+    }, 560);
   };
 
   const bindBookOpening = () => {
@@ -198,7 +206,7 @@ const featuredWork = works.find((work) => work.featured);
           Date.parse(right.publishedAt || "") -
           Date.parse(left.publishedAt || ""),
       )
-      .slice(0, 3)
+      .slice(0, 1)
       .map((work) => work.slug);
     const fragment = document.createDocumentFragment();
     const accessibleFragment = document.createDocumentFragment();
