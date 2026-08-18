@@ -1069,11 +1069,14 @@ textarea {
 }
 
 .story-content hr,
-.rich-story-canvas hr {
+.rich-story-canvas hr,
+.story-content p[data-scene-break="true"],
+.rich-story-canvas p[data-scene-break="true"] {
   width: min(11rem, 42%);
   height: 1.5rem;
   margin: 3.25rem auto;
   border: 0;
+  font-size: 0;
   background:
     linear-gradient(var(--gold), var(--gold)) left center / calc(50% - 0.8rem)
       1px no-repeat,
@@ -1084,7 +1087,9 @@ textarea {
 }
 
 .story-content hr::after,
-.rich-story-canvas hr::after {
+.rich-story-canvas hr::after,
+.story-content p[data-scene-break="true"]::after,
+.rich-story-canvas p[data-scene-break="true"]::after {
   content: "◆";
   display: inline-block;
   padding: 0 0.5rem;
