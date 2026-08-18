@@ -1192,7 +1192,8 @@ const authorInitials = settings.authorName
         element.tagName === "P" &&
         element.getAttribute("data-scene-break") !== "true",
     );
-    if (!paragraph) return template.innerHTML;
+    if (!paragraph || paragraph.getAttribute("data-drop-cap") === "false")
+      return template.innerHTML;
     const textNodes = document.createTreeWalker(
       paragraph,
       NodeFilter.SHOW_TEXT,
@@ -1226,7 +1227,8 @@ const authorInitials = settings.authorName
         element.tagName === "P" &&
         element.getAttribute("data-scene-break") !== "true",
     );
-    if (!paragraph) return;
+    if (!paragraph || paragraph.getAttribute("data-drop-cap") === "false")
+      return;
     const textNodes = document.createTreeWalker(
       paragraph,
       NodeFilter.SHOW_TEXT,
@@ -1241,11 +1243,27 @@ const authorInitials = settings.authorName
         const marker = document.createElement("span");
         marker.dataset.dropCap = "true";
         marker.textContent = firstCharacter;
-        textNode.replaceWith(
-          document.createTextNode(textNode.data.slice(0, index)),
-          marker,
-          document.createTextNode(characters.join("")),
-        );
+        const leadingText = document.createTextNode(textNode.data.slice(0, index));
+        const trailingText = document.createTextNode(characters.join(""));
+        const selection = window.getSelection();
+        const range = selection?.rangeCount ? selection.getRangeAt(0) : undefined;
+        const cursorWasInOpeningText =
+          range?.collapsed && range.startContainer === textNode
+            ? range.startOffset
+            : undefined;
+        textNode.replaceWith(leadingText, marker, trailingText);
+        if (cursorWasInOpeningText === undefined || !selection) return;
+        const cursor = document.createRange();
+        if (cursorWasInOpeningText <= index) {
+          cursor.setStart(leadingText, cursorWasInOpeningText);
+        } else if (cursorWasInOpeningText === index + 1) {
+          cursor.setStartAfter(marker);
+        } else {
+          cursor.setStart(trailingText, cursorWasInOpeningText - index - 1);
+        }
+        cursor.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(cursor);
         return;
       }
       textNode = textNodes.nextNode() as Text | null;
@@ -1590,7 +1608,10 @@ const authorInitials = settings.authorName
     }
   };
 
-  storyEditor.addEventListener("input", () => syncStoryEditor());
+  storyEditor.addEventListener("input", () => {
+    addDefaultStoryDropCap();
+    syncStoryEditor();
+  });
   storyEditor.addEventListener("blur", () => {
     syncStoryEditor();
   });
@@ -1708,6 +1729,7 @@ const authorInitials = settings.authorName
         )?.closest<HTMLElement>("[data-drop-cap='true']");
         if (selectedMarker && storyEditor.contains(selectedMarker)) {
           selectedMarker.replaceWith(...selectedMarker.childNodes);
+          selectedParagraph.dataset.dropCap = "false";
         } else if (!range.collapsed) {
           const endElement =
             range.endContainer.nodeType === Node.ELEMENT_NODE
@@ -1718,6 +1740,7 @@ const authorInitials = settings.authorName
           marker.dataset.dropCap = "true";
           marker.append(range.extractContents());
           range.insertNode(marker);
+          delete selectedParagraph.dataset.dropCap;
           range.selectNodeContents(marker);
           window.getSelection()?.removeAllRanges();
           window.getSelection()?.addRange(range);
