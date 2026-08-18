@@ -163,6 +163,7 @@ const structuredData = {
           class="story-content"
           id="story"
           aria-label={`${work.title}, full story`}
+          data-story-protected
         >
           <p class="eyebrow">Read online</p>
           <div set:html={storyHtml} />
@@ -226,6 +227,11 @@ const structuredData = {
     type Work,
   } from "@mums-bookshelf/shared";
   import { getRuntimePublicWork } from "../../lib/runtimeContent";
+  import { protectStoryContent } from "../../lib/storyProtection";
+
+  protectStoryContent(
+    document.querySelector<HTMLElement>("[data-story-protected]"),
+  );
 
   const shelfArrivalKey = "mums-bookshelf:shelf-arrival";
   const arrivingFromShelf = (() => {

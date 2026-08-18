@@ -31,6 +31,7 @@ const settings = await getPublicSettings();
     normaliseStoryHtml,
     storyTextToEditorHtml,
   } from "../../lib/wordPaste";
+  import { protectStoryContent } from "../../lib/storyProtection";
 
   const container = document.querySelector<HTMLElement>("[data-runtime-work]");
   const base = import.meta.env.BASE_URL;
@@ -230,6 +231,7 @@ const settings = await getPublicSettings();
       story.className = "story-content";
       story.id = "story";
       story.setAttribute("aria-label", `${work.title}, full story`);
+      story.setAttribute("data-story-protected", "");
       appendText(story, "p", "Read online", "eyebrow");
       const content = document.createElement("div");
       content.append(safeStoryFragment(work.storyContent));
@@ -264,6 +266,9 @@ const settings = await getPublicSettings();
       fragment.append(footer);
     }
     container.replaceChildren(fragment);
+    protectStoryContent(
+      container.querySelector<HTMLElement>("[data-story-protected]"),
+    );
     document.documentElement.dataset.activeWorkId = work.id;
     document.dispatchEvent(
       new CustomEvent("mums-bookshelf:work-ready", {
