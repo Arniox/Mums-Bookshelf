@@ -198,9 +198,7 @@ function staleWorkError() {
 }
 
 export async function createWork(context: Context<AppEnvironment>) {
-  const { expectedUpdatedAt: _expectedUpdatedAt, ...work } = normaliseWork(
-    await parseJsonBody(context),
-  );
+  const work = normaliseWork(await parseJsonBody(context));
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   try {
@@ -302,8 +300,7 @@ export async function patchWork(context: Context<AppEnvironment>) {
   const { expectedUpdatedAt, ...patchData } = patch.data;
   if (!expectedUpdatedAt) throw staleWorkError();
   const existing = rowToWork(row, true);
-  const merged = normaliseWork({ ...existing, ...patchData });
-  const { expectedUpdatedAt: _mergedExpectedUpdatedAt, ...work } = merged;
+  const work = normaliseWork({ ...existing, ...patchData });
   const updatedAt = new Date().toISOString();
   const result = await insertStatement(
     context,
