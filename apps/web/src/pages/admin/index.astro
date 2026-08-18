@@ -1601,9 +1601,7 @@ const authorInitials = settings.authorName
     setButtonBusy(archiveButton, true);
     archiveButton.disabled = true;
     try {
-      const updatedAt = String(
-        new FormData(workForm).get("updatedAt") || "",
-      );
+      const updatedAt = String(new FormData(workForm).get("updatedAt") || "");
       await request(`/api/v1/admin/works/${id}`, {
         method: "DELETE",
         headers: { "If-Unmodified-Since": updatedAt },

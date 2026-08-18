@@ -257,7 +257,9 @@ export async function replaceWork(context: Context<AppEnvironment>) {
       );
     throw error;
   }
-  const updated = await context.env.DB.prepare("SELECT * FROM works WHERE id = ?")
+  const updated = await context.env.DB.prepare(
+    "SELECT * FROM works WHERE id = ?",
+  )
     .bind(id)
     .first();
   await auditStatement(
@@ -302,7 +304,9 @@ export async function patchWork(context: Context<AppEnvironment>) {
     expectedUpdatedAt,
   ).run();
   if (!result.meta.changes) throw staleWorkError();
-  const updated = await context.env.DB.prepare("SELECT * FROM works WHERE id = ?")
+  const updated = await context.env.DB.prepare(
+    "SELECT * FROM works WHERE id = ?",
+  )
     .bind(id)
     .first();
   await auditStatement(
@@ -322,10 +326,13 @@ export async function archiveWork(context: Context<AppEnvironment>) {
   const expectedUpdatedAt = context.req.header("If-Unmodified-Since");
   if (!expectedUpdatedAt) throw staleWorkError();
   const id = context.req.param("id");
-  const existing = await context.env.DB.prepare("SELECT * FROM works WHERE id = ?")
+  const existing = await context.env.DB.prepare(
+    "SELECT * FROM works WHERE id = ?",
+  )
     .bind(id)
     .first();
-  if (!existing) throw new ApiError(404, "work_not_found", "Work was not found.");
+  if (!existing)
+    throw new ApiError(404, "work_not_found", "Work was not found.");
   const previous = rowToWork(existing, true);
   const updatedAt = new Date().toISOString();
   const result = await context.env.DB.prepare(
@@ -333,8 +340,7 @@ export async function archiveWork(context: Context<AppEnvironment>) {
   )
     .bind(updatedAt, id, expectedUpdatedAt)
     .run();
-  if (!result.meta.changes)
-    throw staleWorkError();
+  if (!result.meta.changes) throw staleWorkError();
   const archived = { ...previous, status: "archived", updatedAt };
   await auditStatement(
     context,
