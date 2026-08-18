@@ -1,7 +1,9 @@
 import { getBookAppearance } from "@mums-bookshelf/shared";
 import { Window } from "happy-dom";
+import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { works } from "../src/data/sample";
+import { ShelfBook } from "../src/lib/bookshelf/ShelfBook";
 import {
   getResponsiveShelfWidth,
   getShelfViewportHeight,
@@ -109,6 +111,31 @@ describe("public library", () => {
     const appearance = getBookAppearance(works[0]!.id);
     expect(appearance.height).toBeGreaterThanOrEqual(184);
     expect(appearance.titlePosition).toBe("middle");
+  });
+
+  it("settles a hovered book completely before demand animation stops", () => {
+    const home = new THREE.Vector3(0, 2, 0.2);
+    const book = new ShelfBook({
+      root: new THREE.Group(),
+      leftLeaf: new THREE.Group(),
+      rightLeaf: new THREE.Group(),
+      home,
+      homeLean: 0,
+      url: "/works/test/",
+    });
+    const camera = new THREE.Vector3(0, 2, 10);
+    const advanceUntilIdle = (hovered: boolean) => {
+      let active = true;
+      for (let frame = 0; frame < 240 && active; frame += 1) {
+        active = book.update(hovered, camera);
+      }
+      return active;
+    };
+
+    expect(advanceUntilIdle(true)).toBe(false);
+    expect(advanceUntilIdle(false)).toBe(false);
+    expect(book.root.position).toEqual(home);
+    expect(book.root.rotation.z).toBe(0);
   });
 
   it("adds shelves and canvas height for hundreds of books without overflow", () => {

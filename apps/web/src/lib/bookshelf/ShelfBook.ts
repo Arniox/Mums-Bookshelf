@@ -48,11 +48,8 @@ export class ShelfBook {
   }
 
   update(isHovered: boolean, cameraPosition: THREE.Vector3): boolean {
-    this.hover = THREE.MathUtils.lerp(
-      this.hover,
-      isHovered && !this.isOpen ? 1 : 0,
-      0.16,
-    );
+    const hoverTarget = isHovered && !this.isOpen ? 1 : 0;
+    this.hover = THREE.MathUtils.lerp(this.hover, hoverTarget, 0.16);
     if (this.isOpen) {
       this.settle = THREE.MathUtils.lerp(this.settle, 1, 0.12);
       if (this.settle > 0.96) this.pullStarted = true;
@@ -101,7 +98,12 @@ export class ShelfBook {
     const targetLean = this.isOpen
       ? this.homeLean * (1 - this.pull)
       : this.homeLean;
-    return (
+    const isMoving =
+      Math.abs(hoverTarget - this.hover) > 0.0001 ||
+      (this.isOpen &&
+        (Math.abs(1 - this.settle) > 0.0001 ||
+          Math.abs(1 - this.pull) > 0.0001)) ||
+      Math.abs(pageOpenTarget - this.pageOpen) > 0.0001 ||
       this.targetPosition.distanceToSquared(this.root.position) > 0.000001 ||
       Math.abs(targetYaw - this.root.rotation.y) > 0.001 ||
       Math.abs(targetLean - this.root.rotation.z) > 0.001 ||
@@ -110,7 +112,26 @@ export class ShelfBook {
       ) > 0.001 ||
       Math.abs(
         (Math.PI / 2) * (1 - this.pageOpen) - this.rightLeaf.rotation.y,
-      ) > 0.001
-    );
+      ) > 0.001;
+    if (!isMoving) this.snapToRest(targetYaw, targetLean, pageOpenTarget);
+    return isMoving;
+  }
+
+  private snapToRest(
+    targetYaw: number,
+    targetLean: number,
+    pageOpenTarget: number,
+  ) {
+    this.hover = this.isOpen ? 0 : this.hover > 0.5 ? 1 : 0;
+    if (this.isOpen) {
+      this.settle = 1;
+      this.pull = 1;
+    }
+    this.pageOpen = pageOpenTarget;
+    this.root.position.copy(this.targetPosition);
+    this.root.rotation.y = targetYaw;
+    this.root.rotation.z = targetLean;
+    this.leftLeaf.rotation.y = (-Math.PI / 2) * (1 - pageOpenTarget);
+    this.rightLeaf.rotation.y = (Math.PI / 2) * (1 - pageOpenTarget);
   }
 }
