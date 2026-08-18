@@ -205,6 +205,49 @@ const authorInitials = settings.authorName
             </label>
           </section>
 
+          <section class="settings-card" aria-labelledby="homepage-intro-title">
+            <p class="eyebrow">Homepage</p>
+            <h3 id="homepage-intro-title">Intro card</h3>
+            <label>
+              <span>Intro list <small>Shown above the title</small></span>
+              <input name="homepageEyebrow" required maxlength="200" />
+            </label>
+            <label>
+              <span>Intro title <small>Use the writing tools below</small></span>
+              <div class="rich-story-editor homepage-heading-editor">
+                <div
+                  class="rich-story-toolbar"
+                  role="toolbar"
+                  aria-label="Homepage title formatting"
+                >
+                  <button type="button" data-homepage-heading-command="bold" title="Bold"
+                    ><strong>B</strong></button
+                  >
+                  <button type="button" data-homepage-heading-command="italic" title="Italic"
+                    ><em>I</em></button
+                  >
+                  <button type="button" data-homepage-heading-command="underline" title="Underline"
+                    ><u>U</u></button
+                  >
+                  <button
+                    type="button"
+                    data-homepage-heading-command="strikeThrough"
+                    title="Strikethrough"><s>S</s></button
+                  >
+                </div>
+                <div
+                  class="rich-story-canvas"
+                  data-homepage-heading-editor
+                  contenteditable="true"
+                  role="textbox"
+                  aria-multiline="true"
+                  aria-label="Homepage title editor"
+                ></div>
+              </div>
+              <textarea name="homepageHeadingHtml" hidden></textarea>
+            </label>
+          </section>
+
           <section class="settings-card" aria-labelledby="announcement-title">
             <p class="eyebrow">Homepage</p>
             <h3 id="announcement-title">Announcement</h3>
@@ -1573,6 +1616,12 @@ const authorInitials = settings.authorName
   const settingsForm = document.querySelector<HTMLFormElement>(
     "[data-settings-form]",
   )!;
+  const homepageHeadingEditor = document.querySelector<HTMLElement>(
+    "[data-homepage-heading-editor]",
+  )!;
+  const homepageHeadingInput = settingsForm.elements.namedItem(
+    "homepageHeadingHtml",
+  ) as HTMLTextAreaElement;
   const socialLinksEditor = settingsForm.querySelector<HTMLElement>(
     "[data-social-links]",
   )!;
@@ -1592,6 +1641,10 @@ const authorInitials = settings.authorName
 
   const updateAnnouncementCount = () => {
     announcementCount.textContent = String(announcementInput.value.length);
+  };
+
+  const syncHomepageHeading = () => {
+    homepageHeadingInput.value = homepageHeadingEditor.innerHTML.trim();
   };
 
   const updateProfilePreview = () => {
@@ -1670,6 +1723,7 @@ const authorInitials = settings.authorName
     currentThemeSettings = settings.themeSettings || {};
     [
       "authorName",
+      "homepageEyebrow",
       "introduction",
       "biography",
       "profileImageUrl",
@@ -1680,12 +1734,31 @@ const authorInitials = settings.authorName
         HTMLInputElement | HTMLTextAreaElement | null;
       if (input) input.value = String(settings[key] ?? "");
     });
+    homepageHeadingEditor.innerHTML = String(settings.homepageHeadingHtml);
+    syncHomepageHeading();
     renderSocialLinks(settings.socialLinks || {});
     updateAnnouncementCount();
     updateProfilePreview();
   };
 
   announcementInput.addEventListener("input", updateAnnouncementCount);
+  homepageHeadingEditor.addEventListener("input", syncHomepageHeading);
+  homepageHeadingEditor.addEventListener("paste", (event) => {
+    event.preventDefault();
+    const text = event.clipboardData?.getData("text/plain") || "";
+    executeRichTextCommand("insertText", text);
+    syncHomepageHeading();
+  });
+  settingsForm
+    .querySelectorAll<HTMLButtonElement>("[data-homepage-heading-command]")
+    .forEach((button) => {
+      button.addEventListener("mousedown", (event) => event.preventDefault());
+      button.addEventListener("click", () => {
+        homepageHeadingEditor.focus();
+        executeRichTextCommand(button.dataset.homepageHeadingCommand!);
+        syncHomepageHeading();
+      });
+    });
   profileImageInput.addEventListener("input", updateProfilePreview);
   profilePreview.addEventListener("error", () => {
     profilePreview.hidden = true;
@@ -1702,6 +1775,8 @@ const authorInitials = settings.authorName
     const form = new FormData(event.currentTarget as HTMLFormElement);
     const payload = {
       authorName: form.get("authorName"),
+      homepageEyebrow: form.get("homepageEyebrow"),
+      homepageHeadingHtml: form.get("homepageHeadingHtml"),
       introduction: form.get("introduction"),
       biography: form.get("biography"),
       profileImageUrl: form.get("profileImageUrl") || undefined,

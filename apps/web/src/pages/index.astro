@@ -32,8 +32,8 @@ const personSchema = {
   <div class="library-room">
     <section class="library-intro" aria-labelledby="welcome-title">
       <div class="library-sign">
-        <p class="eyebrow">Fiction · Essays · Small observations</p>
-        <h1 id="welcome-title">Stories for the <em>quietly curious.</em></h1>
+        <p class="eyebrow">{settings.homepageEyebrow}</p>
+        <h1 id="welcome-title" set:html={settings.homepageHeadingHtml} />
         <p class="hero-intro">{settings.introduction}</p>
         <a class="text-link" href={`${base}about/`}
           >Meet {settings.authorName.split(/\s+/)[0]}
