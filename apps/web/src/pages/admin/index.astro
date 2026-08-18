@@ -581,6 +581,10 @@ const authorInitials = settings.authorName
         </p>
         <p data-local-draft-status aria-live="polite"></p>
       </aside>
+      <details data-work-history hidden>
+        <summary>Change history</summary>
+        <div class="admin-list" data-work-history-list></div>
+      </details>
       <div class="editor-actions">
         <button class="button secondary" type="button" data-archive hidden
           >Archive work</button
@@ -1121,6 +1125,12 @@ const authorInitials = settings.authorName
   const localDraftStatus = document.querySelector<HTMLElement>(
     "[data-local-draft-status]",
   )!;
+  const workHistory = document.querySelector<HTMLElement>(
+    "[data-work-history]",
+  )!;
+  const workHistoryList = document.querySelector<HTMLElement>(
+    "[data-work-history-list]",
+  )!;
   const storyEditor = document.querySelector<HTMLElement>(
     "[data-story-editor]",
   )!;
@@ -1219,6 +1229,29 @@ const authorInitials = settings.authorName
     localDraftStatus.textContent = "";
   };
 
+  const loadWorkHistory = async (id?: string) => {
+    workHistory.hidden = !id;
+    workHistoryList.textContent = "";
+    if (!id) return;
+    try {
+      const history = await request(`/api/v1/admin/works/${id}/history`);
+      workHistoryList.innerHTML = history.items.length
+        ? history.items
+            .map(
+              (entry: {
+                action: string;
+                actor_username: string;
+                occurred_at: string;
+              }) =>
+                `<p>${escape(entry.action)} by ${escape(entry.actor_username)} on ${new Date(entry.occurred_at).toLocaleString()}</p>`,
+            )
+            .join("")
+        : "<p>No recorded changes yet.</p>";
+    } catch {
+      workHistoryList.textContent = "Change history could not be loaded.";
+    }
+  };
+
   const openEditor = (work?: ApiWork) => {
     workForm.reset();
     storyEditor.innerHTML = "";
@@ -1271,6 +1304,7 @@ const authorInitials = settings.authorName
     updateVisibilityRequirements();
     updatePreview();
     dialog.showModal();
+    void loadWorkHistory(work?.id);
     (workForm.elements.namedItem("title") as HTMLInputElement).focus();
   };
 

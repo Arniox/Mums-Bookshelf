@@ -73,6 +73,16 @@ export async function getAdminWork(context: Context<AppEnvironment>) {
   return success(context, rowToWork(row, true));
 }
 
+export async function listWorkAudit(context: Context<AppEnvironment>) {
+  const result = await context.env.DB.prepare(
+    `SELECT action, actor_username, occurred_at, previous_updated_at, next_updated_at
+     FROM work_audit_log WHERE work_id = ? ORDER BY occurred_at DESC, id DESC`,
+  )
+    .bind(context.req.param("id"))
+    .all();
+  return success(context, { items: result.results });
+}
+
 function normaliseWork(raw: unknown) {
   const parsed = workInputSchema.safeParse(raw);
   if (!parsed.success) {

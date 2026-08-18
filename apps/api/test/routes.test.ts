@@ -225,6 +225,22 @@ describe("API routes", () => {
     );
   });
 
+  it("lists an authenticated work's audit history", async () => {
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/works/work-1/history",
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(
+      database.statements.some((statement) =>
+        statement.sql.includes("FROM work_audit_log WHERE work_id = ?"),
+      ),
+    ).toBe(true);
+  });
+
   it("rejects CORS preflight from an unlisted origin", async () => {
     const response = await app.request(
       "/api/v1/works",

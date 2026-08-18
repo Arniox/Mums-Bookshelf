@@ -30,6 +30,7 @@ import {
   createWork,
   getAdminWork,
   getPublicWork,
+  listWorkAudit,
   listAdminWorks,
   listPublicWorks,
   patchWork,
@@ -100,6 +101,7 @@ app.get("/api/v1/auth/session", requireAuth, (context) =>
 );
 
 app.get("/api/v1/admin/works", listAdminWorks);
+app.get("/api/v1/admin/works/:id/history", listWorkAudit);
 app.get("/api/v1/admin/works/:id", getAdminWork);
 app.post("/api/v1/admin/works", createWork);
 app.post("/api/v1/admin/works/publish-all", publishAllDrafts);
