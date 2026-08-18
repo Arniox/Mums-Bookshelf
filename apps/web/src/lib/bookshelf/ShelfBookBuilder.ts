@@ -17,8 +17,9 @@ export class ShelfBookBuilder {
     const rightLeaf = new THREE.Group();
     const coverThickness = 0.08;
     const paperThickness = Math.max(0.12, depth * 0.38);
-    const pageWidth = THREE.MathUtils.clamp(height * 0.38, 0.72, 1.02);
-    const pageHeight = height * 0.9;
+    const coverHeight = height;
+    const pageWidth = THREE.MathUtils.clamp(height * 0.58, 1.05, 1.48);
+    const pageHeight = coverHeight - coverThickness * 3;
     const coverMaterial = new THREE.MeshStandardMaterial({
       color: appearance.primaryColor,
       roughness: appearance.materialStyle === "leather" ? 0.38 : 0.68,
@@ -67,6 +68,7 @@ export class ShelfBookBuilder {
       -1,
       pageWidth,
       pageHeight,
+      coverHeight,
       coverThickness,
       coverMaterial,
       pageMaterial,
@@ -77,6 +79,7 @@ export class ShelfBookBuilder {
       1,
       pageWidth,
       pageHeight,
+      coverHeight,
       coverThickness,
       coverMaterial,
       pageMaterial,
@@ -103,6 +106,7 @@ export class ShelfBookBuilder {
     direction: -1 | 1,
     pageWidth: number,
     pageHeight: number,
+    coverHeight: number,
     coverThickness: number,
     coverMaterial: THREE.MeshStandardMaterial,
     pageMaterial: THREE.MeshStandardMaterial,
@@ -112,7 +116,7 @@ export class ShelfBookBuilder {
     const cover = new THREE.Mesh(
       new THREE.BoxGeometry(
         pageWidth + coverThickness,
-        pageHeight + coverThickness,
+        coverHeight,
         coverThickness,
       ),
       coverMaterial,
