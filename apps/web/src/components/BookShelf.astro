@@ -48,7 +48,13 @@ const featuredWork = works.find((work) => work.featured);
             </a>
           )}
         </div>
-        <ol class="shelves" data-shelf-list>
+        <div class="webgl-bookshelf" data-webgl-bookshelf aria-hidden="true">
+          <canvas data-bookshelf-canvas />
+          <p class="webgl-bookshelf-hint">
+            Select a book to pull it from the shelf. Drag it to turn the cover.
+          </p>
+        </div>
+        <ol class="shelves shelf-fallback" data-shelf-list>
           {works.map((work, index) => {
             const appearance = getBookAppearance(work.id || work.slug);
             const style = [
@@ -69,6 +75,9 @@ const featuredWork = works.find((work) => work.featured);
                 ]}
                 data-featured={String(work.featured)}
                 data-order-key={work.id}
+                data-work-id={work.id}
+                data-work-slug={work.slug}
+                data-recent={String(recentWorkSlugs.includes(work.slug))}
               >
                 <a
                   class:list={[
@@ -119,11 +128,11 @@ const featuredWork = works.find((work) => work.featured);
 
 <script>
   import { getBookAppearance, type Work } from "@mums-bookshelf/shared";
+  import * as THREE from "three";
   import { dailyFeaturedOrder } from "../lib/randomiseWorks";
   import { getRuntimePublicWorks } from "../lib/runtimeContent";
 
   const shelf = document.querySelector<HTMLElement>("[data-bookshelf]");
-  const skip = shelf?.querySelector<HTMLButtonElement>("[data-skip-animation]");
   const bookcase = shelf?.querySelector<HTMLElement>("[data-bookcase]");
   const shelfList = shelf?.querySelector<HTMLOListElement>("[data-shelf-list]");
   const accessibleList = shelf?.querySelector<HTMLUListElement>(
@@ -132,12 +141,18 @@ const featuredWork = works.find((work) => work.featured);
   const featuredNote = shelf?.querySelector<HTMLElement>(
     "[data-featured-note]",
   );
+  const webglShelf = shelf?.querySelector<HTMLElement>(
+    "[data-webgl-bookshelf]",
+  );
+  const canvas = shelf?.querySelector<HTMLCanvasElement>(
+    "[data-bookshelf-canvas]",
+  );
+  const hint = shelf?.querySelector<HTMLElement>(".webgl-bookshelf-hint");
   const base = import.meta.env.BASE_URL;
   const reduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
-  const shelfArrivalKey = "mums-bookshelf:shelf-arrival";
-  let activeFlyingBook: HTMLAnchorElement | undefined;
+  let disposeWebglShelf: (() => void) | undefined;
 
   const workUrl = (slug: string) => `${base}works/${slug}/`;
   const orderShelf = () => {
@@ -154,55 +169,378 @@ const featuredWork = works.find((work) => work.featured);
     ).forEach((item) => accessibleList.append(item));
   };
 
-  const openBook = (book: HTMLAnchorElement, event: MouseEvent) => {
-    if (
-      reduceMotion ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey
-    )
-      return;
-    event.preventDefault();
-    if (activeFlyingBook) return;
-    const bounds = book.getBoundingClientRect();
-    const flyingBook = book.cloneNode(true) as HTMLAnchorElement;
-    flyingBook.classList.add("flying-book");
-    flyingBook.classList.remove("is-opening");
-    flyingBook.removeAttribute("href");
-    flyingBook.setAttribute("aria-hidden", "true");
-    flyingBook.style.top = `${bounds.top}px`;
-    flyingBook.style.left = `${bounds.left}px`;
-    flyingBook.style.width = `${bounds.width}px`;
-    flyingBook.style.height = `${bounds.height}px`;
-    flyingBook.style.setProperty(
-      "--book-fly-x",
-      `${window.innerWidth / 2 - (bounds.left + bounds.width / 2)}px`,
-    );
-    flyingBook.style.setProperty(
-      "--book-fly-y",
-      `${window.innerHeight / 2 - (bounds.top + bounds.height / 2)}px`,
-    );
-    activeFlyingBook = flyingBook;
-    document.body.append(flyingBook);
-    book.classList.add("is-opening");
-    window.setTimeout(() => {
-      try {
-        sessionStorage.setItem(shelfArrivalKey, book.href);
-      } catch {
-        // The destination still works when browser storage is unavailable.
-      }
-      activeFlyingBook?.remove();
-      activeFlyingBook = undefined;
-      book.classList.remove("is-opening");
-      window.location.assign(book.href);
-    }, 1050);
+  type ShelfBook = {
+    root: THREE.Group;
+    frontCover: THREE.Group;
+    backCover: THREE.Group;
+    home: THREE.Vector3;
+    homeLean: number;
+    width: number;
+    height: number;
+    url: string;
+    open: number;
+    turn: number;
   };
 
-  const bindBookOpening = () => {
-    shelf?.querySelectorAll<HTMLAnchorElement>(".book").forEach((book) => {
-      book.addEventListener("click", (event) => openBook(book, event));
+  const makeTitleTexture = (
+    title: string,
+    mark: string,
+    accent: string,
+    style: string,
+  ) => {
+    const textureCanvas = document.createElement("canvas");
+    textureCanvas.width = 512;
+    textureCanvas.height = 768;
+    const context = textureCanvas.getContext("2d");
+    if (!context) return new THREE.CanvasTexture(textureCanvas);
+    context.clearRect(0, 0, textureCanvas.width, textureCanvas.height);
+    context.strokeStyle = accent;
+    context.globalAlpha = 0.8;
+    context.lineWidth = 5;
+    if (style === "bands") {
+      [82, 684].forEach((y) => context.strokeRect(55, y, 402, 24));
+    } else if (style === "frame") {
+      context.strokeRect(44, 44, 424, 680);
+    } else if (style === "rule") {
+      context.beginPath();
+      context.moveTo(92, 58);
+      context.lineTo(92, 710);
+      context.stroke();
+    }
+    context.globalAlpha = 1;
+    context.fillStyle = accent;
+    context.textAlign = "center";
+    context.font = "46px Georgia, serif";
+    context.fillText(mark, 256, 135);
+    context.font = "600 32px Georgia, serif";
+    const words = title.split(/\s+/);
+    const lines: string[] = [];
+    let line = "";
+    words.forEach((word) => {
+      const candidate = line ? `${line} ${word}` : word;
+      if (context.measureText(candidate).width > 340 && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = candidate;
+      }
     });
+    if (line) lines.push(line);
+    const lineStart = 382 - ((lines.length - 1) * 42) / 2;
+    lines.forEach((text, index) =>
+      context.fillText(text, 256, lineStart + index * 42),
+    );
+    const texture = new THREE.CanvasTexture(textureCanvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
+  };
+
+  const renderWebglShelf = () => {
+    disposeWebglShelf?.();
+    if (!canvas || !webglShelf || !shelfList || reduceMotion) return;
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog("#2b1710", 15, 28);
+    const camera = new THREE.PerspectiveCamera(33, 1, 0.1, 100);
+    camera.position.set(0, 5.2, 17.5);
+    camera.lookAt(0, 2.7, 0);
+    const warmLight = new THREE.SpotLight(
+      "#ffe2ad",
+      260,
+      30,
+      Math.PI / 5,
+      0.7,
+      1.5,
+    );
+    warmLight.position.set(-5, 9, 8);
+    warmLight.castShadow = true;
+    warmLight.shadow.mapSize.set(1024, 1024);
+    scene.add(warmLight, new THREE.HemisphereLight("#f7dbad", "#25130c", 2.4));
+
+    const shelfWidth = 15;
+    const wood = new THREE.MeshStandardMaterial({
+      color: "#5a301d",
+      roughness: 0.62,
+      metalness: 0.03,
+    });
+    const woodEdge = new THREE.MeshStandardMaterial({
+      color: "#32170e",
+      roughness: 0.72,
+    });
+    const back = new THREE.Mesh(
+      new THREE.BoxGeometry(shelfWidth, 7.2, 0.42),
+      wood,
+    );
+    back.position.set(0, 3.7, -0.72);
+    back.receiveShadow = true;
+    scene.add(back);
+    [-shelfWidth / 2 + 0.22, shelfWidth / 2 - 0.22].forEach((x) => {
+      const side = new THREE.Mesh(
+        new THREE.BoxGeometry(0.45, 7.7, 1.3),
+        woodEdge,
+      );
+      side.position.set(x, 3.85, 0);
+      side.castShadow = true;
+      scene.add(side);
+    });
+
+    const links = [...shelfList.querySelectorAll<HTMLAnchorElement>(".book")];
+    const books: ShelfBook[] = [];
+    let cursor = -shelfWidth / 2 + 0.65;
+    let row = 0;
+    const shelfHeights: number[] = [0.25];
+    links.forEach((link) => {
+      const appearance = getBookAppearance(
+        link.closest<HTMLElement>(".book-slot")?.dataset.workId ||
+          link.dataset.title ||
+          "book",
+      );
+      const width = appearance.width / 46;
+      const height = appearance.height / 78;
+      const depth = 0.42 + appearance.depth / 95;
+      if (cursor + width > shelfWidth / 2 - 0.52) {
+        row += 1;
+        cursor = -shelfWidth / 2 + 0.65;
+        shelfHeights.push(row * 3.55 + 0.25);
+      }
+      const root = new THREE.Group();
+      const frontCover = new THREE.Group();
+      const backCover = new THREE.Group();
+      const bookMaterial = new THREE.MeshStandardMaterial({
+        color: appearance.primaryColor,
+        roughness: appearance.materialStyle === "leather" ? 0.38 : 0.68,
+        metalness: 0.03,
+      });
+      const pageMaterial = new THREE.MeshStandardMaterial({
+        color: "#eadfc9",
+        roughness: 0.9,
+      });
+      const pages = new THREE.Mesh(
+        new THREE.BoxGeometry(width - 0.13, height - 0.14, depth - 0.12),
+        pageMaterial,
+      );
+      pages.position.z = -0.01;
+      pages.castShadow = true;
+      root.add(pages);
+      frontCover.position.x = -width / 2;
+      const front = new THREE.Mesh(
+        new THREE.BoxGeometry(width, height, 0.1),
+        bookMaterial,
+      );
+      front.position.set(width / 2, 0, depth / 2);
+      front.castShadow = true;
+      frontCover.add(front);
+      backCover.position.x = width / 2;
+      const rear = new THREE.Mesh(
+        new THREE.BoxGeometry(width, height, 0.1),
+        bookMaterial,
+      );
+      rear.position.set(-width / 2, 0, -depth / 2);
+      rear.castShadow = true;
+      backCover.add(rear);
+      const spine = new THREE.Mesh(
+        new THREE.BoxGeometry(width, height, 0.12),
+        bookMaterial,
+      );
+      spine.position.z = depth / 2 + 0.055;
+      spine.castShadow = true;
+      root.add(frontCover, backCover, spine);
+      const titleTexture = makeTitleTexture(
+        link.dataset.title || "",
+        appearance.mark,
+        appearance.accentColor,
+        appearance.spineStyle,
+      );
+      const title = new THREE.Mesh(
+        new THREE.PlaneGeometry(width * 0.79, height * 0.74),
+        new THREE.MeshBasicMaterial({
+          map: titleTexture,
+          transparent: true,
+          depthWrite: false,
+        }),
+      );
+      title.position.z = depth / 2 + 0.117;
+      root.add(title);
+      const home = new THREE.Vector3(
+        cursor + width / 2,
+        shelfHeights[row] + height / 2,
+        0.04,
+      );
+      root.position.copy(home);
+      root.rotation.z = THREE.MathUtils.degToRad(appearance.lean);
+      const book: ShelfBook = {
+        root,
+        frontCover,
+        backCover,
+        home,
+        homeLean: root.rotation.z,
+        width,
+        height,
+        url: link.href,
+        open: 0,
+        turn: 0,
+      };
+      root.userData.shelfBook = book;
+      scene.add(root);
+      books.push(book);
+      cursor += width + 0.08;
+    });
+    shelfHeights.forEach((height) => {
+      const board = new THREE.Mesh(
+        new THREE.BoxGeometry(shelfWidth - 0.42, 0.28, 1.45),
+        woodEdge,
+      );
+      board.position.set(0, height, -0.05);
+      board.receiveShadow = true;
+      board.castShadow = true;
+      scene.add(board);
+    });
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    let selected: ShelfBook | undefined;
+    let pointerDown: { x: number; y: number } | undefined;
+    let isDragging = false;
+    let frame = 0;
+    const findBook = (object: THREE.Object3D | null) => {
+      let current = object;
+      while (current) {
+        if (current.userData.shelfBook)
+          return current.userData.shelfBook as ShelfBook;
+        current = current.parent;
+      }
+    };
+    const bookAt = (event: PointerEvent) => {
+      const bounds = canvas.getBoundingClientRect();
+      pointer.set(
+        ((event.clientX - bounds.left) / bounds.width) * 2 - 1,
+        -((event.clientY - bounds.top) / bounds.height) * 2 + 1,
+      );
+      raycaster.setFromCamera(pointer, camera);
+      return findBook(
+        raycaster.intersectObjects(scene.children, true)[0]?.object,
+      );
+    };
+    const select = (book: ShelfBook) => {
+      selected = book;
+      books.forEach((candidate) => {
+        candidate.open = candidate === book ? 1 : 0;
+      });
+      if (hint)
+        hint.textContent =
+          "Drag the open book to turn it. Select it again to begin reading.";
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      pointerDown = { x: event.clientX, y: event.clientY };
+      isDragging = false;
+      canvas.setPointerCapture(event.pointerId);
+    };
+    const onPointerMove = (event: PointerEvent) => {
+      const book = bookAt(event);
+      canvas.style.cursor = book ? "grab" : "default";
+      if (!pointerDown || !selected) return;
+      const dx = event.clientX - pointerDown.x;
+      const dy = event.clientY - pointerDown.y;
+      if (Math.abs(dx) + Math.abs(dy) > 5) {
+        isDragging = true;
+        selected.turn = THREE.MathUtils.clamp(
+          selected.turn + dx * 0.008,
+          -1.05,
+          1.05,
+        );
+        selected.root.rotation.x = THREE.MathUtils.clamp(
+          selected.root.rotation.x + dy * 0.004,
+          -0.65,
+          0.35,
+        );
+        pointerDown = { x: event.clientX, y: event.clientY };
+      }
+    };
+    const onPointerUp = (event: PointerEvent) => {
+      const book = bookAt(event);
+      if (!isDragging && book) {
+        if (book === selected) window.location.assign(book.url);
+        else select(book);
+      }
+      pointerDown = undefined;
+    };
+    const resize = () => {
+      const { width, height } = webglShelf.getBoundingClientRect();
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    };
+    const animate = () => {
+      frame = window.requestAnimationFrame(animate);
+      books.forEach((book) => {
+        const target = book.open ? new THREE.Vector3(0, 3.25, 2.65) : book.home;
+        book.root.position.lerp(target, 0.11);
+        book.root.rotation.y = THREE.MathUtils.lerp(
+          book.root.rotation.y,
+          book.open ? book.turn : 0,
+          0.1,
+        );
+        book.root.rotation.z = THREE.MathUtils.lerp(
+          book.root.rotation.z,
+          book.open ? -0.06 : book.homeLean,
+          0.1,
+        );
+        if (!book.open)
+          book.root.rotation.x = THREE.MathUtils.lerp(
+            book.root.rotation.x,
+            0,
+            0.1,
+          );
+        book.frontCover.rotation.y = THREE.MathUtils.lerp(
+          book.frontCover.rotation.y,
+          book.open ? -1.18 : 0,
+          0.1,
+        );
+        book.backCover.rotation.y = THREE.MathUtils.lerp(
+          book.backCover.rotation.y,
+          book.open ? 0.52 : 0,
+          0.1,
+        );
+      });
+      renderer.render(scene, camera);
+    };
+    const observer = new ResizeObserver(resize);
+    observer.observe(webglShelf);
+    canvas.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerup", onPointerUp);
+    resize();
+    animate();
+    shelf?.classList.add("has-webgl-bookshelf");
+    disposeWebglShelf = () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerup", onPointerUp);
+      scene.traverse((object) => {
+        const mesh = object as THREE.Mesh;
+        mesh.geometry?.dispose();
+        const materials = Array.isArray(mesh.material)
+          ? mesh.material
+          : [mesh.material];
+        materials.forEach((material) => {
+          material.map?.dispose();
+          material.dispose();
+        });
+      });
+      renderer.dispose();
+    };
   };
 
   const renderShelf = (publishedWorks: Work[]) => {
@@ -223,6 +561,9 @@ const featuredWork = works.find((work) => work.featured);
       slot.className = "book-slot";
       slot.dataset.featured = String(work.featured);
       slot.dataset.orderKey = work.id;
+      slot.dataset.workId = work.id;
+      slot.dataset.workSlug = work.slug;
+      slot.dataset.recent = String(recentSlugs.includes(work.slug));
       if (recentSlugs.includes(work.slug))
         slot.classList.add("is-recent-release");
 
@@ -302,27 +643,12 @@ const featuredWork = works.find((work) => work.featured);
       featuredNote.append(link);
     }
     orderShelf();
-    bindBookOpening();
+    renderWebglShelf();
   };
 
   orderShelf();
-  bindBookOpening();
+  renderWebglShelf();
   void getRuntimePublicWorks()
     .then(renderShelf)
     .catch(() => undefined);
-
-  if (shelf && !reduceMotion) {
-    shelf.classList.add("is-revealing");
-    if (skip) {
-      skip.hidden = false;
-      skip.addEventListener("click", () => {
-        shelf.classList.remove("is-revealing");
-        skip.hidden = true;
-      });
-    }
-    window.setTimeout(() => {
-      shelf.classList.remove("is-revealing");
-      if (skip) skip.hidden = true;
-    }, 1800);
-  }
 </script>
