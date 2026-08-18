@@ -329,11 +329,7 @@ const featuredWork = works.find((work) => work.featured);
       );
     };
     updateShelfViewportHeight();
-    camera.position.set(
-      0,
-      occupiedShelfCenter + 0.65,
-      9.2,
-    );
+    camera.position.set(0, occupiedShelfCenter + 0.65, 9.2);
     camera.lookAt(0, occupiedShelfCenter, 0);
     const wood = new THREE.MeshStandardMaterial({
       color: "#5a301d",
