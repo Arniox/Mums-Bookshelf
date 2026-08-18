@@ -462,19 +462,6 @@ button.is-loading::before {
   touch-action: none;
 }
 
-.webgl-book-links {
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-  pointer-events: none;
-}
-
-.webgl-book-link {
-  position: absolute;
-  display: block;
-  pointer-events: auto;
-}
-
 .webgl-bookshelf-hint {
   position: absolute;
   right: 1.25rem;

@@ -50,7 +50,6 @@ const featuredWork = works.find((work) => work.featured);
         </div>
         <div class="webgl-bookshelf" data-webgl-bookshelf aria-hidden="true">
           <canvas data-bookshelf-canvas />
-          <div class="webgl-book-links" data-webgl-book-links />
           <p class="webgl-bookshelf-hint">
             Select a book to pull it from the shelf.
           </p>
@@ -148,9 +147,6 @@ const featuredWork = works.find((work) => work.featured);
   );
   const canvas = shelf?.querySelector<HTMLCanvasElement>(
     "[data-bookshelf-canvas]",
-  );
-  const bookLinks = shelf?.querySelector<HTMLElement>(
-    "[data-webgl-book-links]",
   );
   const hint = shelf?.querySelector<HTMLElement>(".webgl-bookshelf-hint");
   const base = import.meta.env.BASE_URL;
@@ -288,7 +284,7 @@ const featuredWork = works.find((work) => work.featured);
 
   const renderWebglShelf = () => {
     disposeWebglShelf?.();
-    if (!canvas || !webglShelf || !shelfList || !bookLinks || reduceMotion)
+    if (!canvas || !webglShelf || !shelfList || reduceMotion)
       return false;
 
     const renderer = new THREE.WebGLRenderer({
@@ -399,7 +395,6 @@ const featuredWork = works.find((work) => work.featured);
     });
 
     const books: ShelfBook[] = [];
-    const interactiveLinks = new Map<ShelfBook, HTMLAnchorElement>();
     shelfRows.forEach((shelfRow, row) => {
       const rowBookWidth = shelfRow.reduce(
         (total, book, index) => total + book.width + (index ? 0.08 : 0),
@@ -505,29 +500,6 @@ const featuredWork = works.find((work) => work.featured);
           hover: 0,
         };
         root.userData.shelfBook = book;
-        const linkTarget = document.createElement("a");
-        linkTarget.className = "webgl-book-link";
-        linkTarget.href = book.url;
-        linkTarget.setAttribute(
-          "aria-label",
-          link.dataset.bookTitle || "Open book",
-        );
-        linkTarget.addEventListener("pointerenter", () => {
-          hovered = book;
-          canvas.style.cursor = "grab";
-        });
-        linkTarget.addEventListener("pointerleave", () => {
-          if (hovered === book) hovered = undefined;
-          canvas.style.cursor = "default";
-        });
-        linkTarget.addEventListener("click", (event) => {
-          if (selected === book) return;
-          event.preventDefault();
-          select(book);
-        });
-        linkTarget.addEventListener("focus", () => select(book));
-        interactiveLinks.set(book, linkTarget);
-        bookLinks.append(linkTarget);
         scene.add(root);
         books.push(book);
         cursor += width + 0.08;
@@ -606,29 +578,6 @@ const featuredWork = works.find((work) => work.featured);
       });
       scene.updateMatrixWorld(true);
       camera.updateMatrixWorld();
-      interactiveLinks.forEach((linkTarget, book) => {
-        const box = new THREE.Box3().setFromObject(book.root);
-        const min = new THREE.Vector2(Infinity, Infinity);
-        const max = new THREE.Vector2(-Infinity, -Infinity);
-        const corner = new THREE.Vector3();
-        [box.min.x, box.max.x].forEach((x) => {
-          [box.min.y, box.max.y].forEach((y) => {
-            [box.min.z, box.max.z].forEach((z) => {
-              corner.set(x, y, z).project(camera);
-              min.min(corner);
-              max.max(corner);
-            });
-          });
-        });
-        const left = ((min.x + 1) / 2) * 100;
-        const top = ((1 - max.y) / 2) * 100;
-        const width = ((max.x - min.x) / 2) * 100;
-        const height = ((max.y - min.y) / 2) * 100;
-        linkTarget.style.left = `${left}%`;
-        linkTarget.style.top = `${top}%`;
-        linkTarget.style.width = `${width}%`;
-        linkTarget.style.height = `${height}%`;
-      });
       renderer.render(scene, camera);
     };
     const observer = new ResizeObserver(resize);
