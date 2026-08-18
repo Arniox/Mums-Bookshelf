@@ -19,7 +19,6 @@ export class ShelfBook {
 
   private readonly targetPosition = new THREE.Vector3();
   private open = 0;
-  private turn = 0;
   private hover = 0;
 
   constructor(options: ShelfBookOptions) {
@@ -46,7 +45,8 @@ export class ShelfBook {
       0.16,
     );
     if (this.isOpen) {
-      this.targetPosition.set(0, 3.25, 2.65);
+      this.targetPosition.copy(this.home);
+      this.targetPosition.z += 3.25;
     } else {
       this.targetPosition.copy(this.home);
       this.targetPosition.y += this.hover * 0.24;
@@ -55,12 +55,12 @@ export class ShelfBook {
     this.root.position.lerp(this.targetPosition, 0.11);
     this.root.rotation.y = THREE.MathUtils.lerp(
       this.root.rotation.y,
-      this.isOpen ? this.turn : 0,
+      this.isOpen ? Math.PI : 0,
       0.1,
     );
     this.root.rotation.z = THREE.MathUtils.lerp(
       this.root.rotation.z,
-      this.isOpen ? -0.06 : this.homeLean,
+      this.isOpen ? 0 : this.homeLean,
       0.1,
     );
     if (!this.isOpen) {
