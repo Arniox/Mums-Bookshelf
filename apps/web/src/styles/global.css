@@ -1750,6 +1750,12 @@ fieldset {
   border-color: var(--plum);
   color: var(--plum);
 }
+.rich-story-toolbar button.is-active,
+.rich-story-toolbar button[aria-pressed="true"] {
+  border-color: var(--plum);
+  color: var(--paper);
+  background: var(--plum);
+}
 .rich-story-canvas {
   min-height: 24rem;
   padding: 1.1rem;
