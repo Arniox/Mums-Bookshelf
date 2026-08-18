@@ -150,9 +150,15 @@ export async function moderateComment(context: Context<AppEnvironment>) {
 
 export async function deleteComment(context: Context<AppEnvironment>) {
   const result = await context.env.DB.prepare(
-    "UPDATE comments SET deleted_at = ?, deleted_reason = 'admin' WHERE id = ? AND deleted_at IS NULL",
+    `WITH RECURSIVE comment_tree(id) AS (
+       SELECT id FROM comments WHERE id = ?
+       UNION ALL
+       SELECT comment.id FROM comments comment
+       JOIN comment_tree parent ON comment.parent_comment_id = parent.id
+     )
+     DELETE FROM comments WHERE id IN (SELECT id FROM comment_tree)`,
   )
-    .bind(new Date().toISOString(), context.req.param("id"))
+    .bind(context.req.param("id"))
     .run();
   if (!result.meta.changes)
     throw new ApiError(404, "comment_not_found", "Comment was not found.");

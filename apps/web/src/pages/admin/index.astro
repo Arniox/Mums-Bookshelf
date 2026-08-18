@@ -1104,6 +1104,7 @@ const authorInitials = settings.authorName
           <div class="button-row">
             ${comment.moderation_status !== "approved" ? `<button class="button secondary" data-comment-action="approved" data-comment-id="${escape(comment.id)}">Approve</button>` : ""}
             ${comment.moderation_status !== "rejected" ? `<button class="text-button" data-comment-action="rejected" data-comment-id="${escape(comment.id)}">Reject</button>` : ""}
+            <button class="text-button" data-comment-action="delete" data-comment-id="${escape(comment.id)}">Delete permanently</button>
           </div>
         </article>`,
           )
@@ -1117,12 +1118,22 @@ const authorInitials = settings.authorName
           button.disabled = true;
           try {
             const path = `/api/v1/admin/comments/${button.dataset.commentId}`;
-            await request(path, {
-              method: "PATCH",
-              body: JSON.stringify({
-                moderationStatus: button.dataset.commentAction,
-              }),
-            });
+            if (button.dataset.commentAction === "delete") {
+              if (
+                !confirm(
+                  "Delete this comment permanently? This cannot be undone.",
+                )
+              )
+                return;
+              await request(path, { method: "DELETE" });
+            } else {
+              await request(path, {
+                method: "PATCH",
+                body: JSON.stringify({
+                  moderationStatus: button.dataset.commentAction,
+                }),
+              });
+            }
             await loadDashboard();
           } finally {
             setButtonBusy(button, false);

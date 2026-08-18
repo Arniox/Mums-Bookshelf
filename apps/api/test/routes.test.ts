@@ -477,7 +477,7 @@ describe("API routes", () => {
     expect(response.status).toBe(200);
     expect(
       database.statements.some((statement) =>
-        statement.sql.includes("UPDATE comments SET deleted_at"),
+        statement.sql.includes("DELETE FROM comments"),
       ),
     ).toBe(true);
   });
