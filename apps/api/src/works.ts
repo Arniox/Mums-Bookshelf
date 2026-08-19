@@ -401,6 +401,8 @@ export async function patchWork(context: Context<AppEnvironment>) {
     existing.createdAt,
     updatedAt,
     expectedUpdatedAt,
+    existing.sourceWorkId,
+    existing.sourceWorkId ? String(row.slug) : undefined,
   ).run();
   if (!result.meta.changes) throw staleWorkError();
   const updated = await context.env.DB.prepare(
