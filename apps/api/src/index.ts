@@ -27,6 +27,7 @@ import { getPublicSettings, updateSettings } from "./settings";
 import type { AppEnvironment } from "./types";
 import {
   archiveWork,
+  createWorkDraft,
   createWork,
   getAdminWork,
   getPublicWork,
@@ -105,6 +106,7 @@ app.get("/api/v1/admin/works/:id/history", listWorkAudit);
 app.get("/api/v1/admin/works/:id", getAdminWork);
 app.post("/api/v1/admin/works", createWork);
 app.post("/api/v1/admin/works/publish-all", publishAllDrafts);
+app.post("/api/v1/admin/works/:id/draft", createWorkDraft);
 app.put("/api/v1/admin/works/:id", replaceWork);
 app.patch("/api/v1/admin/works/:id", patchWork);
 app.delete("/api/v1/admin/works/:id", archiveWork);
