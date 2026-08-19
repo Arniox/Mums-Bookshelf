@@ -13,21 +13,21 @@ export interface BookAppearance {
 }
 
 const palettes = [
-  ["#193f3a", "#d7b66f"],
+  ["#193f3a", "#e8c876"],
   ["#692f3d", "#ead7b7"],
-  ["#233e66", "#d9a441"],
-  ["#5f482d", "#dfc99b"],
-  ["#76556f", "#f0d8cb"],
-  ["#40593e", "#f0ca83"],
-  ["#854634", "#f4dfc2"],
-  ["#353244", "#cab1dc"],
-  ["#625835", "#f0dfaa"],
-  ["#3a5863", "#f3d2a7"],
-  ["#8d4f57", "#fff0d8"],
-  ["#234738", "#d9b65f"],
+  ["#1c355e", "#e6b64d"],
+  ["#4a351d", "#e8cf9c"],
+  ["#57364f", "#f0d8cb"],
+  ["#314a35", "#f0ca83"],
+  ["#703621", "#f4dfc2"],
+  ["#2c293b", "#dbc1ed"],
+  ["#c9aa70", "#431f30"],
+  ["#2e4e59", "#f3d2a7"],
+  ["#713b45", "#fff0d8"],
+  ["#1c3b30", "#d9b65f"],
 ] as const;
 
-const minimumAccentContrast = 4.5;
+const minimumAccentContrast = 6;
 
 const bookMarks = ["◆", "◇", "◈", "⌁", "❖", "✧", "⋮", "⌘", "◒", "⋄"] as const;
 

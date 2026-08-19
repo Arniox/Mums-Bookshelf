@@ -60,7 +60,7 @@ describe("shared domain logic", () => {
       const appearance = getBookAppearance(`contrast-${index}`);
       expect(
         getColorContrastRatio(appearance.primaryColor, appearance.accentColor),
-      ).toBeGreaterThanOrEqual(4.5);
+      ).toBeGreaterThanOrEqual(6);
     }
   });
 
