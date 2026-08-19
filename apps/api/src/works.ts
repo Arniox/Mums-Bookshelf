@@ -113,12 +113,14 @@ function insertStatement(
   createdAt: string,
   updatedAt: string,
   expectedUpdatedAt?: string,
+  sourceWorkId?: string,
+  storedSlug = work.slug || slugify(work.title),
 ) {
   return context.env.DB.prepare(
     `INSERT INTO works (${workColumns})
-     VALUES (${Array.from({ length: 23 }, () => "?").join(",")})
+     VALUES (${Array.from({ length: 24 }, () => "?").join(",")})
      ON CONFLICT(id) DO UPDATE SET
-       slug = excluded.slug, title = excluded.title,
+       source_work_id = excluded.source_work_id, slug = excluded.slug, title = excluded.title,
        status = excluded.status, publication_type = excluded.publication_type,
        published_at = excluded.published_at, updated_at = excluded.updated_at,
        word_count = excluded.word_count, reading_time_minutes = excluded.reading_time_minutes,
@@ -132,7 +134,8 @@ function insertStatement(
      WHERE works.updated_at = ?`,
   ).bind(
     id,
-    work.slug || slugify(work.title),
+    sourceWorkId ?? null,
+    storedSlug,
     work.title,
     work.status,
     work.publicationType,
@@ -246,6 +249,54 @@ export async function replaceWork(context: Context<AppEnvironment>) {
   const createdAt = String(existing.created_at);
   const previous = rowToWork(existing, true);
   const updatedAt = new Date().toISOString();
+  const sourceWorkId = existing.source_work_id
+    ? String(existing.source_work_id)
+    : undefined;
+
+  if (sourceWorkId && work.status === "published") {
+    const source = await context.env.DB.prepare(
+      "SELECT * FROM works WHERE id = ? AND status = 'published'",
+    )
+      .bind(sourceWorkId)
+      .first();
+    if (!source)
+      throw new ApiError(
+        409,
+        "published_source_missing",
+        "The published version is no longer available. Reopen the draft before publishing.",
+      );
+    const publishedPrevious = rowToWork(source, true);
+    const sourceUpdate = insertStatement(
+      context,
+      sourceWorkId,
+      work,
+      String(source.created_at),
+      updatedAt,
+      String(source.updated_at),
+    );
+    const deleteDraft = context.env.DB.prepare(
+      "DELETE FROM works WHERE id = ? AND updated_at = ?",
+    ).bind(id, expectedUpdatedAt);
+    const results = await context.env.DB.batch([sourceUpdate, deleteDraft]);
+    if (!results[0]?.meta.changes || !results[1]?.meta.changes)
+      throw staleWorkError();
+    const published = await context.env.DB.prepare(
+      "SELECT * FROM works WHERE id = ?",
+    )
+      .bind(sourceWorkId)
+      .first();
+    await auditStatement(
+      context,
+      "updated",
+      sourceWorkId,
+      updatedAt,
+      publishedPrevious.updatedAt,
+      updatedAt,
+      publishedPrevious,
+      rowToWork(published!, true),
+    ).run();
+    return success(context, rowToWork(published!, true));
+  }
   try {
     const result = await insertStatement(
       context,
@@ -254,6 +305,8 @@ export async function replaceWork(context: Context<AppEnvironment>) {
       createdAt,
       updatedAt,
       expectedUpdatedAt,
+      sourceWorkId,
+      sourceWorkId ? String(existing.slug) : undefined,
     ).run();
     if (!result.meta.changes) throw staleWorkError();
   } catch (error) {
@@ -281,6 +334,45 @@ export async function replaceWork(context: Context<AppEnvironment>) {
     rowToWork(updated!, true),
   ).run();
   return success(context, rowToWork(updated!, true));
+}
+
+export async function createWorkDraft(context: Context<AppEnvironment>) {
+  const sourceWorkId = context.req.param("id")!;
+  const source = await context.env.DB.prepare(
+    "SELECT * FROM works WHERE id = ? AND status = 'published'",
+  )
+    .bind(sourceWorkId)
+    .first();
+  if (!source)
+    throw new ApiError(404, "work_not_found", "Published work was not found.");
+  const existingDraft = await context.env.DB.prepare(
+    "SELECT * FROM works WHERE source_work_id = ? AND status = 'draft'",
+  )
+    .bind(sourceWorkId)
+    .first();
+  if (existingDraft) return success(context, rowToWork(existingDraft, true));
+
+  const draftId = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const sourceWork = rowToWork(source, true);
+  const draft = normaliseWork({ ...sourceWork, status: "draft" });
+  const storedSlug = `${sourceWork.slug}-draft-${draftId.replaceAll("-", "").slice(0, 8)}`;
+  await insertStatement(
+    context,
+    draftId,
+    draft,
+    now,
+    now,
+    undefined,
+    sourceWorkId,
+    storedSlug,
+  ).run();
+  const created = await context.env.DB.prepare(
+    "SELECT * FROM works WHERE id = ?",
+  )
+    .bind(draftId)
+    .first();
+  return success(context, rowToWork(created!, true), 201);
 }
 
 export async function patchWork(context: Context<AppEnvironment>) {
@@ -367,7 +459,7 @@ export async function publishAllDrafts(context: Context<AppEnvironment>) {
   const result = await context.env.DB.prepare(
     `UPDATE works
      SET status = 'published', published_at = COALESCE(published_at, ?), updated_at = ?
-     WHERE status = 'draft'`,
+     WHERE status = 'draft' AND source_work_id IS NULL`,
   )
     .bind(publishedAt, publishedAt)
     .run();
