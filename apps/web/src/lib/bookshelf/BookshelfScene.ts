@@ -113,25 +113,37 @@ export class BookshelfScene {
   private addLighting() {
     this.keyLight = new THREE.SpotLight(
       "#FAC998",
-      230,
+      2000,
       0,
-      Math.PI / 2.8,
-      0.45,
-      1.2,
+      Math.PI / 3,
+      0.6,
+      2,
     );
+
+    // Position and target
     this.keyLight.position.set(
       -this.shelfWidth * 1.01,
       this.cabinetHeight / 2,
-      15,
+      12,
     );
     this.keyLightTarget.position.set(0, this.cabinetHeight / 2, 0);
     this.keyLight.target = this.keyLightTarget;
+
+    // Shadow
     this.keyLight.castShadow = true;
     this.keyLight.shadow.mapSize.set(4096, 4096);
+    this.keyLight.shadow.bias = -0.0001;
+    this.keyLight.shadow.radius = 2; // Smooth out any jagged pixel edges slightly
+
+    // Tighten the shadow camera focus for sharper edges
+    this.keyLight.shadow.camera.near = 5;
+    this.keyLight.shadow.camera.far = 25;
+
+    // Add light
     this.scene.add(
       this.keyLight,
       this.keyLightTarget,
-      new THREE.HemisphereLight("#f7dbad", "#25130c", 2.4),
+      new THREE.HemisphereLight("#f7dbad", "#25130c", 0.4),
     );
   }
 }
