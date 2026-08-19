@@ -999,7 +999,8 @@ const authorInitials = settings.authorName
       work.status === "published"
         ? works.find(
             (candidate) =>
-              candidate.status === "draft" && candidate.sourceWorkId === work.id,
+              candidate.status === "draft" &&
+              candidate.sourceWorkId === work.id,
           )
         : undefined;
     const versionLabel = source
@@ -1038,10 +1039,16 @@ const authorInitials = settings.authorName
           setButtonBusy(button, true);
           button.disabled = true;
           try {
-            const draft = await request(`/api/v1/admin/works/${work.id}/draft`, {
-              method: "POST",
-            });
-            works = [...works.filter((candidate) => candidate.id !== draft.id), draft];
+            const draft = await request(
+              `/api/v1/admin/works/${work.id}/draft`,
+              {
+                method: "POST",
+              },
+            );
+            works = [
+              ...works.filter((candidate) => candidate.id !== draft.id),
+              draft,
+            ];
             openEditor(draft);
           } catch (error) {
             deploymentStatus.textContent = (error as Error).message;
@@ -1438,7 +1445,9 @@ const authorInitials = settings.authorName
       setValue(key, Array.isArray(value) ? value.join(", ") : value),
     );
     if (work?.sourceWorkId) {
-      const source = works.find((candidate) => candidate.id === work.sourceWorkId);
+      const source = works.find(
+        (candidate) => candidate.id === work.sourceWorkId,
+      );
       if (source) setValue("slug", source.slug);
     }
     if (work?.publishedAt)
