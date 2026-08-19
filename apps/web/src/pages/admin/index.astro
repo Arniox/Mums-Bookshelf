@@ -991,23 +991,65 @@ const authorInitials = settings.authorName
         })[character]!,
     );
 
-  const workRow = (work: ApiWork) => `
-    <article class="admin-list-row">
-      <div>
-        <strong>${escape(work.title)}${work.featured ? ' <span class="featured-work-badge">Featured</span>' : ""}</strong>
-        <span><span class="status-badge status-badge--${escape(work.status)}">${escape(work.status)}</span> · ${escape(work.publicationType).replace("-", " ")}</span>
-      </div>
-      <time>${new Date(work.updatedAt).toLocaleDateString()}</time>
-      <button class="text-button" type="button" data-edit-work="${escape(work.id)}">Edit</button>
-    </article>`;
+  const workRow = (work: ApiWork) => {
+    const source = work.sourceWorkId
+      ? works.find((candidate) => candidate.id === work.sourceWorkId)
+      : undefined;
+    const draft =
+      work.status === "published"
+        ? works.find(
+            (candidate) =>
+              candidate.status === "draft" && candidate.sourceWorkId === work.id,
+          )
+        : undefined;
+    const versionLabel = source
+      ? `Draft update of ${escape(source.title)}`
+      : work.status === "published" && draft
+        ? "Published version with a draft update"
+        : "";
+    const editLabel =
+      work.status === "published"
+        ? draft
+          ? "Continue draft"
+          : "Edit as draft"
+        : "Edit";
+    const editId = draft?.id || work.id;
+    return `
+      <article class="admin-list-row">
+        <div>
+          <strong>${escape(work.title)}${work.featured ? ' <span class="featured-work-badge">Featured</span>' : ""}</strong>
+          <span><span class="status-badge status-badge--${escape(work.status)}">${escape(work.status)}</span> · ${escape(work.publicationType).replace("-", " ")}${versionLabel ? ` · ${versionLabel}` : ""}</span>
+        </div>
+        <time>${new Date(work.updatedAt).toLocaleDateString()}</time>
+        <button class="text-button" type="button" data-edit-work="${escape(editId)}">${editLabel}</button>
+      </article>`;
+  };
 
   const bindEditButtons = () => {
     document
       .querySelectorAll<HTMLButtonElement>("[data-edit-work]")
       .forEach((button) => {
-        button.addEventListener("click", () =>
-          openEditor(works.find((work) => work.id === button.dataset.editWork)),
-        );
+        button.addEventListener("click", async () => {
+          const work = works.find(
+            (candidate) => candidate.id === button.dataset.editWork,
+          );
+          if (!work) return;
+          if (work.status !== "published") return openEditor(work);
+          setButtonBusy(button, true);
+          button.disabled = true;
+          try {
+            const draft = await request(`/api/v1/admin/works/${work.id}/draft`, {
+              method: "POST",
+            });
+            works = [...works.filter((candidate) => candidate.id !== draft.id), draft];
+            openEditor(draft);
+          } catch (error) {
+            deploymentStatus.textContent = (error as Error).message;
+          } finally {
+            setButtonBusy(button, false);
+            button.disabled = false;
+          }
+        });
       });
   };
 
@@ -1017,12 +1059,14 @@ const authorInitials = settings.authorName
       request("/api/v1/admin/comments?status=all"),
     ]);
     works = workData.items;
-    const draftCount = works.filter((work) => work.status === "draft").length;
+    const draftCount = works.filter(
+      (work) => work.status === "draft" && !work.sourceWorkId,
+    ).length;
     publishAllButtons.forEach((button) => {
       button.disabled = draftCount === 0;
       button.textContent = draftCount
-        ? `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"} now`
-        : "No drafts to publish";
+        ? `Publish all ${draftCount} ${draftCount === 1 ? "new draft" : "new drafts"} now`
+        : "No new drafts to publish";
     });
     document.querySelector<HTMLElement>("[data-stat-published]")!.textContent =
       String(works.filter((work) => work.status === "published").length);
@@ -1050,11 +1094,13 @@ const authorInitials = settings.authorName
 
   publishAllButtons.forEach((button) =>
     button.addEventListener("click", async () => {
-      const draftCount = works.filter((work) => work.status === "draft").length;
+      const draftCount = works.filter(
+        (work) => work.status === "draft" && !work.sourceWorkId,
+      ).length;
       if (!draftCount) return;
       if (
         !confirm(
-          `Publish all ${draftCount} ${draftCount === 1 ? "draft" : "drafts"}? They will appear on the website immediately. Drafts without a publication date will use today, and a background SEO refresh will follow.`,
+          `Publish all ${draftCount} ${draftCount === 1 ? "new draft" : "new drafts"}? They will appear on the website immediately. Drafts without a publication date will use today, and a background SEO refresh will follow.`,
         )
       )
         return;
@@ -1391,6 +1437,10 @@ const authorInitials = settings.authorName
     Object.entries(defaults).forEach(([key, value]) =>
       setValue(key, Array.isArray(value) ? value.join(", ") : value),
     );
+    if (work?.sourceWorkId) {
+      const source = works.find((candidate) => candidate.id === work.sourceWorkId);
+      if (source) setValue("slug", source.slug);
+    }
     if (work?.publishedAt)
       setValue("publishedAt", work.publishedAt.slice(0, 10));
     (workForm.elements.namedItem("slug") as HTMLInputElement).dataset.auto =

@@ -396,6 +396,35 @@ describe("API routes", () => {
     ).toBe(true);
   });
 
+  it("creates a linked draft when editing a published work", async () => {
+    const accessToken = await activeAccessToken(database, env);
+    const response = await app.request(
+      "/api/v1/admin/works/work-1/draft",
+      {
+        method: "POST",
+        headers: {
+          Origin: "https://allowed.example",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+      env,
+    );
+
+    expect(response.status).toBe(201);
+    expect(
+      database.statements.some((statement) =>
+        statement.sql.includes("source_work_id = ? AND status = 'draft'"),
+      ),
+    ).toBe(true);
+    expect(
+      database.statements.some(
+        (statement) =>
+          statement.sql.includes("INSERT INTO works") &&
+          statement.sql.includes("source_work_id"),
+      ),
+    ).toBe(true);
+  });
+
   it("publishes every draft with one database update", async () => {
     const accessToken = await activeAccessToken(database, env);
     const response = await app.request(
