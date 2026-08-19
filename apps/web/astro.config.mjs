@@ -12,6 +12,7 @@ export default defineConfig({
   trailingSlash: "ignore",
   build: {
     assets: "_assets",
+    inlineStylesheets: "always",
   },
   vite: {
     define: {

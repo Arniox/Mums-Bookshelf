@@ -22,6 +22,7 @@ export function sanitiseMarkdown(markdown: string): string {
     ALLOWED_TAGS: [
       "p",
       "br",
+      "span",
       "em",
       "strong",
       "a",
@@ -36,7 +37,7 @@ export function sanitiseMarkdown(markdown: string): string {
       "code",
       "pre",
     ],
-    ALLOWED_ATTR: ["href", "title", "target", "rel"],
+    ALLOWED_ATTR: ["href", "title", "target", "rel", "data-drop-cap"],
     ALLOW_UNKNOWN_PROTOCOLS: false,
   });
   return markStorySceneBreaks(sanitised);

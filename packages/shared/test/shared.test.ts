@@ -72,6 +72,12 @@ describe("shared domain logic", () => {
     );
   });
 
+  it("preserves the drop-cap marker in rich story HTML", () => {
+    expect(
+      sanitiseMarkdown('<p><span data-drop-cap="true">T</span>he opening.</p>'),
+    ).toBe('<p><span data-drop-cap="true">T</span>he opening.</p>');
+  });
+
   it("sanitises rich homepage headings while retaining inline formatting", () => {
     const result = sanitiseHomepageHeading(
       'Stories for the <i>quietly curious</i><script>alert(1)</script><a href="javascript:alert(1)">.</a>',
