@@ -24,6 +24,8 @@ export class ShelfBookBuilder {
     const leftLeaf = new THREE.Group();
     const rightLeaf = new THREE.Group();
     const coverThickness = 0.08;
+    const spineRecess = 0.028;
+    const coverEdgeWidth = Math.min(width * 0.1, 0.035);
     const paperThickness = Math.max(0.12, depth * 0.38);
     const coverHeight = height;
     const pageWidth = THREE.MathUtils.clamp(height * 0.58, 1.05, 1.48);
@@ -34,11 +36,23 @@ export class ShelfBookBuilder {
       metalness: 0.03,
     });
     const spine = new THREE.Mesh(
-      new THREE.BoxGeometry(width, height, coverThickness),
+      new THREE.BoxGeometry(width - coverEdgeWidth * 2, height, coverThickness),
       coverMaterial,
     );
+    spine.position.z = -spineRecess;
     spine.castShadow = true;
-    root.add(spine);
+    const coverEdgeGeometry = new THREE.BoxGeometry(
+      coverEdgeWidth,
+      height,
+      coverThickness,
+    );
+    const leftCoverEdge = new THREE.Mesh(coverEdgeGeometry, coverMaterial);
+    const rightCoverEdge = new THREE.Mesh(coverEdgeGeometry, coverMaterial);
+    leftCoverEdge.position.set(-(width - coverEdgeWidth) / 2, 0, 0);
+    rightCoverEdge.position.set((width - coverEdgeWidth) / 2, 0, 0);
+    leftCoverEdge.castShadow = true;
+    rightCoverEdge.castShadow = true;
+    root.add(spine, leftCoverEdge, rightCoverEdge);
 
     const titleTexture = this.titleTextures.create({
       title: layout.title,

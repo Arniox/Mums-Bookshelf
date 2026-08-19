@@ -4,6 +4,7 @@ import {
   calculateReadingTime,
   calculateReadingTimeFromWordCount,
   commentInputSchema,
+  getColorContrastRatio,
   getBookAppearance,
   isAllowedExternalUrl,
   sanitiseHomepageHeading,
@@ -52,6 +53,15 @@ describe("shared domain logic", () => {
     expect(getBookAppearance("story-one")).not.toEqual(
       getBookAppearance("story-two"),
     );
+  });
+
+  it("uses legible title and ornament colours on every book spine", () => {
+    for (let index = 0; index < 500; index += 1) {
+      const appearance = getBookAppearance(`contrast-${index}`);
+      expect(
+        getColorContrastRatio(appearance.primaryColor, appearance.accentColor),
+      ).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it("sanitises Markdown", () => {
