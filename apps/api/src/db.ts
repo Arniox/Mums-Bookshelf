@@ -6,6 +6,7 @@ export function rowToWork(row: WorkRow, privileged = false): Work {
   const visibility = String(row.content_visibility);
   const base = {
     id: String(row.id),
+    ...(row.source_work_id ? { sourceWorkId: String(row.source_work_id) } : {}),
     slug: String(row.slug),
     title: String(row.title),
     status: String(row.status),
@@ -64,7 +65,7 @@ export function rowToSettings(row: Record<string, unknown>): PublicSettings {
 }
 
 export const workColumns = `
-  id, slug, title, status, publication_type, published_at, created_at, updated_at,
+  id, source_work_id, slug, title, status, publication_type, published_at, created_at, updated_at,
   word_count, reading_time_minutes, blurb, story_content, content_visibility,
   publisher_name, primary_external_url, audio_url, purchase_url, social_post_url, social_provider,
   social_embed_enabled, work_image_url, genres_json, featured
