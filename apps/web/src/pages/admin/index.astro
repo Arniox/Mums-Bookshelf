@@ -1875,16 +1875,10 @@ const authorInitials = settings.authorName
     };
     if (
       action === "publish" &&
-      payload.contentVisibility === "full" &&
       !confirm(
-        "This will publish the complete story for anyone to read. Confirm that you hold the digital rights.",
-      )
-    )
-      return;
-    if (
-      action === "publish" &&
-      !confirm(
-        "Ready to publish? This will make the work public immediately. Static SEO files will refresh in the background.",
+        payload.contentVisibility === "full"
+          ? "This will publish the complete story for anyone to read immediately. Confirm that you hold the digital rights. Static SEO files will refresh in the background."
+          : "Ready to publish? This will make the work public immediately. Static SEO files will refresh in the background.",
       )
     )
       return;
@@ -1910,26 +1904,25 @@ const authorInitials = settings.authorName
       window.clearTimeout(localSaveTimer);
       clearLocalDraft();
       originalStatus = savedWork.status;
+      dialog.close();
       await loadDashboard();
       const needsSeoRefresh = savedWork.status === "published" || wasPublished;
       if (needsSeoRefresh) {
         try {
-          await triggerDeployment(editorStatus);
-          editorStatus.textContent =
+          await triggerDeployment();
+          deploymentStatus.textContent =
             savedWork.status === "published"
               ? "Published and visible now. Static SEO files will refresh in the background."
               : "Draft saved. The public version has been removed; static SEO files will refresh in the background.";
-          window.setTimeout(() => dialog.close(), 1800);
         } catch (deploymentError) {
-          editorStatus.textContent =
+          deploymentStatus.textContent =
             savedWork.status === "published"
               ? `Published and visible now. ${(deploymentError as Error).message}`
               : `Draft saved and removed from the public site. ${(deploymentError as Error).message}`;
         }
       } else {
-        editorStatus.textContent =
+        deploymentStatus.textContent =
           "Saved online. You can continue on another device.";
-        window.setTimeout(() => dialog.close(), 1200);
       }
     } catch (error) {
       editorStatus.textContent = (error as Error).message;
