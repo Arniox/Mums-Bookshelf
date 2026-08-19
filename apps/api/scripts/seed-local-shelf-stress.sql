@@ -1,7 +1,7 @@
 WITH RECURSIVE books(number) AS (
   VALUES(1)
   UNION ALL
-  SELECT number + 1 FROM books WHERE number < 100
+  SELECT number + 1 FROM books WHERE number < 50
 )
 INSERT OR REPLACE INTO works (
   id,
