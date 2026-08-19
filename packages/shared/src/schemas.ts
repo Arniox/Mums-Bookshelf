@@ -20,6 +20,7 @@ const optionalUrl = z
 
 const workBaseSchema = z.object({
   id: z.string().min(1).max(64),
+  sourceWorkId: z.string().min(1).max(64).optional(),
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   title: z.string().trim().min(1).max(180),
   status: z.enum(workStatuses),
@@ -78,6 +79,7 @@ export const workSchema = workBaseSchema.superRefine(validateVisibility);
 const workInputBaseSchema = workBaseSchema
   .omit({
     id: true,
+    sourceWorkId: true,
     createdAt: true,
     updatedAt: true,
   })
